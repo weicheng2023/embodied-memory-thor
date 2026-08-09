@@ -32,6 +32,20 @@ The real adapter is unit-tested with an injected controller-like object. A live 
 - Success, steps, invalid-action count/rate, planning latency, episode latency, and failure reasons
 - Unit and CLI verification of successful and max-step failure paths
 
+### Phase 2R
+
+- Separate agent observation and privileged evaluator-state interfaces
+- Three-region seeded partial mock layout
+- View-dependent visibility from region and orientation
+- Visibility and interaction-distance preconditions with explicit failure codes
+- Partial task that forces the Apple to leave and later re-enter observation
+- Observation-only no-memory region-search baseline
+- Explicitly privileged oracle debug upper bound
+- Auditable pre/post-action observations and planner-received object IDs
+- Successful CLI runs for seeds 0–2 with both planners
+
+Phase 2R remains controlled E1 harness evidence. It does not replace the planned live AI2-THOR smoke test or demonstrate a memory improvement before Phase 3.
+
 ## Planned
 
 - Phase 3: short-term, object-state, and action-failure memory

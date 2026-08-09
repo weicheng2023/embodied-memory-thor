@@ -23,7 +23,7 @@ from embodied_memory_thor.evaluation import (  # noqa: E402
 
 
 class TaskConfigurationTests(unittest.TestCase):
-    def test_all_four_tasks_load_with_required_fields(self) -> None:
+    def test_all_configured_tasks_load_with_required_fields(self) -> None:
         tasks = load_tasks()
 
         self.assertEqual(
@@ -32,6 +32,7 @@ class TaskConfigurationTests(unittest.TestCase):
                 "put_apple_on_plate",
                 "wash_apple_put_countertop",
                 "slice_apple_put_plate",
+                "po_slice_apple_put_plate",
             },
             set(tasks),
         )

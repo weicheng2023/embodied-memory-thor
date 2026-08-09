@@ -30,6 +30,26 @@ class EmbodiedEnv(ABC):
     def get_agent_state(self) -> dict[str, Any]:
         """Return the current agent metadata."""
 
+    def get_observation(self) -> dict[str, Any]:
+        """Return the agent-facing local observation.
+
+        Implementations with partial observability should override this method
+        so hidden state cannot leak into planner input.
+        """
+
+        return {
+            "objects": self.get_visible_objects(),
+            "agent": self.get_agent_state(),
+        }
+
+    def get_evaluator_state(self) -> dict[str, Any]:
+        """Return privileged full state for evaluation only."""
+
+        return {
+            "objects": self.get_all_objects(),
+            "agent": self.get_agent_state(),
+        }
+
     @abstractmethod
     def save_frame(self, path: str | Path) -> Path:
         """Save the current RGB frame and return the resolved output path."""

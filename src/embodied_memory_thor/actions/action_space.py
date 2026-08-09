@@ -14,6 +14,7 @@ class ActionSpace:
         {
             "Pass",
             "MoveAhead",
+            "MoveToRegion",
             "RotateLeft",
             "RotateRight",
             "LookUp",
@@ -56,6 +57,8 @@ class ActionSpace:
             return False, f"unsupported action: {action_name}"
         if action_name in self.object_actions and not str(action_dict.get("objectId", "")).strip():
             return False, f"{action_name} requires objectId"
+        if action_name == "MoveToRegion" and not str(action_dict.get("region", "")).strip():
+            return False, "MoveToRegion requires region"
         return True, ""
 
     def as_sorted_list(self) -> list[str]:
