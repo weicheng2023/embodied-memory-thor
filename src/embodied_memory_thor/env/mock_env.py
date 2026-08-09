@@ -67,10 +67,10 @@ class MockEnv(EmbodiedEnv):
     """Deterministic state mock with an optional partial-observability mode.
 
     Fully observable mode preserves the Phase 0–2 regression harness. Partial
-    mode assigns Apple, Knife, and Plate to distinct seeded regions, filters the
-    agent event to the current view, and enforces visibility/reachability before
-    interaction. Full state remains accessible only through the explicitly
-    privileged evaluator interface.
+    mode assigns Apple, Knife, and Plate to distinct seeded regions, places Book
+    with Apple and DeskLamp with Knife, filters the agent event to the current
+    view, and enforces visibility/reachability before interaction. Full state
+    remains accessible only through the explicitly privileged evaluator interface.
     """
 
     DEFAULT_SCENE = "MockKitchen"
@@ -219,6 +219,21 @@ class MockEnv(EmbodiedEnv):
                 pickupable=True,
                 parent_receptacles=[countertop],
             ),
+            "Book|1": _object(
+                "Book",
+                "Book|1",
+                _position(-0.55, 0.95, 1.5),
+                region="Kitchen",
+                pickupable=True,
+                parent_receptacles=[countertop],
+            ),
+            "DeskLamp|1": _object(
+                "DeskLamp",
+                "DeskLamp|1",
+                _position(0.85, 0.95, 1.5),
+                region="Kitchen",
+                toggleable=True,
+            ),
             "SinkBasin|1": _object(
                 "SinkBasin", "SinkBasin|1", _position(-1.0, 0.85, 1.2), region="Kitchen", receptacle=True
             ),
@@ -283,6 +298,20 @@ class MockEnv(EmbodiedEnv):
                 region=assignments["Knife"],
                 pickupable=True,
             ),
+            "Book|1": _object(
+                "Book",
+                "Book|1",
+                located(assignments["Apple"], -0.55),
+                region=assignments["Apple"],
+                pickupable=True,
+            ),
+            "DeskLamp|1": _object(
+                "DeskLamp",
+                "DeskLamp|1",
+                located(assignments["Knife"], 0.8),
+                region=assignments["Knife"],
+                toggleable=True,
+            ),
             "SinkBasin|1": _object(
                 "SinkBasin",
                 "SinkBasin|1",
@@ -318,6 +347,37 @@ class MockEnv(EmbodiedEnv):
 
     def _make_event(self) -> MockEvent:
         return MockEvent(metadata=self._make_metadata(include_hidden=not self.partial_observability))
+
+    def relocate_object_for_experiment(self, object_id: str, region: str) -> dict[str, Any]:
+        """Apply a logged evaluator-side relocation outside the agent action space.
+
+        This method is intentionally absent from :class:`ActionSpace` and the
+        environment ``step`` handlers. Callers must keep its returned record out
+        of planner inputs.
+        """
+
+        if object_id not in self._objects:
+            raise KeyError(f"unknown experiment object: {object_id}")
+        if region not in self.REGIONS:
+            raise ValueError(f"unknown experiment region: {region}")
+        target = self._objects[object_id]
+        if target["isPickedUp"] or self._held_object_id == object_id:
+            raise RuntimeError(f"cannot relocate held object: {object_id}")
+
+        before = {"region": target["region"], "position": deepcopy(target["position"])}
+        anchor_x, anchor_z = self.REGION_ANCHORS[region]
+        target["region"] = region
+        target["position"] = _position(anchor_x - 0.2, 0.95, anchor_z + 1.4)
+        target["parentReceptacles"] = []
+        self._refresh_receptacle_contents()
+        self._refresh_visibility()
+        self._last_event = self._make_event()
+        return {
+            "type": "relocate_object",
+            "object_id": object_id,
+            "before": before,
+            "after": {"region": region, "position": deepcopy(target["position"])},
+        }
 
     def _make_metadata(self, *, include_hidden: bool) -> dict[str, Any]:
         objects = self.get_all_objects() if include_hidden else self.get_visible_objects()

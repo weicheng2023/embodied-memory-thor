@@ -75,3 +75,20 @@ tasks:
         object_type: Apple
         receptacle_type: Plate
     max_steps: 14
+
+  po_find_book_after_distraction:
+    task_name: po_find_book_after_distraction
+    natural_language_instruction: Turn on the desk lamp, then return to the previously observed book and pick it up.
+    required_objects:
+      - Book
+      - DeskLamp
+    goal_conditions:
+      - type: object_state
+        object_type: DeskLamp
+        field: isToggled
+        equals: true
+      - type: object_state
+        object_type: Book
+        field: isPickedUp
+        equals: true
+    max_steps: 10
