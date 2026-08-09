@@ -7,7 +7,7 @@ from statistics import mean
 from typing import Any, Iterable, Mapping
 
 
-PROTOCOL_VERSION = "phase3-v1"
+PROTOCOL_VERSION = "phase3-v2"
 SHORT_TERM_CAPACITY = 2
 SEARCH_ORDER = ("Kitchen", "DiningArea", "SinkArea")
 LAYOUT_SEEDS = (0, 1, 4, 5, 6, 7)
@@ -87,9 +87,9 @@ def build_protocol_manifest(
         "short_term_capacity": SHORT_TERM_CAPACITY,
         "fallback_search_order": list(SEARCH_ORDER),
         "stale_intervention": {
-            "id": "phase3_stale_apple_after_knife",
-            "trigger": "successful Knife pickup while Apple is hidden",
-            "destination": "Plate pre-intervention region",
+            "id": "phase3_v2_stale_apple_after_knife_departure",
+            "trigger": "first departure from Knife region after successful Knife pickup",
+            "destination": "Knife pre-intervention region just vacated by the agent",
             "planner_accessible": False,
         },
         "metric_fields": list(METRICS),

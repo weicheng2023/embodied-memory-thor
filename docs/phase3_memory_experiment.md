@@ -32,7 +32,9 @@ When a provider has no usable target record, the selected fallback action must b
 
 ### T1 stale
 
-Immediately after successful Knife pickup while Apple is hidden, the evaluator-side harness relocates Apple to Plate's pre-intervention region. Relocation is not an agent action and is not exposed to planners. Object memory may first direct the agent to the old region; a miss marks that record `suspected_stale`, shared fallback search resumes, and rediscovery refreshes the record. Step limit: 18 for every variant.
+After successful Knife pickup, the intervention is armed. On the agent's first departure from the Knife region, the evaluator-side harness relocates Apple into the just-vacated Knife region before the post-move observation reaches the planner. The target is therefore hidden from every variant and is not co-located with Plate. Relocation is not an agent action and is not exposed to planners. Object memory may first direct the agent to the old region; a miss marks that record `suspected_stale`, shared fallback search resumes, and rediscovery refreshes the record. Step limit: 18 for every variant.
+
+Protocol v1 relocated Apple to Plate's region. Its audit logs are retained, but that run is invalid for the final stale-cost comparison because co-location with the downstream receptacle made the remainder of T1 easier and could offset the stale-location detour. Phase 3 formal evidence therefore uses protocol `phase3-v2` and reruns the complete matrix.
 
 ## Frozen matrix
 

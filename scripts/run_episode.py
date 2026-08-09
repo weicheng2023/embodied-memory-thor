@@ -244,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
     episode_start = perf_counter()
     unmet_conditions: tuple[str, ...] = ()
     intervention_destination: str | None = None
+    stale_intervention_armed = False
 
     try:
         env.reset(scene)
@@ -265,10 +266,10 @@ def main(argv: list[str] | None = None) -> int:
             memory_update_count += memory_variant != "no_memory"
             object_record_update_count += len(updated)
         if args.stale_intervention:
-            plate = next(
-                obj for obj in parse_objects(evaluator_state) if obj["objectType"] == "Plate"
+            knife = next(
+                obj for obj in parse_objects(evaluator_state) if obj["objectType"] == "Knife"
             )
-            intervention_destination = str(plate["region"])
+            intervention_destination = str(knife["region"])
 
         availability = check_object_availability(task, evaluator_state)
         if not availability.available:
@@ -350,17 +351,29 @@ def main(argv: list[str] | None = None) -> int:
                     and action.get("objectId") == "Knife|1"
                     and "Apple|1" not in _visible_ids(current_observation)
                 ):
+                    stale_intervention_armed = True
+
+                if (
+                    args.stale_intervention
+                    and stale_intervention_armed
+                    and not interventions
+                    and execution.success
+                    and action.get("action") == "MoveToRegion"
+                    and str(current_observation.get("agent", {}).get("region", ""))
+                    != intervention_destination
+                ):
                     intervention_record = env.relocate_object_for_experiment(
                         "Apple|1", str(intervention_destination)
                     )
                     intervention_record.update(
                         {
-                            "intervention_id": "phase3_stale_apple_after_knife",
+                            "intervention_id": "phase3_v2_stale_apple_after_knife_departure",
                             "trigger_step": step_number,
-                            "trigger": "successful_knife_pickup_while_apple_hidden",
+                            "trigger": "first_departure_from_knife_region_after_successful_pickup",
                         }
                     )
                     interventions.append(deepcopy(intervention_record))
+                    stale_intervention_armed = False
                     current_observation = env.get_observation()
 
                 evaluator_state = env.get_evaluator_state()

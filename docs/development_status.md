@@ -73,7 +73,7 @@ Phase 2.5 is integration evidence only. It is not a memory experiment or a repea
 - Frozen six-layout, three-condition, three-variant pilot runner and manifest
 - Unit, parity, two-task, and protocol-acceptance tests
 
-The implementation is complete, but formal Phase 3 results are claimed only after the 54 episodes run from a clean Git revision and `protocol_acceptance.json` passes.
+The implementation is complete, but formal Phase 3 results are claimed only after all 54 `phase3-v2` episodes run from a clean Git revision and `protocol_acceptance.json` passes. A completed v1 run exposed a stale-condition confound—Apple was co-located with the downstream Plate—and was invalidated rather than silently reused.
 
 ## Planned
 

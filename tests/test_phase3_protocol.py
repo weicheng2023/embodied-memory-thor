@@ -70,6 +70,8 @@ class Phase3ProtocolTests(unittest.TestCase):
         self.assertEqual(54, manifest["ordinary_episode_count"])
         self.assertEqual(6, len(signatures))
         self.assertEqual(2, manifest["short_term_capacity"])
+        self.assertEqual("phase3-v2", manifest["protocol_version"])
+        self.assertIn("Knife", manifest["stale_intervention"]["destination"])
 
     def test_matched_deltas_and_aggregates_are_deterministic(self) -> None:
         rows = _synthetic_rows()

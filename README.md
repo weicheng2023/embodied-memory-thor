@@ -4,7 +4,7 @@ A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-T
 
 ## Status
 
-Phases 0–2.5 are complete. Phase 3 memory modules, shared planner variants, two-task controlled benchmark, stale-memory intervention, and frozen pilot runner are implemented and unit-tested; the formal 54-episode result is recorded only after a clean-revision run. LLM planners remain later work.
+Phases 0–2.5 are complete. Phase 3 memory modules, shared planner variants, two-task controlled benchmark, stale-memory intervention, and frozen pilot runner are implemented and unit-tested; the formal 54-episode result is recorded only after a clean-revision `phase3-v2` run. LLM planners remain later work.
 
 ## Motivation and scope
 
