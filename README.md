@@ -4,7 +4,7 @@ A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-T
 
 ## Status
 
-Phases 0–1 are implemented: project scaffolding, non-destructive environment diagnostics, a deterministic mock kitchen, a lazy AI2-THOR adapter, safe object parsing, and scene-object inspection. Task execution, memory, planners, and experiments are planned for later phases and are not yet claimed as complete.
+Phases 0–2 are implemented: project scaffolding, environment diagnostics, real/mock environment adapters, safe object parsing, YAML task definitions, object availability checks, state-based evaluation, a transparent rule baseline, and structured episode logging. Memory, LLM planners, and batch experiments are planned for later phases and are not yet claimed as complete.
 
 ## Motivation and scope
 
@@ -108,20 +108,38 @@ python scripts/list_scene_objects.py --scene FloorPlan1
 
 The real-environment command reports an actionable error when AI2-THOR or Unity rendering is unavailable. The mock path remains usable in that case.
 
-The Phase 2 target episode command is not available yet:
+## Run the minimal episode
+
+Run the Phase 2 acceptance task without AI2-THOR or external APIs:
 
 ```powershell
 python scripts/run_episode.py --mock --task put_apple_on_countertop --planner rule_based
 ```
 
+Other configured tasks are:
+
+```text
+put_apple_on_plate
+wash_apple_put_countertop
+slice_apple_put_plate
+```
+
+Each run creates a unique directory under `outputs/runs/<timestamp>/` containing:
+
+- `episode.jsonl`: one record per attempted action, including visible objects, action outcome, latency, goal state, and an empty Phase 3 memory placeholder
+- `summary.json`: success, steps, invalid-action metrics, planning/episode latency, and failure reason
+
+Task success is evaluated only from object metadata. Planner text is never treated as evidence of success.
+
 ## Repository layout
 
 ```text
-configs/                         Task and planner configuration (later phases)
+configs/tasks.yaml              Validated Phase 2 task definitions
 docs/                            Public-facing project documentation
 outputs/                         Generated run artifacts (ignored except .gitkeep)
 scripts/check_environment.py     Environment diagnostic CLI
 scripts/list_scene_objects.py    Real/mock scene inspection CLI
+scripts/run_episode.py           Single-episode execution and logging CLI
 src/embodied_memory_thor/        Installable Python package
 tests/                           Automated tests
 ```

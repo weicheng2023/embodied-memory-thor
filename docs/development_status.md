@@ -21,9 +21,19 @@
 
 The real adapter is unit-tested with an injected controller-like object. A live AI2-THOR Unity runtime is not yet verified on the current machine because the optional dependency is not installed.
 
+### Phase 2
+
+- Four validated YAML household tasks
+- Required-object availability checks before execution
+- Structured action validation and exception-safe execution
+- Success evaluation based only on environment object state
+- Transparent rule-based planner for all four mock tasks
+- JSONL step logs and JSON episode summaries under timestamped output directories
+- Success, steps, invalid-action count/rate, planning latency, episode latency, and failure reasons
+- Unit and CLI verification of successful and max-step failure paths
+
 ## Planned
 
-- Phase 2: task configuration, rule-based execution, state-based evaluation
 - Phase 3: short-term, object-state, and action-failure memory
 - Phase 4: mock and OpenAI-compatible planners
 - Phase 5: experiments, metrics, and ablations

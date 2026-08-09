@@ -108,7 +108,6 @@ class MockEnv(EmbodiedEnv):
                 pickupable=True,
                 sliceable=True,
                 dirtyable=True,
-                parent_receptacles=[countertop],
             ),
             "Knife|1": _object(
                 "Knife",
@@ -298,6 +297,13 @@ class MockEnv(EmbodiedEnv):
         if not target["toggleable"]:
             return False, f"object is not toggleable: {target['objectId']}"
         target["isToggled"] = action_dict["action"] == "ToggleObjectOn"
+        if target["objectType"] == "Faucet" and target["isToggled"]:
+            for obj in self._objects.values():
+                if obj["dirtyable"] and any(
+                    self._objects.get(parent_id, {}).get("objectType") == "SinkBasin"
+                    for parent_id in obj["parentReceptacles"]
+                ):
+                    obj["isDirty"] = False
         return True, ""
 
     def _open_close_object(self, action_dict: Mapping[str, Any]) -> tuple[bool, str]:
