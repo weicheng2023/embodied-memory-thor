@@ -1,0 +1,60 @@
+tasks:
+  put_apple_on_countertop:
+    task_name: put_apple_on_countertop
+    natural_language_instruction: Put the apple on the countertop.
+    required_objects:
+      - Apple
+      - CounterTop
+    goal_conditions:
+      - type: object_in_receptacle
+        object_type: Apple
+        receptacle_type: CounterTop
+    max_steps: 6
+
+  put_apple_on_plate:
+    task_name: put_apple_on_plate
+    natural_language_instruction: Put the apple on a plate.
+    required_objects:
+      - Apple
+      - Plate
+    goal_conditions:
+      - type: object_in_receptacle
+        object_type: Apple
+        receptacle_type: Plate
+    max_steps: 6
+
+  wash_apple_put_countertop:
+    task_name: wash_apple_put_countertop
+    natural_language_instruction: Wash the apple and put it on the countertop.
+    required_objects:
+      - Apple
+      - CounterTop
+      - SinkBasin
+      - Faucet
+    goal_conditions:
+      - type: object_state
+        object_type: Apple
+        field: isDirty
+        equals: false
+      - type: object_in_receptacle
+        object_type: Apple
+        receptacle_type: CounterTop
+    max_steps: 10
+
+  slice_apple_put_plate:
+    task_name: slice_apple_put_plate
+    natural_language_instruction: Slice the apple and place it on the plate.
+    required_objects:
+      - Apple
+      - Knife
+      - CounterTop
+      - Plate
+    goal_conditions:
+      - type: object_state
+        object_type: Apple
+        field: isSliced
+        equals: true
+      - type: object_in_receptacle
+        object_type: Apple
+        receptacle_type: Plate
+    max_steps: 10

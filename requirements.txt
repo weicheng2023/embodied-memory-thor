@@ -1,3 +1,4 @@
-# Phase 0 has no mandatory third-party runtime dependencies.
+PyYAML>=6.0
+
 # Install optional capabilities through pyproject extras, for example:
 #   python -m pip install -e ".[dev,thor]"
