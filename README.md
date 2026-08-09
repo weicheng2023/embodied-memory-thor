@@ -4,7 +4,7 @@ A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-T
 
 ## Status
 
-Phase 0 is implemented: project scaffolding and non-destructive environment diagnostics. Environment wrappers, task execution, memory, planners, and experiments are planned for later phases and are not yet claimed as complete.
+Phases 0–1 are implemented: project scaffolding, non-destructive environment diagnostics, a deterministic mock kitchen, a lazy AI2-THOR adapter, safe object parsing, and scene-object inspection. Task execution, memory, planners, and experiments are planned for later phases and are not yet claimed as complete.
 
 ## Motivation and scope
 
@@ -91,16 +91,28 @@ python -m unittest discover -s tests -v
 
 They are also compatible with `pytest` after installing the development extra.
 
-## Planned demos
+## Inspect scene objects
 
-The following commands describe the Phase 1–2 target interface and are not available in Phase 0 yet:
+The deterministic mock path requires no AI2-THOR installation or graphical display:
 
 ```powershell
 python scripts/list_scene_objects.py --mock
-python scripts/run_episode.py --mock --task put_apple_on_countertop --planner rule_based
+python scripts/list_scene_objects.py --mock --json
 ```
 
-The mock path will remain available when AI2-THOR, Unity rendering, or external API access is unavailable.
+If the optional AI2-THOR dependency and graphical environment are available:
+
+```powershell
+python scripts/list_scene_objects.py --scene FloorPlan1
+```
+
+The real-environment command reports an actionable error when AI2-THOR or Unity rendering is unavailable. The mock path remains usable in that case.
+
+The Phase 2 target episode command is not available yet:
+
+```powershell
+python scripts/run_episode.py --mock --task put_apple_on_countertop --planner rule_based
+```
 
 ## Repository layout
 
@@ -108,7 +120,8 @@ The mock path will remain available when AI2-THOR, Unity rendering, or external 
 configs/                         Task and planner configuration (later phases)
 docs/                            Public-facing project documentation
 outputs/                         Generated run artifacts (ignored except .gitkeep)
-scripts/check_environment.py     Phase 0 diagnostic CLI
+scripts/check_environment.py     Environment diagnostic CLI
+scripts/list_scene_objects.py    Real/mock scene inspection CLI
 src/embodied_memory_thor/        Installable Python package
 tests/                           Automated tests
 ```
