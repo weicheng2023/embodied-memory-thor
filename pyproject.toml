@@ -12,8 +12,8 @@ dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
 dev = ["pytest"]
-thor = ["ai2thor"]
-llm = ["openai"]
+thor = ["ai2thor", "Pillow"]
+llm = ["openai", "pydantic>=2"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

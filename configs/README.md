@@ -6,4 +6,10 @@
 
 `po_find_book_after_distraction` is the structurally different Phase 3 task. Book begins with Apple, DeskLamp begins with Knife, and an ordered milestone audit requires the lamp to be toggled before Book pickup.
 
-Scene and planner configuration files will be added only when later phases require them.
+`phase4_tasks.yaml` isolates controlled real-AI2-THOR task definitions from the
+frozen Phase 0–3 mock task panel. `phase4_acceptance.yaml` currently contains
+exactly one cautious acceptance case: `FloorPlan1`, `thor_book_reacquire`, and
+the deterministic object-memory planner. It is not a Phase 5 comparison matrix.
+The Phase 4 v2 case disables frame-file saving by default; it retains lightweight
+in-memory RGB diagnostics and a raw array hash, which do not depend on desktop
+window visibility or screenshots.

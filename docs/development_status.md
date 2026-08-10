@@ -88,4 +88,18 @@ The formal `phase3-v2` pilot completed 54/54 successful episodes from clean revi
 
 Phase 4 planning does not establish real memory improvement: a controlled closed-loop trace remains E2 integration/information-flow evidence. Repeated matched real-simulator comparisons remain Phase 5 E3 work.
 
+Phase 4 source, CLI, configuration, and a single bounded test case are staged.
+The first live formal episode reached AI2-THOR but stopped at preflight with
+`initial_visible_book_missing`: FloorPlan1's reset observation did not show a
+Book. No planner call or environment action followed. The run also exposed that
+preflight failures currently omit observation-0 RGB and leave `episode.jsonl`
+empty. Phase 4 remains planned/unverified until deterministic setup and durable
+preflight evidence are implemented and the same bounded gate is rerun.
+
+Protocol v2 implements the deterministic safe-observation setup sequence and a
+separate `setup.jsonl`. It diagnoses `event.frame` numerically in memory and does
+not rely on desktop screenshots or save PNGs by default. One targeted local test
+and the corrected single live case passed; full offline regression and mode-parity
+acceptance remain pending.
+
 This status page distinguishes implemented work from intended interfaces. Planned items must not be moved into the implemented section until their acceptance commands have been run.

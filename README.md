@@ -185,10 +185,46 @@ See [`docs/phase3_memory_experiment.md`](docs/phase3_memory_experiment.md) for t
 
 The accepted aggregate and per-layout results are in [`docs/phase3_results.md`](docs/phase3_results.md). Object memory reduced mean stable-task steps/moves by 0.5 in both task structures, while all stale ObjectMemory episodes exposed and recovered from an outdated last-seen record. These small deterministic results are reported without significance or broad-generalization claims.
 
+## Phase 4 real-THOR runner (corrected single gate passed)
+
+The first live Phase 4 case reached THOR but failed before planning because Book
+was not visible directly after reset. Protocol v2 corrected that assumption and
+its bounded rerun completed the three-step evaluated episode. It provides one engine
+for both formal and visual-debug presentations, a real `thor_book_reacquire` task,
+visible-observation spatial memory, exact planner-input audits, per-step RGB/trace
+artifacts, and an optional structured external planner.
+
+The frozen first test is one formal `FloorPlan1` object-memory case only:
+
+```bash
+python scripts/run_thor_episode.py \
+  --scene FloorPlan1 \
+  --task thor_book_reacquire \
+  --planner object_memory \
+  --mode formal \
+  --trace-html
+```
+
+The corrected bounded run uses planner-safe metadata plus lightweight statistics
+and a raw hash from AI2-THOR's in-memory `event.frame`; it does not take desktop
+screenshots and does not save PNG files unless `--save-frames` is explicitly set.
+The fixed task-setup actions are written to `setup.jsonl` and excluded from
+planner metrics.
+
+Do not interpret that single run as a memory comparison. The runner labels RGB as
+a human-audit artifact because the initial planner consumes visible metadata, not
+pixels. Full evaluator metadata is excluded from `episode.jsonl` and is written
+only to a separately labeled file when `--save-evaluator-debug` is explicitly set.
+
+See [`docs/phase4_execution_trace.md`](docs/phase4_execution_trace.md) for the
+contracts, artifact schema, information boundary, and the one-case test gate.
+
 ## Repository layout
 
 ```text
-configs/tasks.yaml              Validated Phase 2 task definitions
+configs/tasks.yaml              Frozen Phase 0–3 mock task definitions
+configs/phase4_tasks.yaml       Controlled real-THOR task definitions
+configs/phase4_acceptance.yaml  Single-case first acceptance manifest
 docs/                            Public-facing project documentation
 outputs/                         Generated run artifacts (ignored except .gitkeep)
 scripts/check_environment.py     Environment diagnostic CLI
@@ -196,6 +232,8 @@ scripts/smoke_ai2thor.py         Live AI2-THOR E2 integration smoke CLI
 scripts/list_scene_objects.py    Real/mock scene inspection CLI
 scripts/run_episode.py           Single-episode execution and logging CLI
 scripts/run_phase3_pilot.py      Frozen Phase 3 matrix, manifest, aggregation, and acceptance
+scripts/run_thor_episode.py      Phase 4 real runner and auditable trace CLI
+scripts/run_thor_batch.py        Manifest runner, limited to one case by default
 src/embodied_memory_thor/        Installable Python package
 tests/                           Automated tests
 ```

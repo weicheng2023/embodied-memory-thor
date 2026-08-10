@@ -1,0 +1,25 @@
+protocol_version: phase4-v2
+purpose: >-
+  Cautious Phase 4 runner acceptance only. This single case is not a Phase 5
+  memory/no-memory research comparison.
+cases:
+  - case_id: floorplan1_book_object_memory_single
+    task: thor_book_reacquire
+    scene: FloorPlan1
+    planner: deterministic
+    memory: object_memory
+    max_steps: 12
+    save_frames: false
+    trace_html: true
+    visualize: false
+    save_evaluator_debug: false
+    controller_settings:
+      width: 300
+      height: 300
+      quality: Low
+      gridSize: 0.25
+      snapToGrid: true
+      rotateStepDegrees: 90
+      fieldOfView: 90
+      renderDepthImage: false
+      renderInstanceSegmentation: false
