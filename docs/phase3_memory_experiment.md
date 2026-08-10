@@ -74,3 +74,5 @@ The pilot directory contains:
 ## Permitted interpretation
 
 Report individual layouts, counts, means, and ranges. Retain mixed, negative, and failed episodes. Phase 3 cannot establish statistical significance, broad task generalization, or memory improvement in real AI2-THOR; those require larger repeated E3 experiments.
+
+The accepted `phase3-v2` outcomes are recorded in [`phase3_results.md`](phase3_results.md).

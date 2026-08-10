@@ -73,7 +73,7 @@ Phase 2.5 is integration evidence only. It is not a memory experiment or a repea
 - Frozen six-layout, three-condition, three-variant pilot runner and manifest
 - Unit, parity, two-task, and protocol-acceptance tests
 
-The implementation is complete, but formal Phase 3 results are claimed only after all 54 `phase3-v2` episodes run from a clean Git revision and `protocol_acceptance.json` passes. A completed v1 run exposed a stale-condition confound—Apple was co-located with the downstream Plate—and was invalidated rather than silently reused.
+The formal `phase3-v2` pilot completed 54/54 successful episodes from clean revision `1af6c9c`. All 54 ordinary information-leak audits, all 18 T2 ordered-subgoal audits, all 18 matched stale interventions, and all six ObjectMemory stale miss/recovery traces passed. See `phase3_results.md` for per-layout results and the documented v1 invalidation.
 
 ## Planned
 
