@@ -239,3 +239,8 @@ tests/                           Automated tests
 ```
 
 See [`docs/development_status.md`](docs/development_status.md) for the phase-by-phase status.
+
+The preregistered Phase 5 comparison design is in
+[`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md). It
+freezes fairness, two task structures, a stale-memory negative panel, scene
+qualification, metrics, and stop rules before any real comparison is run.

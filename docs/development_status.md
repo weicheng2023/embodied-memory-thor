@@ -103,3 +103,12 @@ and the corrected single live case passed; full offline regression and mode-pari
 acceptance remain pending.
 
 This status page distinguishes implemented work from intended interfaces. Planned items must not be moved into the implemented section until their acceptance commands have been run.
+
+## Phase 5 protocol status
+
+The real comparison protocol is frozen in `phase5_experiment_protocol.md` before
+implementation or comparative runs. It requires two task structures, three fair
+memory variants, six qualified configurations, stable and stale panels, and a
+54-episode clean-revision formal matrix. Phase 5A implementation and qualification
+must pass before the one-configuration engineering dry run; no Phase 5 result
+currently exists.
