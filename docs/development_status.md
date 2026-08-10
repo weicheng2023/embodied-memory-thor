@@ -77,8 +77,15 @@ The formal `phase3-v2` pilot completed 54/54 successful episodes from clean revi
 
 ## Planned
 
-- Phase 4: mock and OpenAI-compatible planners
+- Phase 4: one real AI2-THOR episode engine with deterministic and OpenAI-compatible structured planners
+  - controlled `thor_book_reacquire` closed-loop task using ordinary THOR actions
+  - exact planner-safe input, memory provenance, action result, memory update, and evaluator-status trace
+  - formal non-interactive and visual debug profiles over the same decision engine
+  - aligned RGB frames and portable HTML trace, with hidden evaluator metadata stored separately
+  - mode-parity and hidden-state-leakage acceptance tests
 - Phase 5: experiments, metrics, and ablations
 - Phase 6: architecture, research report, failure cases, and scorecard
 
-This status page distinguishes implemented work from intended interfaces. It should be updated only after the relevant acceptance commands have been run.
+Phase 4 planning does not establish real memory improvement: a controlled closed-loop trace remains E2 integration/information-flow evidence. Repeated matched real-simulator comparisons remain Phase 5 E3 work.
+
+This status page distinguishes implemented work from intended interfaces. Planned items must not be moved into the implemented section until their acceptance commands have been run.
