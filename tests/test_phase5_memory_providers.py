@@ -12,6 +12,7 @@ from embodied_memory_thor.phase4.planners import ThorBookReacquirePlanner
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
 from embodied_memory_thor.phase4.spatial_memory import build_thor_memory
 from embodied_memory_thor.phase4.task import BookReacquireProgress
+from embodied_memory_thor.phase5.protocol import PHASE5_REQUIRED_METRICS
 from tests.test_phase4_single_case import _SingleCaseThorEnv
 
 
@@ -183,6 +184,10 @@ class Phase5MemoryProviderTests(unittest.TestCase):
         for summary in summaries.values():
             self.assertTrue(summary["success"])
             self.assertTrue(summary["information_boundary_passed"])
+            self.assertTrue(
+                set(PHASE5_REQUIRED_METRICS).issubset(summary),
+                set(PHASE5_REQUIRED_METRICS).difference(summary),
+            )
             self.assertEqual(
                 summary["task_progress"]["distraction_transition_count"], 3
             )
@@ -234,6 +239,36 @@ class Phase5MemoryProviderTests(unittest.TestCase):
         self.assertEqual(summaries["object_memory"]["steps"], 5)
         self.assertEqual(summaries["no_memory"]["steps"], 7)
         self.assertEqual(summaries["short_memory_k2"]["steps"], 7)
+        self.assertEqual(
+            summaries["object_memory"]["target_reacquisition_action_count"], 3
+        )
+        self.assertEqual(
+            summaries["no_memory"]["target_reacquisition_action_count"], 5
+        )
+        self.assertEqual(
+            summaries["short_memory_k2"]["target_reacquisition_action_count"], 5
+        )
+        self.assertFalse(
+            summaries["no_memory"]["short_memory_evicted_before_reacquisition"]
+        )
+        self.assertTrue(
+            summaries["short_memory_k2"][
+                "short_memory_evicted_before_reacquisition"
+            ]
+        )
+        self.assertFalse(
+            summaries["object_memory"][
+                "short_memory_evicted_before_reacquisition"
+            ]
+        )
+        self.assertEqual(summaries["no_memory"]["memory_retrieval_count"], 0)
+        self.assertGreater(
+            summaries["object_memory"]["memory_retrieval_count"], 0
+        )
+        self.assertEqual(
+            summaries["object_memory"]["useful_memory_retrieval_count"],
+            summaries["object_memory"]["memory_guided_action_count"],
+        )
 
     @staticmethod
     def _request(observation: dict, records: list[dict]) -> PlannerRequest:

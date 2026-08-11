@@ -317,6 +317,16 @@ class ThorEpisodeRunner:
         information_boundary_passed = True
         invalid_action_count = 0
         memory_guided_action_count = 0
+        memory_retrieval_count = 0
+        useful_memory_retrieval_count = 0
+        short_memory_evicted_before_reacquisition = False
+        translation_action_count = 0
+        translation_distance_meters = 0.0
+        search_rotation_count = 0
+        repeated_viewpoint_visit_count = 0
+        visited_viewpoints: set[tuple[float, ...]] = set()
+        failed_interaction_count = 0
+        failure_taxonomy: dict[str, int] = {}
         stale_memory_use_count = 0
         old_viewpoint_miss_count = 0
         stale_record_recovery_count = 0
@@ -395,6 +405,9 @@ class ThorEpisodeRunner:
             self.memory.observe(
                 current_observation, step=0, observation_id="observation:0"
             )
+            initial_viewpoint = self._viewpoint_key(current_observation)
+            if initial_viewpoint is not None:
+                visited_viewpoints.add(initial_viewpoint)
 
             evaluator_state = self.env.get_evaluator_state()
             writer.log_evaluator_state(step=0, metadata=evaluator_state)
@@ -419,6 +432,13 @@ class ThorEpisodeRunner:
                 retrieved = tuple(
                     self.memory.retrieve(runtime_spec.retrieval_target_type)
                 )
+                memory_retrieval_count += len(retrieved)
+                if (
+                    config.memory == "short_memory_k2"
+                    and progress.stage in {"reacquire_book", "reacquire_cup"}
+                    and not retrieved
+                ):
+                    short_memory_evicted_before_reacquisition = True
                 request = PlannerRequest(
                     task_name=task.task_name,
                     instruction=task.natural_language_instruction,
@@ -464,6 +484,7 @@ class ThorEpisodeRunner:
                     break
                 if decision.memory_guided:
                     memory_guided_action_count += 1
+                    useful_memory_retrieval_count += 1
                     if config.condition == "stale_r1":
                         stale_memory_use_count += 1
                 elif stale_fallback_active:
@@ -475,6 +496,19 @@ class ThorEpisodeRunner:
                 action_latencies.append(action_latency)
                 if execution.invalid_action:
                     invalid_action_count += 1
+                action_name = str(execution.action.get("action", ""))
+                if (
+                    action_name in {"RotateLeft", "RotateRight"}
+                    and "search" in decision.reason_code
+                ):
+                    search_rotation_count += 1
+                if (
+                    action_name in self.action_space.object_actions
+                    and not execution.success
+                ):
+                    failed_interaction_count += 1
+                    failure_key = execution.error_message.strip() or "unspecified_failure"
+                    failure_taxonomy[failure_key] = failure_taxonomy.get(failure_key, 0) + 1
 
                 pre_intervention_observation = build_planner_observation(
                     self.env.get_observation()
@@ -509,6 +543,23 @@ class ThorEpisodeRunner:
                         )
                 else:
                     current_observation = pre_intervention_observation
+                if execution.success and action_name in {
+                    "MoveAhead",
+                    "MoveBack",
+                    "MoveLeft",
+                    "MoveRight",
+                }:
+                    moved = self._translation_distance(
+                        request.observation, current_observation
+                    )
+                    if moved is not None:
+                        translation_action_count += 1
+                        translation_distance_meters += moved
+                viewpoint = self._viewpoint_key(current_observation)
+                if viewpoint is not None:
+                    if viewpoint in visited_viewpoints:
+                        repeated_viewpoint_visit_count += 1
+                    visited_viewpoints.add(viewpoint)
                 post_observation_id = f"observation:{step}"
                 visible_history[post_observation_id] = set(
                     visible_object_ids(current_observation)
@@ -695,6 +746,20 @@ class ThorEpisodeRunner:
             self.env.close()
 
         elapsed = perf_counter() - episode_started
+        progress_snapshot = progress.snapshot()
+        hidden_step = progress_snapshot.get(
+            "book_hidden_step", progress_snapshot.get("cup_hidden_step")
+        )
+        reacquired_step = progress_snapshot.get(
+            "book_reacquired_step", progress_snapshot.get("cup_reacquired_step")
+        )
+        target_reacquisition_action_count = (
+            int(reacquired_step) - int(hidden_step)
+            if isinstance(hidden_step, int)
+            and isinstance(reacquired_step, int)
+            and reacquired_step >= hidden_step
+            else None
+        )
         summary = {
             "protocol_version": PHASE4_PROTOCOL_VERSION,
             "episode_id": episode_id,
@@ -736,6 +801,18 @@ class ThorEpisodeRunner:
             ),
             "setup_included_in_planner_metrics": False,
             "memory_guided_action_count": memory_guided_action_count,
+            "memory_retrieval_count": memory_retrieval_count,
+            "useful_memory_retrieval_count": useful_memory_retrieval_count,
+            "short_memory_evicted_before_reacquisition": (
+                short_memory_evicted_before_reacquisition
+            ),
+            "target_reacquisition_action_count": target_reacquisition_action_count,
+            "translation_action_count": translation_action_count,
+            "translation_distance_meters": translation_distance_meters,
+            "search_rotation_count": search_rotation_count,
+            "repeated_viewpoint_visit_count": repeated_viewpoint_visit_count,
+            "failed_interaction_count": failed_interaction_count,
+            "failure_taxonomy": dict(sorted(failure_taxonomy.items())),
             "stale_memory_use_count": stale_memory_use_count,
             "old_viewpoint_miss_count": old_viewpoint_miss_count,
             "stale_record_recovery_count": stale_record_recovery_count,
@@ -753,9 +830,11 @@ class ThorEpisodeRunner:
             ),
             "invalid_action_count": invalid_action_count,
             "information_boundary_passed": information_boundary_passed,
-            "task_progress": progress.snapshot(),
+            "task_progress": progress_snapshot,
             "average_planning_latency_seconds": self._average(planning_latencies),
             "average_action_latency_seconds": self._average(action_latencies),
+            "total_planning_latency_seconds": sum(planning_latencies),
+            "total_action_latency_seconds": sum(action_latencies),
             "total_artifact_capture_latency_seconds": sum(artifact_latencies),
             "total_episode_latency_seconds": elapsed,
             "performance_note": (
@@ -1053,3 +1132,44 @@ class ThorEpisodeRunner:
     @staticmethod
     def _average(values: list[float]) -> float:
         return sum(values) / len(values) if values else 0.0
+
+    @staticmethod
+    def _viewpoint_key(
+        observation: Mapping[str, Any],
+    ) -> tuple[float, ...] | None:
+        agent = observation.get("agent", {})
+        if not isinstance(agent, Mapping):
+            return None
+        position = agent.get("position", {})
+        rotation = agent.get("rotation", {})
+        if not isinstance(position, Mapping) or not isinstance(rotation, Mapping):
+            return None
+        try:
+            return (
+                round(float(position["x"]), 2),
+                round(float(position["z"]), 2),
+                round(float(rotation.get("y", 0.0)) % 360.0, 1),
+                round(float(agent.get("cameraHorizon", 0.0)), 1),
+            )
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _translation_distance(
+        before: Mapping[str, Any], after: Mapping[str, Any]
+    ) -> float | None:
+        before_agent = before.get("agent", {})
+        after_agent = after.get("agent", {})
+        if not isinstance(before_agent, Mapping) or not isinstance(after_agent, Mapping):
+            return None
+        before_position = before_agent.get("position", {})
+        after_position = after_agent.get("position", {})
+        if not isinstance(before_position, Mapping) or not isinstance(after_position, Mapping):
+            return None
+        try:
+            return math.hypot(
+                float(after_position["x"]) - float(before_position["x"]),
+                float(after_position["z"]) - float(before_position["z"]),
+            )
+        except (KeyError, TypeError, ValueError):
+            return None

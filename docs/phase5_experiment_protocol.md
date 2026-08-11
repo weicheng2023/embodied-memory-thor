@@ -14,6 +14,14 @@ candidate `thor_book_reacquire_k2` now uses the frozen shared sequence
 observation-0 K=2 eviction, and common no/short fallback. Real scene qualification
 must still verify these properties before a three-variant dry run.
 
+Phase 5A4 offline checkpoint: metric schema `phase5-metrics-v1` is now enforced
+against runner summaries. Qualification records retain both passes and rejected
+candidates in unique ascending order, and code selects exactly the first six
+distinct passes. The manifest builder expands these into the matched 54-cell
+matrix, binds one Git revision, disables formal visual/debug output, and refuses
+a dirty worktree. These are protocol mechanisms, not completed real-scene
+qualification or experiment evidence.
+
 ## Research question
 
 In matched partially observable AI2-THOR tasks, does persistent visible-history
@@ -130,6 +138,9 @@ one deterministic reset is not independent evidence.
 
 ## Metrics
 
+Machine-readable schema: `phase5-metrics-v1`. The formal manifest lists every
+required summary key and validation fails if its matrix or output policy changes.
+
 Primary outcomes:
 
 - success and evaluated action steps;
@@ -172,6 +183,16 @@ Stop the matrix if:
 
 Retain invalidated artifacts and reasons. Increment the protocol and rerun every
 matched episode after a validity correction.
+
+## Stale relocation qualification gate
+
+The first real probe will use evaluator-only
+`GetSpawnCoordinatesAboveReceptacle` followed by `PlaceObjectAtPoint`, as paired
+by the official iTHOR interactive-physics API. The pure A4 probe contract checks:
+query success and candidates; placement success; the same target surviving; a
+material move; immediate and old-viewpoint hiddenness; and two stable samples.
+The record is private and excluded from planner metrics. The API remains a
+candidate until the installed AI2-THOR 5.0.0 default-agent runtime passes it.
 
 ## Gate before formal comparisons
 
