@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import subprocess
 from copy import deepcopy
@@ -48,6 +49,7 @@ from embodied_memory_thor.phase4.trace import (
     render_console_step,
     rgb_array_diagnostics,
 )
+from embodied_memory_thor.phase5.interventions import EvaluatorIntervention
 from embodied_memory_thor.utils.serialization import to_jsonable
 
 
@@ -140,6 +142,7 @@ class ThorEpisodeConfig:
     scene: str = "FloorPlan1"
     planner: str = "deterministic"
     memory: str = "object_memory"
+    condition: str = "stable"
     mode: str = "formal"
     max_steps: int = 12
     output_dir: Path | None = None
@@ -173,6 +176,10 @@ class ThorEpisodeConfig:
             raise ValueError(f"unsupported planner: {self.planner}")
         if self.memory not in {"no_memory", "short_memory_k2", "object_memory"}:
             raise ValueError(f"unsupported memory mode: {self.memory}")
+        if self.condition not in {"stable", "stale_r1"}:
+            raise ValueError(f"unsupported condition: {self.condition}")
+        if self.condition == "stale_r1" and self.task != "thor_book_reacquire_k2":
+            raise ValueError("stale_r1 requires thor_book_reacquire_k2")
         if self.mode not in {"formal", "debug"}:
             raise ValueError("mode must be formal or debug")
         if self.max_steps <= 0:
@@ -195,6 +202,7 @@ class ThorEpisodeRunner:
         env: EmbodiedEnv | None = None,
         planner: StructuredPlanner | None = None,
         memory: ThorMemoryProvider | None = None,
+        intervention: EvaluatorIntervention | None = None,
         viewer_factory: Callable[..., LiveFrameViewer] | None = None,
     ) -> None:
         config.validate()
@@ -204,6 +212,11 @@ class ThorEpisodeRunner:
             config.planner, model=config.model, base_url=config.base_url
         )
         self.memory = memory or build_thor_memory(config.memory)
+        if config.condition == "stale_r1" and intervention is None:
+            raise ValueError("stale_r1 requires an evaluator intervention")
+        if config.condition == "stable" and intervention is not None:
+            raise ValueError("an evaluator intervention requires condition=stale_r1")
+        self.intervention = intervention
         self.action_space = ActionSpace()
         self.executor = ActionExecutor(self.action_space)
         self.viewer_factory = viewer_factory or LiveFrameViewer
@@ -216,7 +229,9 @@ class ThorEpisodeRunner:
             task=config.task, planner=config.planner, mode=config.mode
         )
         writer = ThorTraceWriter(
-            output_dir, evaluator_debug=config.save_evaluator_debug
+            output_dir,
+            evaluator_debug=config.save_evaluator_debug,
+            intervention_log=self.intervention is not None,
         )
         episode_id = writer.output_dir.name
         manifest = {
@@ -228,6 +243,7 @@ class ThorEpisodeRunner:
             "scene": config.scene,
             "planner": config.planner,
             "memory": config.memory,
+            "condition": config.condition,
             "mode": config.mode,
             "max_steps": config.max_steps,
             "controller_settings": deepcopy(config.controller_settings),
@@ -265,6 +281,13 @@ class ThorEpisodeRunner:
             ),
             **_git_state(),
         }
+        if self.intervention is not None:
+            manifest["intervention"] = {
+                "intervention_id": self.intervention.intervention_id,
+                "boundary": EVALUATOR_ONLY_LABEL,
+                "included_in_planner_metrics": False,
+                "destination_visible_to_planner": False,
+            }
         manifest["evidence_status"] = (
             "formal_acceptance_candidate"
             if manifest["working_tree_dirty"] is False and config.mode == "formal"
@@ -294,6 +317,15 @@ class ThorEpisodeRunner:
         information_boundary_passed = True
         invalid_action_count = 0
         memory_guided_action_count = 0
+        stale_memory_use_count = 0
+        old_viewpoint_miss_count = 0
+        stale_record_recovery_count = 0
+        fallback_action_count_after_stale_miss = 0
+        stale_fallback_active = False
+        stale_rediscovery_step: int | None = None
+        memory_correction_step: int | None = None
+        intervention_count = 0
+        intervention_failure_count = 0
         planner_call_count = 0
         setup_action_count = 0
         setup_action_latencies: list[float] = []
@@ -432,6 +464,10 @@ class ThorEpisodeRunner:
                     break
                 if decision.memory_guided:
                     memory_guided_action_count += 1
+                    if config.condition == "stale_r1":
+                        stale_memory_use_count += 1
+                elif stale_fallback_active:
+                    fallback_action_count_after_stale_miss += 1
 
                 action_started = perf_counter()
                 execution = self.executor.execute(self.env, decision.action)
@@ -440,9 +476,39 @@ class ThorEpisodeRunner:
                 if execution.invalid_action:
                     invalid_action_count += 1
 
-                current_observation = build_planner_observation(
+                pre_intervention_observation = build_planner_observation(
                     self.env.get_observation()
                 )
+                intervention_record = None
+                if self.intervention is not None:
+                    intervention_record = self.intervention.maybe_apply(
+                        env=self.env,
+                        task_name=config.task,
+                        step=step,
+                        task_stage=request.task_stage,
+                        agent_action=execution.action,
+                        agent_action_success=execution.success,
+                        pre_intervention_observation=pre_intervention_observation,
+                    )
+                if intervention_record is not None:
+                    intervention_count += 1
+                    writer.log_intervention(intervention_record)
+                    if intervention_record.get("success") is not True:
+                        intervention_failure_count += 1
+                        failure_reason = "evaluator_intervention_failed"
+                    current_observation = build_planner_observation(
+                        self.env.get_observation()
+                    )
+                    for safe_action_field in (
+                        "last_action",
+                        "last_action_success",
+                        "last_action_error",
+                    ):
+                        current_observation[safe_action_field] = deepcopy(
+                            pre_intervention_observation.get(safe_action_field)
+                        )
+                else:
+                    current_observation = pre_intervention_observation
                 post_observation_id = f"observation:{step}"
                 visible_history[post_observation_id] = set(
                     visible_object_ids(current_observation)
@@ -453,11 +519,51 @@ class ThorEpisodeRunner:
                     success=execution.success,
                     observation_after=current_observation,
                 )
+                stale_ids_before_update = {
+                    str(record_id)
+                    for record_id, record in memory_before.get("records", {}).items()
+                    if isinstance(record, Mapping)
+                    and record.get("status") == "suspected_stale"
+                }
                 updated_record_ids = self.memory.observe(
                     current_observation,
                     step=step,
                     observation_id=post_observation_id,
                 )
+                recovered_ids = stale_ids_before_update.intersection(updated_record_ids)
+                if recovered_ids:
+                    stale_record_recovery_count += len(recovered_ids)
+                    stale_rediscovery_step = step
+                    memory_correction_step = step
+                    stale_fallback_active = False
+
+                marked_stale_ids: list[str] = []
+                if (
+                    config.condition == "stale_r1"
+                    and decision.memory_guided
+                    and not self._visible_target(
+                        current_observation, runtime_spec.retrieval_target_type
+                    )
+                ):
+                    retrieved_by_id = {
+                        str(record.get("record_id", "")): record
+                        for record in retrieved
+                    }
+                    marker = getattr(self.memory, "mark_suspected_stale", None)
+                    for record_id in decision.memory_record_ids:
+                        record = retrieved_by_id.get(record_id)
+                        if (
+                            record is not None
+                            and self._at_last_seen_viewpoint(
+                                current_observation, record
+                            )
+                            and callable(marker)
+                            and marker(record_id, step=step)
+                        ):
+                            marked_stale_ids.append(record_id)
+                    if marked_stale_ids:
+                        old_viewpoint_miss_count += len(marked_stale_ids)
+                        stale_fallback_active = True
                 memory_after = self.memory.snapshot()
 
                 evaluator_state = self.env.get_evaluator_state()
@@ -513,6 +619,8 @@ class ThorEpisodeRunner:
                             memory_before, memory_after
                         ),
                         "memory_updated_record_ids": updated_record_ids,
+                        "memory_marked_stale_record_ids": marked_stale_ids,
+                        "memory_recovered_record_ids": sorted(recovered_ids),
                         "memory_after": memory_after,
                         "task_progress": progress.snapshot(),
                         "task_success": success,
@@ -594,6 +702,7 @@ class ThorEpisodeRunner:
             "scene": config.scene,
             "planner": config.planner,
             "memory": config.memory,
+            "condition": config.condition,
             "mode": config.mode,
             "visualization_requested": visualization_requested,
             "visualization_started": visualization_started,
@@ -627,6 +736,21 @@ class ThorEpisodeRunner:
             ),
             "setup_included_in_planner_metrics": False,
             "memory_guided_action_count": memory_guided_action_count,
+            "stale_memory_use_count": stale_memory_use_count,
+            "old_viewpoint_miss_count": old_viewpoint_miss_count,
+            "stale_record_recovery_count": stale_record_recovery_count,
+            "fallback_action_count_after_stale_miss": (
+                fallback_action_count_after_stale_miss
+            ),
+            "stale_rediscovery_step": stale_rediscovery_step,
+            "memory_correction_step": memory_correction_step,
+            "intervention_count": intervention_count,
+            "intervention_failure_count": intervention_failure_count,
+            "intervention_id": (
+                self.intervention.intervention_id
+                if self.intervention is not None
+                else None
+            ),
             "invalid_action_count": invalid_action_count,
             "information_boundary_passed": information_boundary_passed,
             "task_progress": progress.snapshot(),
@@ -652,6 +776,11 @@ class ThorEpisodeRunner:
             "trace_html": str(writer.html_path) if config.trace_html else None,
             "evaluator_debug": (
                 str(writer.evaluator_path) if config.save_evaluator_debug else None
+            ),
+            "intervention_log": (
+                str(writer.intervention_path)
+                if self.intervention is not None
+                else None
             ),
             "finished_at": _utc_now(),
         }
@@ -761,6 +890,64 @@ class ThorEpisodeRunner:
         """Backward-compatible Phase 4 setup predicate."""
 
         return ThorEpisodeRunner._has_visible_pickupable_target(observation, "Book")
+
+    @staticmethod
+    def _visible_target(observation: Mapping[str, Any], object_type: str) -> bool:
+        objects = observation.get("objects", [])
+        return isinstance(objects, list) and any(
+            isinstance(obj, Mapping)
+            and obj.get("visible") is True
+            and str(obj.get("objectType", "")) == object_type
+            for obj in objects
+        )
+
+    @staticmethod
+    def _at_last_seen_viewpoint(
+        observation: Mapping[str, Any], record: Mapping[str, Any]
+    ) -> bool:
+        """Use visible-history pose only to decide whether negative evidence is sufficient."""
+
+        agent = observation.get("agent", {})
+        if not isinstance(agent, Mapping):
+            return False
+        current_position = agent.get("position")
+        remembered_position = record.get("last_seen_agent_position")
+        current_rotation = agent.get("rotation")
+        remembered_rotation = record.get("last_seen_agent_rotation")
+        if not all(
+            isinstance(value, Mapping)
+            for value in (
+                current_position,
+                remembered_position,
+                current_rotation,
+                remembered_rotation,
+            )
+        ):
+            return False
+
+        def number(value: Mapping[str, Any], key: str) -> float:
+            raw = value.get(key, 0.0)
+            return float(raw) if isinstance(raw, (int, float)) else 0.0
+
+        dx = number(current_position, "x") - number(remembered_position, "x")
+        dz = number(current_position, "z") - number(remembered_position, "z")
+        if math.hypot(dx, dz) > 0.18:
+            return False
+        yaw_delta = (
+            number(remembered_rotation, "y")
+            - number(current_rotation, "y")
+            + 180.0
+        ) % 360.0 - 180.0
+        if abs(yaw_delta) > 1.0:
+            return False
+        remembered_horizon = record.get("last_seen_camera_horizon")
+        current_horizon = agent.get("cameraHorizon")
+        if isinstance(remembered_horizon, (int, float)) and isinstance(
+            current_horizon, (int, float)
+        ):
+            if abs(float(remembered_horizon) - float(current_horizon)) > 1.0:
+                return False
+        return True
 
     @staticmethod
     def _setup_record(

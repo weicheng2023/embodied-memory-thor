@@ -84,6 +84,13 @@ uses a documented availability rule before comparisons, never observed outcomes.
 
 ### R1 stale — hidden Book relocation
 
+Offline implementation checkpoint: an injected evaluator-only intervention fires
+after the frozen third distraction transition, logs only to a separate private
+file, and cannot leak its native action/destination through planner `last_action`.
+Visible-history viewpoint miss, `suspected_stale` exclusion, shared fallback,
+rediscovery, and fresh-record correction pass offline. The real AI2-THOR 5.0.0
+action and valid destination remain unqualified and unfrozen.
+
 After Book leaves view and before retrieval reaches the planner, an evaluator-only
 supported simulator action moves it to a frozen valid point. The intervention is
 matched across variants, separately logged, outside the planner action space, and

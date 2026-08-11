@@ -18,6 +18,12 @@ currently visible CoffeeMachine before reacquiring and picking up Cup. It has an
 explicit temporal-order audit and refuses to borrow the Book setup sequence when
 no qualified visible Cup start exists.
 
+The stale R1 path is currently offline-only. Evaluator intervention details are
+isolated in `intervention.jsonl`; planner traces retain only agent actions.
+Old-viewpoint negative evidence marks object memory stale, after which the shared
+fallback can rediscover Book and refresh provenance. A real AI2-THOR relocation
+action and destination have not yet passed qualification.
+
 ## Status
 
 Phases 0–3 are complete. The formal `phase3-v2` controlled pilot ran 54/54 successful episodes from a clean revision, with all information-boundary and protocol checks passing. Results are descriptive E1 mock evidence, not a real AI2-THOR memory claim. LLM planners remain later work.

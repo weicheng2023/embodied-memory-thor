@@ -29,6 +29,14 @@ cannot silently reuse Book setup. The shared visible-target policy approaches a
 distant CoffeeMachine before toggling. Phase 5 targeted tests pass 11/11 and the
 full offline regression passes 71/71. No real R2 or comparison episode has run.
 
+Phase 5A3 now provides an injected evaluator-only stale Book intervention, a
+separate `intervention.jsonl`, native-action leak prevention, visible-history
+old-viewpoint miss detection, stale-record exclusion, common fallback, and
+visible rediscovery/correction. Failed interventions stop with private diagnostics.
+Phase 5 targeted tests pass 15/15 and the full offline regression passes 75/75.
+The actual AI2-THOR 5.0.0 relocation action and
+per-scene valid destinations are deliberately not frozen before qualification.
+
 ## Implemented
 
 ### Phase 0
