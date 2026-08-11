@@ -1,0 +1,74 @@
+{
+  "census_version": "phase5-kitchen-presence-census-v1",
+  "claim_boundary": "evaluator-only object-presence and reachable-position census; not task qualification or a memory comparison",
+  "code_revision": "4bd82611e80492c8950c56ef699f18e95862bd38",
+  "controller_settings": {
+    "fieldOfView": 90,
+    "gridSize": 0.25,
+    "height": 300,
+    "quality": "Low",
+    "renderDepthImage": false,
+    "renderInstanceSegmentation": false,
+    "rotateStepDegrees": 90,
+    "snapToGrid": true,
+    "width": 300
+  },
+  "errors": 0,
+  "images_saved": false,
+  "memory_agents_run": false,
+  "r1_presence_gate": {
+    "criteria": "pickupable Book count > 0, declared open-support count > 0, reachable-position count > 0",
+    "passed_count": 2,
+    "passed_scenes": [
+      "FloorPlan1",
+      "FloorPlan7"
+    ],
+    "rejected_count": 28,
+    "rejection_reason": "pickupable Book absent",
+    "rejected_scenes": [
+      "FloorPlan2",
+      "FloorPlan3",
+      "FloorPlan4",
+      "FloorPlan5",
+      "FloorPlan6",
+      "FloorPlan8",
+      "FloorPlan9",
+      "FloorPlan10",
+      "FloorPlan11",
+      "FloorPlan12",
+      "FloorPlan13",
+      "FloorPlan14",
+      "FloorPlan15",
+      "FloorPlan16",
+      "FloorPlan17",
+      "FloorPlan18",
+      "FloorPlan19",
+      "FloorPlan20",
+      "FloorPlan21",
+      "FloorPlan22",
+      "FloorPlan23",
+      "FloorPlan24",
+      "FloorPlan25",
+      "FloorPlan26",
+      "FloorPlan27",
+      "FloorPlan28",
+      "FloorPlan29",
+      "FloorPlan30"
+    ]
+  },
+  "r2_presence_gate": {
+    "criteria": "pickupable Cup count > 0, toggleable CoffeeMachine count > 0, reachable-position count > 0",
+    "passed_count": 30,
+    "passed_scenes": "FloorPlan1-FloorPlan30",
+    "rejected_count": 0
+  },
+  "scene_family": "AI2-THOR kitchens",
+  "scene_range": "FloorPlan1-FloorPlan30",
+  "scene_count": 30,
+  "stopped_before_anchor_trials": true,
+  "protocol_implication": {
+    "kitchen_only_r1_first_six_feasible": false,
+    "r2_first_six_not_yet_qualified": true,
+    "required_decision": "revise and precommit the R1 scene-family candidate pool, or weaken the six-configuration design; do not continue anchor trials before this decision"
+  }
+}

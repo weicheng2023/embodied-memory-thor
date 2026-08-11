@@ -47,6 +47,13 @@ offline regression is 93/93. This is not a
 real memory result. The first-six R1/R2 qualification pool and one excluded real
 three-variant dry run still block the formal matrix.
 
+A subsequent metadata-only census stopped first-six work at a design blocker.
+Across all 30 kitchens, only FloorPlan1 and FloorPlan7 contain a pickupable Book,
+while all 30 contain a pickupable Cup and toggleable CoffeeMachine. The original
+kitchen-only R1 first-six pool is therefore impossible. No further anchor trial
+or memory episode ran. R1 scene-family scope must be revised and precommitted
+before qualification continues; R2 presence alone is not full qualification.
+
 ## Implemented
 
 ### Phase 0

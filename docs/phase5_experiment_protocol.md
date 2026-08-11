@@ -379,6 +379,26 @@ This clears the earlier route-integration blocker only. The local registry stays
 qualification, and the excluded real three-variant engineering dry run remain.
 No formal stable or stale comparison has run.
 
+### Kitchen-only first-six feasibility blocker
+
+A metadata-only census on clean revision `4bd8261` inspected all 30 kitchen
+scenes (`FloorPlan1`-`FloorPlan30`) before any further anchor trial. Every scene
+reset successfully and returned reachable positions. All 30 contained at least
+one pickupable Cup and one toggleable CoffeeMachine, so R2 has a sufficient
+presence-level candidate pool. Presence is not full R2 qualification.
+
+R1 failed the pool-size assumption: only `FloorPlan1` and `FloorPlan7` contained
+a pickupable Book; the other 28 were rejected at object availability. Therefore
+a kitchen-only R1 pool cannot yield six distinct scene configurations, even
+before visibility, setup, relocation-anchor, fallback, or pickup gates. No
+additional anchor placement was attempted after this finding.
+
+The protocol must now make one pre-outcome choice before qualification resumes:
+expand the ordered R1 pool to another declared scene family, or reduce/replace
+the six-configuration design. Repeating unqualified starts or silently changing
+the target is prohibited. The coordinate-free census record is retained in
+`docs/evidence/phase5_kitchen_scene_census.json`.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
