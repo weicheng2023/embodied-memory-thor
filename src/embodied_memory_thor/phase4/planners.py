@@ -21,6 +21,7 @@ THOR_BOOK_ACTIONS = (
     "RotateLeft",
     "RotateRight",
 )
+THOR_CUP_COFFEE_ACTIONS = THOR_BOOK_ACTIONS + ("ToggleObjectOn",)
 
 
 class StructuredPlanner(Protocol):
@@ -97,6 +98,23 @@ class ThorBookReacquirePlanner:
             ),
             None,
         )
+        visible_cup = next(
+            (
+                obj
+                for obj in _visible_objects(request)
+                if obj.get("visible") is True and obj.get("objectType") == "Cup"
+            ),
+            None,
+        )
+        visible_coffee_machine = next(
+            (
+                obj
+                for obj in _visible_objects(request)
+                if obj.get("visible") is True
+                and obj.get("objectType") == "CoffeeMachine"
+            ),
+            None,
+        )
 
         if stage == "controlled_distraction":
             return self._decision(
@@ -118,6 +136,65 @@ class ThorBookReacquirePlanner:
                 rationale=(
                     "Execute the frozen shared distraction sequence before "
                     "target reacquisition."
+                ),
+            )
+
+        if stage == "toggle_coffee_machine":
+            if visible_coffee_machine is not None:
+                approach = self._approach_visible_target(
+                    request, visible_coffee_machine, target_type="CoffeeMachine"
+                )
+                if approach is not None:
+                    return approach
+                return self._decision(
+                    {
+                        "action": "ToggleObjectOn",
+                        "objectId": str(visible_coffee_machine["objectId"]),
+                    },
+                    target_object_type="CoffeeMachine",
+                    reason_code="visible_ordered_subgoal_interaction",
+                    rationale=(
+                        "The ordered CoffeeMachine subgoal is currently visible "
+                        "and must be completed before Cup pickup."
+                    ),
+                )
+            return self._decision(
+                {"action": "RotateRight"},
+                target_object_type="CoffeeMachine",
+                reason_code="systematic_subgoal_search",
+                rationale=(
+                    "Search clockwise for the CoffeeMachine using the shared "
+                    "observation-only policy."
+                ),
+            )
+
+        if stage == "pickup_cup" and visible_cup is not None:
+            approach = self._approach_visible_target(
+                request, visible_cup, target_type="Cup"
+            )
+            if approach is not None:
+                return approach
+            return self._decision(
+                {"action": "PickupObject", "objectId": str(visible_cup["objectId"])},
+                target_object_type="Cup",
+                reason_code="visible_target_interaction",
+                rationale=(
+                    "The CoffeeMachine subgoal is complete and the reacquired Cup "
+                    "is currently visible."
+                ),
+            )
+
+        if stage == "reacquire_cup":
+            if request.retrieved_memory:
+                return self._memory_navigation(
+                    request, request.retrieved_memory[0], target_type="Cup"
+                )
+            return self._decision(
+                {"action": "RotateRight"},
+                target_object_type="Cup",
+                reason_code="systematic_search",
+                rationale=(
+                    "No Cup memory is available, so continue the shared clockwise scan."
                 ),
             )
 
@@ -152,8 +229,17 @@ class ThorBookReacquirePlanner:
     def _approach_visible_book(
         self, request: PlannerRequest, book: Mapping[str, Any]
     ) -> PlannerDecision | None:
+        return self._approach_visible_target(request, book, target_type="Book")
+
+    def _approach_visible_target(
+        self,
+        request: PlannerRequest,
+        target: Mapping[str, Any],
+        *,
+        target_type: str,
+    ) -> PlannerDecision | None:
         current_position = _agent_vector(request.observation, "position")
-        object_position = book.get("position")
+        object_position = target.get("position")
         if not current_position or not isinstance(object_position, Mapping):
             return None
         dx = _number(object_position, "x") - _number(current_position, "x")
@@ -168,29 +254,41 @@ class ThorBookReacquirePlanner:
             action = "RotateRight" if delta > 0 else "RotateLeft"
             return self._decision(
                 {"action": action},
-                target_object_type="Book",
+                target_object_type=target_type,
                 reason_code="orient_to_visible_target",
-                rationale="Rotate toward the currently visible Book before approaching it.",
+                rationale=(
+                    f"Rotate toward the currently visible {target_type} before "
+                    "approaching it."
+                ),
             )
         return self._decision(
             {"action": "MoveAhead"},
-            target_object_type="Book",
+            target_object_type=target_type,
             reason_code="approach_visible_target",
-            rationale="Move closer to the currently visible Book before pickup.",
+            rationale=(
+                f"Move closer to the currently visible {target_type} before interaction."
+            ),
         )
 
     def _memory_navigation(
-        self, request: PlannerRequest, record: Mapping[str, Any]
+        self,
+        request: PlannerRequest,
+        record: Mapping[str, Any],
+        *,
+        target_type: str = "Book",
     ) -> PlannerDecision:
         record_id = str(record.get("record_id", ""))
         if _last_failed_move(request):
             return self._decision(
                 {"action": "RotateRight"},
-                target_object_type="Book",
+                target_object_type=target_type,
                 memory_guided=True,
                 memory_record_ids=(record_id,),
                 reason_code="memory_navigation_obstacle_recovery",
-                rationale="The last memory-guided forward move failed; rotate before retrying.",
+                rationale=(
+                    f"The last memory-guided move toward {target_type} failed; "
+                    "rotate before retrying."
+                ),
             )
 
         current_position = _agent_vector(request.observation, "position")
@@ -208,19 +306,25 @@ class ThorBookReacquirePlanner:
                     action = "RotateRight" if delta > 0 else "RotateLeft"
                     return self._decision(
                         {"action": action},
-                        target_object_type="Book",
+                        target_object_type=target_type,
                         memory_guided=True,
                         memory_record_ids=(record_id,),
                         reason_code="return_to_last_seen_position_heading",
-                        rationale="Rotate toward the camera position stored when the Book was visible.",
+                        rationale=(
+                            f"Rotate toward the camera position stored when "
+                            f"{target_type} was visible."
+                        ),
                     )
                 return self._decision(
                     {"action": "MoveAhead"},
-                    target_object_type="Book",
+                    target_object_type=target_type,
                     memory_guided=True,
                     memory_record_ids=(record_id,),
                     reason_code="return_to_last_seen_position",
-                    rationale="Move toward the camera position stored when the Book was visible.",
+                    rationale=(
+                        f"Move toward the camera position stored when {target_type} "
+                        "was visible."
+                    ),
                 )
 
         current_rotation = _agent_vector(request.observation, "rotation")
@@ -233,11 +337,14 @@ class ThorBookReacquirePlanner:
                 action = "RotateRight" if delta > 0 else "RotateLeft"
                 return self._decision(
                     {"action": action},
-                    target_object_type="Book",
+                    target_object_type=target_type,
                     memory_guided=True,
                     memory_record_ids=(record_id,),
                     reason_code="return_to_last_seen_viewpoint",
-                    rationale="Restore the camera heading from the Book's last visible observation.",
+                    rationale=(
+                        f"Restore the camera heading from {target_type}'s last "
+                        "visible observation."
+                    ),
                 )
 
         agent = request.observation.get("agent", {})
@@ -254,20 +361,26 @@ class ThorBookReacquirePlanner:
                 action = "LookDown" if horizon_delta > 0 else "LookUp"
                 return self._decision(
                     {"action": action},
-                    target_object_type="Book",
+                    target_object_type=target_type,
                     memory_guided=True,
                     memory_record_ids=(record_id,),
                     reason_code="restore_last_seen_camera_horizon",
-                    rationale="Restore the camera horizon from the Book's last visible observation.",
+                    rationale=(
+                        f"Restore the camera horizon from {target_type}'s last "
+                        "visible observation."
+                    ),
                 )
 
         return self._decision(
             {"action": "RotateRight"},
-            target_object_type="Book",
+            target_object_type=target_type,
             memory_guided=True,
             memory_record_ids=(record_id,),
             reason_code="search_near_last_seen_viewpoint",
-            rationale="The last-seen viewpoint was reached but the Book is not visible; scan locally.",
+            rationale=(
+                f"The last-seen viewpoint was reached but {target_type} is not "
+                "visible; scan locally."
+            ),
         )
 
     def _decision(

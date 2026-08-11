@@ -21,6 +21,14 @@ candidate uses `RotateRight -> LookDown -> LookUp`, requires Book to stay hidden
 evicts observation 0 from K=2, and preserves identical no/short fallback. This
 sequence still requires real scene qualification before any matched comparison.
 
+Phase 5A2 now adds the offline `thor_cup_after_coffee_subgoal` candidate. All
+variants share CoffeeMachine search and visible toggle behavior, and Cup pickup is
+audited as valid only after the toggle milestone. The runner uses task-specific
+initial/retrieval targets, setup actions, and allowed actions, so the Cup task
+cannot silently reuse Book setup. The shared visible-target policy approaches a
+distant CoffeeMachine before toggling. Phase 5 targeted tests pass 11/11 and the
+full offline regression passes 71/71. No real R2 or comparison episode has run.
+
 ## Implemented
 
 ### Phase 0

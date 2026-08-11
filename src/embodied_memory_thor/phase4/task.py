@@ -195,3 +195,159 @@ class BookReacquireProgress:
                 "distraction_error": self._distraction_error,
             }
         )
+
+
+class CupAfterCoffeeProgress:
+    """Track the ordered CoffeeMachine-then-Cup task without spatial history."""
+
+    task_name = "thor_cup_after_coffee_subgoal"
+
+    def __init__(self) -> None:
+        self.initial_cup_id: str | None = None
+        self.initial_cup_observed_step: int | None = None
+        self.cup_hidden_step: int | None = None
+        self.coffee_machine_toggled_step: int | None = None
+        self.cup_reacquired_step: int | None = None
+        self.cup_picked_step: int | None = None
+        self._current_cup_visible = False
+        self._preflight_error = ""
+        self._protocol_violations: list[str] = []
+
+    @staticmethod
+    def _visible_type(
+        observation: Mapping[str, Any], object_type: str
+    ) -> Mapping[str, Any] | None:
+        raw_objects = observation.get("objects", [])
+        if not isinstance(raw_objects, list):
+            return None
+        return next(
+            (
+                obj
+                for obj in raw_objects
+                if isinstance(obj, Mapping)
+                and obj.get("visible") is True
+                and str(obj.get("objectType", "")) == object_type
+            ),
+            None,
+        )
+
+    def initialize(self, observation: Mapping[str, Any]) -> None:
+        cup = self._visible_type(observation, "Cup")
+        if cup is None:
+            self._preflight_error = "initial_visible_cup_missing"
+            return
+        if not bool(cup.get("pickupable", False)):
+            self._preflight_error = "initial_visible_cup_not_pickupable"
+            return
+        self.initial_cup_id = str(cup.get("objectId", ""))
+        if not self.initial_cup_id:
+            self._preflight_error = "initial_visible_cup_missing_object_id"
+            return
+        self.initial_cup_observed_step = 0
+        self._current_cup_visible = True
+
+    @property
+    def preflight_error(self) -> str:
+        return self._preflight_error
+
+    @property
+    def stage(self) -> str:
+        if self._preflight_error:
+            return "preflight_failed"
+        if self.cup_picked_step is not None:
+            return "complete"
+        if self.coffee_machine_toggled_step is None:
+            return "toggle_coffee_machine"
+        if self._current_cup_visible:
+            return "pickup_cup"
+        return "reacquire_cup"
+
+    def observe_before_action(self, observation: Mapping[str, Any], *, step: int) -> None:
+        visible = self._visible_type(observation, "Cup") is not None
+        self._current_cup_visible = visible
+        if (
+            self.initial_cup_observed_step is not None
+            and self.cup_hidden_step is None
+            and not visible
+        ):
+            self.cup_hidden_step = int(step)
+        if (
+            self.cup_hidden_step is not None
+            and self.cup_reacquired_step is None
+            and visible
+        ):
+            self.cup_reacquired_step = int(step)
+
+    def observe_action(
+        self,
+        *,
+        step: int,
+        action: Mapping[str, Any],
+        success: bool,
+        observation_after: Mapping[str, Any],
+    ) -> None:
+        action_name = str(action.get("action", ""))
+        object_id = str(action.get("objectId", ""))
+        visible_objects = observation_after.get("objects", [])
+        by_id = (
+            {
+                str(obj.get("objectId", "")): obj
+                for obj in visible_objects
+                if isinstance(obj, Mapping) and obj.get("objectId")
+            }
+            if isinstance(visible_objects, list)
+            else {}
+        )
+        target = by_id.get(object_id)
+        target_type = (
+            str(target.get("objectType", ""))
+            if target is not None
+            else object_id.split("|", 1)[0]
+        )
+
+        if success and action_name == "ToggleObjectOn" and target_type == "CoffeeMachine":
+            if self.coffee_machine_toggled_step is None:
+                self.coffee_machine_toggled_step = int(step)
+        if success and action_name == "PickupObject" and target_type == "Cup":
+            if self.coffee_machine_toggled_step is None:
+                self._protocol_violations.append(
+                    f"cup_picked_before_coffee_machine_at_step:{step}"
+                )
+            if self.cup_picked_step is None:
+                self.cup_picked_step = int(step)
+
+        visible = self._visible_type(observation_after, "Cup") is not None
+        self._current_cup_visible = visible
+        if self.cup_hidden_step is None and not visible:
+            self.cup_hidden_step = int(step)
+        elif (
+            self.cup_hidden_step is not None
+            and self.cup_reacquired_step is None
+            and visible
+        ):
+            self.cup_reacquired_step = int(step)
+
+    def snapshot(self) -> dict[str, Any]:
+        ordered = (
+            self.coffee_machine_toggled_step is not None
+            and self.cup_picked_step is not None
+            and self.coffee_machine_toggled_step < self.cup_picked_step
+            and not self._protocol_violations
+        )
+        return deepcopy(
+            {
+                "task_name": self.task_name,
+                "stage": self.stage,
+                "initial_cup_id": self.initial_cup_id,
+                "initial_cup_observed_step": self.initial_cup_observed_step,
+                "cup_hidden_step": self.cup_hidden_step,
+                "coffee_machine_toggled_step": self.coffee_machine_toggled_step,
+                "cup_reacquired_step": self.cup_reacquired_step,
+                "cup_picked_step": self.cup_picked_step,
+                "ordered_subgoal_passed": (
+                    ordered if self.cup_picked_step is not None else None
+                ),
+                "protocol_violations": list(self._protocol_violations),
+                "preflight_error": self._preflight_error,
+            }
+        )

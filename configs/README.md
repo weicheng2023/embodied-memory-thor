@@ -17,3 +17,7 @@ window visibility or screenshots.
 `thor_book_reacquire_k2` is the separate offline Phase 5 R1 candidate. Its frozen
 shared distraction sequence is `RotateRight -> LookDown -> LookUp`; real scene
 qualification is still required before any matched comparison.
+
+`thor_cup_after_coffee_subgoal` is the offline Phase 5 R2 candidate. It requires a
+visible pickupable Cup at the qualified initial observation, then orders a visible
+CoffeeMachine toggle before Cup pickup. No Book-derived setup sequence is used.

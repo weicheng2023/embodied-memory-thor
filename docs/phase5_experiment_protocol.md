@@ -71,6 +71,12 @@ evaluated goal is visible reacquisition and `PickupObject`.
 
 ### R2 stable — ordered Cup/CoffeeMachine task
 
+Offline implementation checkpoint: `thor_cup_after_coffee_subgoal` now has an
+ordered progress audit, shared observation-only CoffeeMachine search/toggle path,
+Cup retrieval/fallback path, exact-K eviction test, and explicit failure when no
+qualified visible Cup start is supplied. Real scene/start qualification remains
+mandatory before the engineering dry run.
+
 Setup establishes a visible pickupable Cup. The agent must reach and toggle a
 CoffeeMachine while Cup is out of view, then reacquire and pick up Cup. The
 provisional object pair must pass six-configuration qualification; any replacement

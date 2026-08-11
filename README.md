@@ -13,6 +13,11 @@ sequence is `RotateRight -> LookDown -> LookUp`, after which K=2 has evicted the
 initial Book observation. This candidate has not yet passed real-scene
 qualification and must not be treated as a comparison result.
 
+The offline R2 candidate is `thor_cup_after_coffee_subgoal`: find and toggle a
+currently visible CoffeeMachine before reacquiring and picking up Cup. It has an
+explicit temporal-order audit and refuses to borrow the Book setup sequence when
+no qualified visible Cup start exists.
+
 ## Status
 
 Phases 0–3 are complete. The formal `phase3-v2` controlled pilot ran 54/54 successful episodes from a clean revision, with all information-boundary and protocol checks passing. Results are descriptive E1 mock evidence, not a real AI2-THOR memory claim. LLM planners remain later work.

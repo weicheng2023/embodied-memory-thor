@@ -28,6 +28,7 @@ from embodied_memory_thor.phase4.contracts import (
 )
 from embodied_memory_thor.phase4.planners import (
     THOR_BOOK_ACTIONS,
+    THOR_CUP_COFFEE_ACTIONS,
     StructuredPlanner,
     build_structured_planner,
     validate_planner_decision,
@@ -36,7 +37,10 @@ from embodied_memory_thor.phase4.spatial_memory import (
     ThorMemoryProvider,
     build_thor_memory,
 )
-from embodied_memory_thor.phase4.task import BookReacquireProgress
+from embodied_memory_thor.phase4.task import (
+    BookReacquireProgress,
+    CupAfterCoffeeProgress,
+)
 from embodied_memory_thor.phase4.trace import (
     LiveFrameViewer,
     ThorTraceWriter,
@@ -49,12 +53,42 @@ from embodied_memory_thor.utils.serialization import to_jsonable
 
 PHASE4_PROTOCOL_VERSION = "phase4-v3"
 PHASE4_TASKS_PATH = Path(__file__).resolve().parents[3] / "configs" / "phase4_tasks.yaml"
-SUPPORTED_BOOK_TASKS = {"thor_book_reacquire", "thor_book_reacquire_k2"}
+SUPPORTED_REAL_TASKS = {
+    "thor_book_reacquire",
+    "thor_book_reacquire_k2",
+    "thor_cup_after_coffee_subgoal",
+}
 THOR_BOOK_SETUP_ACTIONS: tuple[dict[str, str], ...] = (
     {"action": "RotateRight"},
     {"action": "MoveAhead"},
     {"action": "RotateRight"},
 )
+
+
+@dataclass(frozen=True)
+class _TaskRuntimeSpec:
+    initial_target_type: str
+    retrieval_target_type: str
+    setup_actions: tuple[dict[str, str], ...]
+    allowed_actions: tuple[str, ...]
+
+
+def _task_runtime_spec(task_name: str) -> _TaskRuntimeSpec:
+    if task_name in {"thor_book_reacquire", "thor_book_reacquire_k2"}:
+        return _TaskRuntimeSpec(
+            initial_target_type="Book",
+            retrieval_target_type="Book",
+            setup_actions=THOR_BOOK_SETUP_ACTIONS,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+    if task_name == "thor_cup_after_coffee_subgoal":
+        return _TaskRuntimeSpec(
+            initial_target_type="Cup",
+            retrieval_target_type="Cup",
+            setup_actions=(),
+            allowed_actions=THOR_CUP_COFFEE_ACTIONS,
+        )
+    raise ValueError(f"unsupported real task: {task_name}")
 
 
 def _utc_now() -> str:
@@ -131,8 +165,8 @@ class ThorEpisodeConfig:
     )
 
     def validate(self) -> None:
-        if self.task not in SUPPORTED_BOOK_TASKS:
-            raise ValueError(f"unsupported real Book task: {self.task}")
+        if self.task not in SUPPORTED_REAL_TASKS:
+            raise ValueError(f"unsupported real task: {self.task}")
         if not self.scene.strip():
             raise ValueError("scene must be non-empty")
         if self.planner not in {"deterministic", "openai_compatible"}:
@@ -177,6 +211,7 @@ class ThorEpisodeRunner:
     def run(self) -> dict[str, Any]:
         config = self.config
         task = load_task(config.task, PHASE4_TASKS_PATH)
+        runtime_spec = _task_runtime_spec(config.task)
         output_dir = config.output_dir or default_thor_output_dir(
             task=config.task, planner=config.planner, mode=config.mode
         )
@@ -208,8 +243,13 @@ class ThorEpisodeRunner:
             },
             "save_evaluator_debug": config.save_evaluator_debug,
             "task_setup": {
-                "policy": "fixed_planner_independent_visible_observation_sequence",
-                "actions": deepcopy(THOR_BOOK_SETUP_ACTIONS),
+                "policy": (
+                    "fixed_planner_independent_visible_observation_sequence"
+                    if runtime_spec.setup_actions
+                    else "qualified_initial_visible_observation_required"
+                ),
+                "initial_target_type": runtime_spec.initial_target_type,
+                "actions": deepcopy(runtime_spec.setup_actions),
                 "uses_evaluator_metadata": False,
                 "included_in_planner_metrics": False,
                 "desktop_screenshots_used": False,
@@ -240,11 +280,12 @@ class ThorEpisodeRunner:
             }
         writer.write_manifest(manifest)
 
-        progress = (
-            BookReacquireProgress.phase5_k2()
-            if config.task == "thor_book_reacquire_k2"
-            else BookReacquireProgress()
-        )
+        if config.task == "thor_book_reacquire_k2":
+            progress = BookReacquireProgress.phase5_k2()
+        elif config.task == "thor_cup_after_coffee_subgoal":
+            progress = CupAfterCoffeeProgress()
+        else:
+            progress = BookReacquireProgress()
         visible_history: dict[str, set[str]] = {}
         action_history: list[dict[str, Any]] = []
         planning_latencies: list[float] = []
@@ -316,7 +357,7 @@ class ThorEpisodeRunner:
                 setup_failure_reason,
                 setup_action_count,
                 setup_action_latencies,
-            ) = self._run_task_setup(writer)
+            ) = self._run_task_setup(writer, runtime_spec)
             progress.initialize(current_observation)
             visible_history["observation:0"] = set(visible_object_ids(current_observation))
             self.memory.observe(
@@ -343,7 +384,9 @@ class ThorEpisodeRunner:
 
                 steps = step
                 memory_before = self.memory.snapshot()
-                retrieved = tuple(self.memory.retrieve("Book"))
+                retrieved = tuple(
+                    self.memory.retrieve(runtime_spec.retrieval_target_type)
+                )
                 request = PlannerRequest(
                     task_name=task.task_name,
                     instruction=task.natural_language_instruction,
@@ -351,7 +394,7 @@ class ThorEpisodeRunner:
                     step=step,
                     max_steps=config.max_steps,
                     observation=deepcopy(current_observation),
-                    allowed_actions=THOR_BOOK_ACTIONS,
+                    allowed_actions=runtime_spec.allowed_actions,
                     retrieved_memory=retrieved,
                     recent_action_results=tuple(deepcopy(action_history[-5:])),
                 )
@@ -421,6 +464,14 @@ class ThorEpisodeRunner:
                 writer.log_evaluator_state(step=step, metadata=evaluator_state)
                 success_result = evaluate_task_success(task, evaluator_state)
                 success = success_result.success
+                ordered_subgoal_passed: bool | None = None
+                if config.task == "thor_cup_after_coffee_subgoal":
+                    ordered_subgoal_passed = progress.snapshot().get(
+                        "ordered_subgoal_passed"
+                    )
+                    if success and ordered_subgoal_passed is not True:
+                        success = False
+                        failure_reason = "ordered_subgoal_audit_failed"
 
                 action_history.append(
                     {
@@ -465,6 +516,8 @@ class ThorEpisodeRunner:
                         "memory_after": memory_after,
                         "task_progress": progress.snapshot(),
                         "task_success": success,
+                        "evaluator_state_success": success_result.success,
+                        "ordered_subgoal_passed": ordered_subgoal_passed,
                         "task_success_channel": (
                             "evaluator-only boolean; not included in the next planner request"
                         ),
@@ -608,7 +661,7 @@ class ThorEpisodeRunner:
         return summary
 
     def _run_task_setup(
-        self, writer: ThorTraceWriter
+        self, writer: ThorTraceWriter, runtime_spec: _TaskRuntimeSpec
     ) -> tuple[dict[str, Any], bool, str, int, list[float]]:
         """Establish the frozen initial view without planner or hidden-state access."""
 
@@ -627,14 +680,17 @@ class ThorEpisodeRunner:
                 observation=observation,
                 frame_record=frame_record,
                 action_latency=0.0,
+                initial_target_type=runtime_spec.initial_target_type,
             )
         )
-        if self._has_visible_pickupable_book(observation):
+        if self._has_visible_pickupable_target(
+            observation, runtime_spec.initial_target_type
+        ):
             return observation, True, "", 0, []
 
         latencies: list[float] = []
         action_count = 0
-        for setup_index, action in enumerate(THOR_BOOK_SETUP_ACTIONS, start=1):
+        for setup_index, action in enumerate(runtime_spec.setup_actions, start=1):
             started = perf_counter()
             execution = self.executor.execute(self.env, action)
             action_latency = perf_counter() - started
@@ -655,6 +711,7 @@ class ThorEpisodeRunner:
                     observation=observation,
                     frame_record=frame_record,
                     action_latency=action_latency,
+                    initial_target_type=runtime_spec.initial_target_type,
                 )
             )
             if execution.invalid_action or not execution.success:
@@ -663,29 +720,47 @@ class ThorEpisodeRunner:
                     f"{execution.error_message}"
                 )
                 return observation, False, reason, action_count, latencies
-            if self._has_visible_pickupable_book(observation):
+            if self._has_visible_pickupable_target(
+                observation, runtime_spec.initial_target_type
+            ):
                 return observation, True, "", action_count, latencies
 
+        missing_reason = (
+            "setup_visible_pickupable_book_missing_after_frozen_sequence"
+            if runtime_spec.initial_target_type == "Book"
+            else (
+                "setup_visible_pickupable_target_missing_after_frozen_sequence:"
+                f"{runtime_spec.initial_target_type}"
+            )
+        )
         return (
             observation,
             False,
-            "setup_visible_pickupable_book_missing_after_frozen_sequence",
+            missing_reason,
             action_count,
             latencies,
         )
 
     @staticmethod
-    def _has_visible_pickupable_book(observation: Mapping[str, Any]) -> bool:
+    def _has_visible_pickupable_target(
+        observation: Mapping[str, Any], object_type: str
+    ) -> bool:
         objects = observation.get("objects", [])
         if not isinstance(objects, list):
             return False
         return any(
             isinstance(obj, Mapping)
             and obj.get("visible") is True
-            and str(obj.get("objectType", "")) == "Book"
+            and str(obj.get("objectType", "")) == object_type
             and bool(obj.get("pickupable", False))
             for obj in objects
         )
+
+    @staticmethod
+    def _has_visible_pickupable_book(observation: Mapping[str, Any]) -> bool:
+        """Backward-compatible Phase 4 setup predicate."""
+
+        return ThorEpisodeRunner._has_visible_pickupable_target(observation, "Book")
 
     @staticmethod
     def _setup_record(
@@ -697,6 +772,7 @@ class ThorEpisodeRunner:
         observation: Mapping[str, Any],
         frame_record: Mapping[str, Any],
         action_latency: float,
+        initial_target_type: str = "Book",
     ) -> dict[str, Any]:
         visible_ids = list(visible_object_ids(observation))
         return {
@@ -716,6 +792,12 @@ class ThorEpisodeRunner:
             "visible_object_ids": visible_ids,
             "visible_pickupable_book": ThorEpisodeRunner._has_visible_pickupable_book(
                 observation
+            ),
+            "initial_target_type": initial_target_type,
+            "visible_pickupable_target": (
+                ThorEpisodeRunner._has_visible_pickupable_target(
+                    observation, initial_target_type
+                )
             ),
             "rgb_observation": deepcopy(frame_record),
         }
