@@ -59,6 +59,12 @@ living-room then bedroom pool in `configs/phase5_r1_scene_pool.json`. A dedicate
 coordinate-free census script records presence feasibility without running an
 agent. Full task and anchor qualification still require separate gates.
 
+The expanded census passed at presence level: 35/60 candidates, zero reset
+errors, with the first six fixed as FloorPlan201, FloorPlan202, FloorPlan203,
+FloorPlan209, FloorPlan213, and FloorPlan224. None has a default-view visible
+Book, so evaluator-only visible-and-pickupable start qualification is the next
+gate; this is not a memory result.
+
 ## Implemented
 
 ### Phase 0

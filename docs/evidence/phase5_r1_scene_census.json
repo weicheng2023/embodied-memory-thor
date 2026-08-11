@@ -1,0 +1,77 @@
+{
+  "census_version": "phase5-r1-book-scene-census-v2",
+  "claim_boundary": "coordinate-free evaluator-only presence census; not start, anchor, route, task, or memory qualification",
+  "code_revision": "62e6831c8c87831a440b05db2e989a8a157e9f5b",
+  "working_tree_dirty": false,
+  "ai2thor_version": "5.0.0",
+  "candidate_pool": {
+    "pool_version": "phase5-r1-book-scene-pool-v2",
+    "ordered_families": [
+      "living_rooms:FloorPlan201-FloorPlan230",
+      "bedrooms:FloorPlan301-FloorPlan330"
+    ],
+    "candidate_count": 60
+  },
+  "execution": {
+    "error_count": 0,
+    "images_saved": false,
+    "memory_agents_run": false
+  },
+  "presence_gate": {
+    "criteria": "pickupable Book count > 0, declared open-support count > 0, reachable-position count > 0",
+    "passed_count": 35,
+    "living_room_passed_count": 7,
+    "bedroom_passed_count": 28,
+    "passed_scenes_in_declared_order": [
+      "FloorPlan201",
+      "FloorPlan202",
+      "FloorPlan203",
+      "FloorPlan209",
+      "FloorPlan213",
+      "FloorPlan224",
+      "FloorPlan229",
+      "FloorPlan301",
+      "FloorPlan302",
+      "FloorPlan303",
+      "FloorPlan304",
+      "FloorPlan305",
+      "FloorPlan306",
+      "FloorPlan307",
+      "FloorPlan308",
+      "FloorPlan309",
+      "FloorPlan310",
+      "FloorPlan311",
+      "FloorPlan312",
+      "FloorPlan313",
+      "FloorPlan314",
+      "FloorPlan315",
+      "FloorPlan316",
+      "FloorPlan317",
+      "FloorPlan318",
+      "FloorPlan320",
+      "FloorPlan321",
+      "FloorPlan322",
+      "FloorPlan323",
+      "FloorPlan325",
+      "FloorPlan326",
+      "FloorPlan327",
+      "FloorPlan328",
+      "FloorPlan329",
+      "FloorPlan330"
+    ],
+    "first_six_presence_candidates": [
+      "FloorPlan201",
+      "FloorPlan202",
+      "FloorPlan203",
+      "FloorPlan209",
+      "FloorPlan213",
+      "FloorPlan224"
+    ],
+    "six_scene_pool_feasible": true
+  },
+  "visibility_note": {
+    "all_candidates_with_default_view_visible_book": 4,
+    "first_six_with_default_view_visible_book": 0,
+    "implication": "the six scenes require separately qualified evaluator-chosen start poses; default reset visibility is not required and no start has yet passed"
+  }
+}

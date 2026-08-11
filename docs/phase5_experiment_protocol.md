@@ -417,6 +417,16 @@ or memory improvement. R2 remains in kitchens and is compared only within its
 own matched panel; R1/R2 absolute task costs are not treated as a controlled
 cross-scene comparison.
 
+The clean census at revision `62e6831` completed all 60 resets without error.
+Thirty-five scenes passed the presence gate (7 living rooms and 28 bedrooms), so
+the expanded six-scene pool is feasible. The frozen first six presence candidates
+are `FloorPlan201`, `FloorPlan202`, `FloorPlan203`, `FloorPlan209`,
+`FloorPlan213`, and `FloorPlan224`. None exposes Book in the default reset view,
+so presence does not qualify a start. The next gate uses evaluator-only
+`GetInteractablePoses`, then requires native `TeleportFull`, visible Book, and
+native `PickupObject` success under a predeclared deterministic pose order. Exact
+poses and object IDs remain private.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
