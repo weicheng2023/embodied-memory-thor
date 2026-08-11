@@ -7,13 +7,15 @@ from copy import deepcopy
 from typing import Any, Mapping, Sequence
 
 
-def spawn_coordinate_query(receptacle_object_id: str) -> dict[str, Any]:
+def spawn_coordinate_query(
+    receptacle_object_id: str, *, anywhere: bool = False
+) -> dict[str, Any]:
     if not receptacle_object_id.strip():
         raise ValueError("receptacle_object_id must be non-empty")
     return {
         "action": "GetSpawnCoordinatesAboveReceptacle",
         "objectId": receptacle_object_id,
-        "anywhere": False,
+        "anywhere": anywhere,
     }
 
 

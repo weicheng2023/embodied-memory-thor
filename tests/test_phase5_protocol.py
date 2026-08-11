@@ -115,6 +115,9 @@ class Phase5ProtocolTests(unittest.TestCase):
                 "anywhere": False,
             },
         )
+        self.assertTrue(
+            spawn_coordinate_query("CounterTop|1", anywhere=True)["anywhere"]
+        )
         self.assertEqual(
             place_object_at_point_action(
                 "Book|1", {"x": 1, "y": 0.9, "z": -2}

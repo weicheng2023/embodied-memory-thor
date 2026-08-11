@@ -194,6 +194,13 @@ material move; immediate and old-viewpoint hiddenness; and two stable samples.
 The record is private and excluded from planner metrics. The API remains a
 candidate until the installed AI2-THOR 5.0.0 default-agent runtime passes it.
 
+Probe v1 qualification finding: after excluding the Book's original support,
+`anywhere=false` produced no spawn coordinates across 42 distance-ranked
+receptacles, so no placement occurred. Probe v2 therefore follows the documented
+off-camera use case: it restricts candidates to declared open support types and
+uses evaluator-only `anywhere=true`. It also retains every query result on the
+failure path. The failed v1 artifact remains excluded from comparison evidence.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

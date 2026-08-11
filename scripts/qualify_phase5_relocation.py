@@ -29,7 +29,10 @@ from embodied_memory_thor.phase5.qualification import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-PROBE_VERSION = "phase5-real-relocation-probe-v1"
+PROBE_VERSION = "phase5-real-relocation-probe-v2"
+OPEN_SUPPORT_TYPES = frozenset(
+    {"CounterTop", "DiningTable", "CoffeeTable", "SideTable", "Desk"}
+)
 CONTROLLER_SETTINGS = {
     "width": 300,
     "height": 300,
@@ -141,6 +144,7 @@ def _rank_receptacles(
     candidates = [
         obj for obj in _objects(metadata)
         if obj.get("receptacle") is True
+        and obj.get("objectType") in OPEN_SUPPORT_TYPES
         and obj.get("objectId")
         and obj.get("objectId") not in set(excluded_ids)
         and isinstance(obj.get("position"), Mapping)
@@ -156,11 +160,11 @@ def _rank_receptacles(
 
 def _query_first_spawn_surface(
     env: ThorEnv, receptacles: Sequence[Mapping[str, Any]],
-) -> tuple[Mapping[str, Any], list[Mapping[str, Any]], list[dict[str, Any]]]:
+) -> tuple[Mapping[str, Any] | None, list[Mapping[str, Any]], list[dict[str, Any]]]:
     query_records: list[dict[str, Any]] = []
     for rank, receptacle in enumerate(receptacles, start=1):
         object_id = str(receptacle["objectId"])
-        action = spawn_coordinate_query(object_id)
+        action = spawn_coordinate_query(object_id, anywhere=True)
         event = env.step(action)
         metadata = event.metadata
         raw = metadata.get("actionReturn")
@@ -177,7 +181,7 @@ def _query_first_spawn_surface(
         query_records.append(record)
         if record["success"] and coordinates:
             return receptacle, coordinates, query_records
-    raise RuntimeError("no ranked receptacle returned a valid spawn coordinate")
+    return None, [], query_records
 
 
 def _select_destination(
@@ -250,6 +254,8 @@ def main(argv: list[str] | None = None) -> int:
         private["ranked_receptacle_count"] = len(ranked)
         receptacle, spawn_candidates, query_records = _query_first_spawn_surface(env, ranked)
         private["spawn_queries"] = query_records
+        if receptacle is None:
+            raise RuntimeError("no ranked open support returned a valid spawn coordinate")
         destination = _select_destination(
             spawn_candidates,
             before_position=before_position,
