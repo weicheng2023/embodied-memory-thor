@@ -72,6 +72,14 @@ memory episode ran after this finding. The next safe batch is to continue down
 the already declared scene order and retain later candidates that pass both
 start and route gates before spending compute on anchor trials.
 
+The remaining 29-scene prescreen then completed on clean revision `a3da5aa`:
+29/29 start-qualified, 24/29 route-qualified, and zero runtime errors. Across all
+35 presence candidates, 25 fit the frozen route limit. The earliest six
+route-eligible scenes are FloorPlan202 and FloorPlan301-FloorPlan305. The route
+pool gate is cleared; relocation-anchor qualification is still pending for all
+six, and no memory comparison has run. The complete offline regression remains
+93/93 after the batch-tool addition.
+
 ## Implemented
 
 ### Phase 0

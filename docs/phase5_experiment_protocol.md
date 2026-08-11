@@ -451,6 +451,17 @@ trials and the unchanged target-independent route-v2 builder with the unchanged
 240-action limit. Start or route rejection is retained and the batch continues;
 no anchor placement or agent episode is permitted during this prescreen.
 
+The clean-revision batch at `a3da5aa` completed all 29 remaining candidates
+without runtime error. All 29 passed the visible-and-pickupable start gate; 24
+also fit the unchanged 240-action route limit. Together with the earlier
+`FloorPlan202` pass, the declared pool contains 25 route-eligible candidates.
+The first six route-eligible scenes in the original order are `FloorPlan202`,
+`FloorPlan301`, `FloorPlan302`, `FloorPlan303`, `FloorPlan304`, and
+`FloorPlan305`. They are the next anchor candidates, not yet fully qualified
+configurations. The remaining-batch route rejections are FloorPlan229 (302),
+FloorPlan309 (388), FloorPlan311 (311), FloorPlan323 (281), and FloorPlan325
+(307); the earlier five route rejections also remain retained.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
