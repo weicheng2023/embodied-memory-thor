@@ -46,7 +46,7 @@ from embodied_memory_thor.phase5.qualification import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v1"
+SCRIPT_VERSION = "phase5-anchor-batch-v2"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -64,7 +64,7 @@ FOOTPRINT_MARGIN_METERS = 0.02
 STABILITY_SAMPLE_COUNT = 3
 STABILITY_TOLERANCE_METERS = 0.02
 MAX_CANDIDATE_TRIALS = 12
-MAX_FALLBACK_ACTIONS = 160
+MAX_FALLBACK_ACTIONS = 240
 MAX_VISIBLE_INTERACTION_ACTIONS = 20
 
 
@@ -228,6 +228,11 @@ def _collect_precommitted_plan(
         start_yaw=float(agent.get("rotation", {}).get("y", 0.0)),
         grid_size=float(CONTROLLER_SETTINGS["gridSize"]),
     )
+    if len(coverage_route["actions"]) > MAX_FALLBACK_ACTIONS:
+        raise RuntimeError(
+            "target-independent coverage route exceeds frozen fallback limit: "
+            f"{len(coverage_route['actions'])}>{MAX_FALLBACK_ACTIONS}"
+        )
     route_digest = stable_digest(coverage_route)
     _write_json(output_dir / "coverage_route.json", coverage_route)
 

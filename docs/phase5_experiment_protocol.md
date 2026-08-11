@@ -295,6 +295,20 @@ Passing this script alone will not unblock the stale formal panel: the exact
 qualified coverage route must subsequently be integrated into all three formal
 variants and pass parity/leakage tests before the engineering dry run.
 
+First frozen anchor-batch result (`5d163a6`, FloorPlan1): geometry retained 147
+of 2,205 queried candidates. In the frozen first 12, three native placements
+failed and nine passed placement, same-object, old-view hiddenness, support,
+overlap, and stability gates. None was rediscovered within the v1 route's 160
+action cap. The failure is retained; no anchor was frozen.
+
+Route audit showed why: the complete DFS-with-scan route contained 1,091 actions,
+so its frozen cap covered only an early prefix. Batch v2 replaces it before the
+next run with target-independent 0.75 m spaced scan waypoints connected by
+deterministic shortest grid paths. It rejects the entire plan before placement
+if the complete route exceeds the new frozen 240-action cap. No target, support,
+candidate, placement outcome, or anchor coordinate participates in route
+construction.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

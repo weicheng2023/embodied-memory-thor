@@ -117,10 +117,12 @@ class Phase5AnchorTests(unittest.TestCase):
             reachable_positions=reachable,
             start_position=reachable[0],
             start_yaw=90,
+            scan_spacing_steps=1,
         )
         self.assertTrue(route["target_or_anchor_input_used"] is False)
         self.assertTrue(route["complete_graph_coverage"])
-        self.assertEqual(route["visited_node_count"], 4)
+        self.assertTrue(route["all_nodes_within_nominal_scan_radius"])
+        self.assertGreaterEqual(route["scan_waypoint_count"], 1)
         self.assertTrue(any(row["action"]["action"] == "MoveAhead" for row in route["actions"]))
         self.assertNotIn("Book", str(route))
 

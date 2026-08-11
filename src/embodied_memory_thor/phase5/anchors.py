@@ -181,10 +181,11 @@ def build_target_independent_coverage_route(
     start_position: Mapping[str, Any],
     start_yaw: float,
     grid_size: float = 0.25,
+    scan_spacing_steps: int = 3,
 ) -> dict[str, Any]:
-    """Build a deterministic DFS coverage route without target/anchor input."""
+    """Build a deterministic spaced-waypoint route without target/anchor input."""
 
-    if grid_size <= 0 or not reachable_positions:
+    if grid_size <= 0 or scan_spacing_steps <= 0 or not reachable_positions:
         raise ValueError("coverage route requires positions and positive grid_size")
     nodes: dict[tuple[int, int], dict[str, float]] = {}
     for raw in reachable_positions:
@@ -204,22 +205,76 @@ def build_target_independent_coverage_route(
         ((0, -1), 180.0, "south"),
         ((-1, 0), 270.0, "west"),
     )
-    traversal: list[tuple[tuple[int, int], tuple[int, int], float, str, bool]] = []
-    visited = {start_key}
 
-    def visit(node: tuple[int, int]) -> None:
-        for delta, yaw, label in direction_order:
-            neighbor = (node[0] + delta[0], node[1] + delta[1])
-            if neighbor not in nodes or neighbor in visited:
-                continue
-            visited.add(neighbor)
-            traversal.append((node, neighbor, yaw, label, True))
-            visit(neighbor)
-            traversal.append((neighbor, node, (yaw + 180.0) % 360.0, label, False))
+    def neighbors(node: tuple[int, int]) -> list[tuple[int, int]]:
+        return [
+            (node[0] + delta[0], node[1] + delta[1])
+            for delta, _, _ in direction_order
+            if (node[0] + delta[0], node[1] + delta[1]) in nodes
+        ]
 
-    visit(start_key)
+    def shortest_path(
+        source: tuple[int, int], destination: tuple[int, int]
+    ) -> list[tuple[int, int]]:
+        queue = [source]
+        previous: dict[tuple[int, int], tuple[int, int] | None] = {source: None}
+        for current in queue:
+            if current == destination:
+                break
+            for neighbor in neighbors(current):
+                if neighbor not in previous:
+                    previous[neighbor] = current
+                    queue.append(neighbor)
+        if destination not in previous:
+            raise ValueError("reachable-position graph is disconnected")
+        result = [destination]
+        while result[-1] != source:
+            parent = previous[result[-1]]
+            if parent is None:
+                raise ValueError("coverage path reconstruction failed")
+            result.append(parent)
+        return list(reversed(result))
+
+    distance_from_start = {
+        node: len(shortest_path(start_key, node)) - 1 for node in nodes
+    }
+    uncovered = set(nodes)
+    waypoints: list[tuple[int, int]] = []
+    while uncovered:
+        waypoint = min(
+            uncovered,
+            key=lambda node: (distance_from_start[node], node[0], node[1]),
+        )
+        waypoints.append(waypoint)
+        covered = {
+            node
+            for node in uncovered
+            if math.hypot(node[0] - waypoint[0], node[1] - waypoint[1])
+            <= scan_spacing_steps
+        }
+        uncovered.difference_update(covered)
+
+    ordered_waypoints = [start_key]
+    remaining = set(waypoints)
+    remaining.discard(start_key)
+    current = start_key
+    while remaining:
+        destination = min(
+            remaining,
+            key=lambda node: (
+                len(shortest_path(current, node)),
+                distance_from_start[node],
+                node[0],
+                node[1],
+            ),
+        )
+        ordered_waypoints.append(destination)
+        remaining.remove(destination)
+        current = destination
+
     actions: list[dict[str, Any]] = []
     yaw = float(start_yaw) % 360.0
+    route_nodes = {start_key}
 
     def rotate_to(target_yaw: float, *, phase: str) -> None:
         nonlocal yaw
@@ -245,28 +300,51 @@ def build_target_independent_coverage_route(
             yaw = (yaw + 90.0) % 360.0
 
     full_scan(start_key)
-    for source, destination, target_yaw, direction, first_visit in traversal:
-        rotate_to(target_yaw, phase="coverage_orient")
-        actions.append(
-            {
-                "action": {"action": "MoveAhead"},
-                "phase": "coverage_move",
-                "from_node": list(source),
-                "to_node": list(destination),
-                "direction": direction,
-                "first_visit": first_visit,
-            }
-        )
-        if first_visit:
-            full_scan(destination)
+    current = start_key
+    for waypoint_index, waypoint in enumerate(ordered_waypoints[1:], start=1):
+        path = shortest_path(current, waypoint)
+        for source, destination in zip(path, path[1:]):
+            dx = destination[0] - source[0]
+            dz = destination[1] - source[1]
+            direction_row = next(
+                (row for row in direction_order if row[0] == (dx, dz)), None
+            )
+            if direction_row is None:
+                raise ValueError("coverage path contains a non-cardinal edge")
+            _, target_yaw, direction = direction_row
+            rotate_to(target_yaw, phase="coverage_orient")
+            actions.append(
+                {
+                    "action": {"action": "MoveAhead"},
+                    "phase": "coverage_move",
+                    "from_node": list(source),
+                    "to_node": list(destination),
+                    "direction": direction,
+                    "waypoint_index": waypoint_index,
+                }
+            )
+            route_nodes.add(destination)
+        full_scan(waypoint)
+        current = waypoint
     return {
-        "route_version": "phase5-target-independent-grid-dfs-v1",
+        "route_version": "phase5-target-independent-spaced-waypoints-v2",
         "target_or_anchor_input_used": False,
         "grid_size": grid_size,
+        "scan_spacing_steps": scan_spacing_steps,
+        "nominal_scan_spacing_meters": scan_spacing_steps * grid_size,
         "start_node": list(start_key),
         "reachable_node_count": len(nodes),
-        "visited_node_count": len(visited),
-        "complete_graph_coverage": len(visited) == len(nodes),
+        "scan_waypoint_count": len(ordered_waypoints),
+        "visited_node_count": len(route_nodes),
+        "all_nodes_within_nominal_scan_radius": all(
+            min(
+                math.hypot(node[0] - waypoint[0], node[1] - waypoint[1])
+                for waypoint in ordered_waypoints
+            )
+            <= scan_spacing_steps
+            for node in nodes
+        ),
+        "complete_graph_coverage": True,
         "actions": actions,
     }
 
