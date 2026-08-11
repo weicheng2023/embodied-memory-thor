@@ -209,6 +209,15 @@ v3 replaces only this flawed selector with a tested center-biased point at least
 0.5 m from the old Book location. It does not use `forceAction` and retains v2 as
 a failed qualification artifact.
 
+Probe v3 qualification result: its center-biased point was not against a wall,
+but a Pan on the CounterTop intersected the Book-sized spawn area. Native
+placement again failed, the Book stayed at its old visible location, and scene
+reset reproducibility passed. The API pair is therefore **not qualified** and the
+formal stale panel remains blocked. Do not keep trying points online. A future v4
+must compute clearance before its run from the Book footprint, support bounds,
+and evaluator obstacle AABBs, freeze that selector offline, and then receive one
+new qualification attempt. `forceAction` remains prohibited.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
