@@ -213,10 +213,66 @@ Probe v3 qualification result: its center-biased point was not against a wall,
 but a Pan on the CounterTop intersected the Book-sized spawn area. Native
 placement again failed, the Book stayed at its old visible location, and scene
 reset reproducibility passed. The API pair is therefore **not qualified** and the
-formal stale panel remains blocked. Do not keep trying points online. A future v4
-must compute clearance before its run from the Book footprint, support bounds,
-and evaluator obstacle AABBs, freeze that selector offline, and then receive one
-new qualification attempt. `forceAction` remains prohibited.
+formal stale panel remains blocked. Do not keep trying points online. The earlier
+idea of one manually selected v4 point is superseded by the frozen multi-candidate
+anchor qualification protocol below. `forceAction` remains prohibited.
+
+## Pre-qualified relocation anchor protocol
+
+The v1-v3 failures show that an API-returned coordinate is only a candidate, not
+evidence that the Book can safely occupy it. Phase 5 therefore does not select or
+query a destination during a formal stale episode. Before any comparison, an
+evaluator-only qualification batch creates frozen **relocation anchors**.
+
+### Frozen candidate and acceptance rule
+
+For each declared R1 configuration, candidate surfaces and coordinates are
+ordered deterministically before placement outcomes are known. Geometry using
+the Book footprint, support bounds, and evaluator obstacle AABBs may reject
+obviously unsafe candidates. The remaining candidates are tried with the actual
+Book in that fixed order, resetting the scene before every trial. Every rejection
+and native error is retained. The first anchor satisfying every gate is the
+configuration's primary anchor; no agent outcome is observed when choosing it.
+
+An anchor passes only if:
+
+- `PlaceObjectAtPoint` succeeds without `forceAction` or a collision error;
+- the same Book object ID still exists and moved by the frozen minimum distance;
+- it is not visible from the frozen old viewpoint;
+- its expected support relation is valid and its Book footprint does not overlap
+  a non-support obstacle;
+- it is not moving and its position remains within tolerance over three `Pass`
+  samples;
+- the frozen common observation-only fallback can rediscover and pick up it
+  within the shared action limit;
+- a reset restores the original configuration, and the anchor placement passes
+  again from a fresh reset.
+
+A scene/configuration with no passing candidate is rejected with all reasons. It
+cannot enter the first-six pool. Qualification can test multiple candidates only
+under this precommitted order; this is physical/solvability QA, not adaptive
+retrying inside a formal episode.
+
+### Frozen artifacts and information boundary
+
+The private anchor registry binds `anchor_id`, scene/start configuration, exact
+Book and receptacle IDs, xyz point, intervention milestone, qualification
+protocol, AI2-THOR version, controller settings, trial evidence, and code
+revision. It is evaluator-only. The ordinary formal manifest contains only the
+opaque `anchor_id` and private-registry digest, never xyz coordinates. Coordinates
+may appear only in the private qualification registry and `intervention.jsonl`.
+
+Planner requests, memory records, ordinary `episode.jsonl`, action history, and
+fallback state must contain neither the anchor coordinates nor query results.
+The evaluator resolves the opaque ID and executes exactly one placement in each
+formal stale episode. All three variants in a matched configuration use the same
+anchor. If placement fails, the matched triplet stops and is invalidated; the
+runner must not query a new point or switch to a reserve anchor.
+
+This is a controlled intervention, not an attempt to make object memory look
+better: anchors are selected only for physical validity, old-view hiddenness,
+and common-policy solvability, before variant outcomes exist. Stable and stale
+claims remain limited to the frozen qualified configurations.
 
 ## Gate before formal comparisons
 
