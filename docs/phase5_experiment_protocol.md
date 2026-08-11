@@ -274,6 +274,27 @@ better: anchors are selected only for physical validity, old-view hiddenness,
 and common-policy solvability, before variant outcomes exist. Stable and stale
 claims remain limited to the frozen qualified configurations.
 
+### Anchor qualification implementation checkpoint
+
+`phase5-anchor-qualification-v1` implements the private candidate plan, Book
+footprint/support-bound/obstacle-AABB filter, deterministic first-pass rule,
+three-sample stability audit, reset replay, private registry digest, and ordinary
+coordinate-free summary. It also builds a deterministic DFS grid-coverage route
+from reachable positions without receiving a target type, target ID, anchor ID,
+support, or destination. This corrects the earlier weak fallback that only
+rotated at one viewpoint.
+
+The qualification script writes and hashes the complete candidate order before
+the first native placement outcome, resets before every candidate, tests at most
+the frozen first 12 geometry-safe candidates, and retains all failures. The
+coverage audit permits at most 160 primitive actions and then uses the shared
+visible-target approach/pickup policy. These are qualification constants, not
+post-outcome choices.
+
+Passing this script alone will not unblock the stale formal panel: the exact
+qualified coverage route must subsequently be integrated into all three formal
+variants and pass parity/leakage tests before the engineering dry run.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
