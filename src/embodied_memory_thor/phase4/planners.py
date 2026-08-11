@@ -81,11 +81,15 @@ class ThorBookReacquirePlanner:
         position_tolerance: float = 0.18,
         interaction_distance: float = 1.5,
         rotation_tolerance_degrees: float = 1.0,
+        visible_target_rotation_tolerance_degrees: float = 45.0,
         horizon_tolerance_degrees: float = 1.0,
     ) -> None:
         self.position_tolerance = position_tolerance
         self.interaction_distance = interaction_distance
         self.rotation_tolerance_degrees = rotation_tolerance_degrees
+        self.visible_target_rotation_tolerance_degrees = (
+            visible_target_rotation_tolerance_degrees
+        )
         self.horizon_tolerance_degrees = horizon_tolerance_degrees
 
     def plan(self, request: PlannerRequest) -> PlannerDecision:
@@ -250,7 +254,7 @@ class ThorBookReacquirePlanner:
         current_yaw = _number(current_rotation, "y")
         target_yaw = math.degrees(math.atan2(dx, dz)) % 360.0
         delta = _angle_delta(target_yaw, current_yaw)
-        if abs(delta) > self.rotation_tolerance_degrees:
+        if abs(delta) > self.visible_target_rotation_tolerance_degrees:
             action = "RotateRight" if delta > 0 else "RotateLeft"
             return self._decision(
                 {"action": action},

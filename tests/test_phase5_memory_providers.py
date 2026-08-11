@@ -52,6 +52,26 @@ def _observation(*, book_visible: bool, yaw: float, marker: str) -> dict:
 
 
 class Phase5MemoryProviderTests(unittest.TestCase):
+    def test_visible_far_book_inside_half_fov_moves_without_90_degree_overshoot(self) -> None:
+        observation = _observation(book_visible=True, yaw=90.0, marker="edge")
+        observation["objects"][-1]["position"] = {"x": 2.0, "y": 0.8, "z": -2.0}
+        request = PlannerRequest(
+            task_name="thor_book_reacquire_k2",
+            instruction="Reacquire and pick up the Book.",
+            task_stage="pickup_book",
+            step=1,
+            max_steps=20,
+            observation=observation,
+            allowed_actions=(
+                "LookDown", "LookUp", "MoveAhead", "Pass", "PickupObject",
+                "RotateLeft", "RotateRight",
+            ),
+            retrieved_memory=(),
+        )
+        decision = ThorBookReacquirePlanner().plan(request)
+        self.assertEqual(decision.action, {"action": "MoveAhead"})
+        self.assertEqual(decision.reason_code, "approach_visible_target")
+
     def test_exact_k2_evicts_initial_book_after_two_new_observations(self) -> None:
         memory = build_thor_memory("short_memory_k2")
         initial = _observation(book_visible=True, yaw=0.0, marker="initial")

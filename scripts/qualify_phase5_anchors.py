@@ -46,7 +46,7 @@ from embodied_memory_thor.phase5.qualification import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v2"
+SCRIPT_VERSION = "phase5-anchor-batch-v3"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -448,10 +448,16 @@ def _fallback_rediscovery_audit(
     recent: list[dict[str, Any]] = []
     for interaction_index in range(1, MAX_VISIBLE_INTERACTION_ACTIONS + 1):
         observation = build_planner_observation(env.get_observation())
+        target_visible = any(
+            isinstance(obj, Mapping)
+            and obj.get("objectId") == target_id
+            and obj.get("visible") is True
+            for obj in observation.get("objects", [])
+        )
         request = PlannerRequest(
             task_name="thor_book_reacquire_k2",
             instruction="Reacquire and pick up the Book.",
-            task_stage="pickup_book",
+            task_stage="pickup_book" if target_visible else "reacquire_book",
             step=discovery_step + interaction_index,
             max_steps=MAX_FALLBACK_ACTIONS + MAX_VISIBLE_INTERACTION_ACTIONS,
             observation=observation,

@@ -309,6 +309,21 @@ if the complete route exceeds the new frozen 240-action cap. No target, support,
 candidate, placement outcome, or anchor coordinate participates in route
 construction.
 
+Second frozen anchor-batch result (`d2fd052`): route v2 contained 210 actions,
+19 target-independent scan waypoints, and nominally covered all 162 reachable
+nodes within 0.75 m. All nine physically valid candidates were rediscovered at
+search action 20. They then failed pickup because the shared visible-target
+policy demanded 1-degree alignment despite 90-degree rotations: it overshot a
+Book near the camera edge, lost visibility, and the qualification audit kept an
+obsolete `pickup_book` stage. No anchor was frozen.
+
+Batch v3 corrects these shared-capability defects without anchor input. A visible
+distant target within the camera half-FOV (45 degrees) is approached directly
+instead of receiving a guaranteed-overshoot 90-degree turn; the audit recomputes
+`pickup_book` versus `reacquire_book` from each current visible observation. The
+memory-navigation tolerance remains unchanged. The change is common to every
+variant and passed the complete offline regression before another batch.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
