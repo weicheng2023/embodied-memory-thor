@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import unittest
+import json
+from pathlib import Path
 
 from embodied_memory_thor.phase5.anchors import (
     build_geometry_candidate_plan,
@@ -37,6 +39,32 @@ def _box(
 
 
 class Phase5AnchorTests(unittest.TestCase):
+    def test_local_private_registry_is_ignored_and_not_imported_by_planner_path(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        private_path = root / "configs" / "evaluator_only" / "phase5_anchor_registry.json"
+        ordinary = json.loads(
+            (root / "docs" / "evidence" / "phase5_anchor_qualification_summary.json")
+            .read_text(encoding="utf-8")
+        )
+        if private_path.exists():
+            private = json.loads(private_path.read_text(encoding="utf-8"))
+            self.assertFalse(private["formal_use_allowed"])
+            self.assertIn("target_point", private["anchors"][0])
+        gitignore = (root / ".gitignore").read_text(encoding="utf-8")
+        self.assertIn("configs/evaluator_only/*.json", gitignore)
+        self.assertNotIn("target_point", ordinary)
+        self.assertNotIn("position", ordinary)
+        planner_path = "\n".join(
+            (root / relative).read_text(encoding="utf-8")
+            for relative in (
+                "src/embodied_memory_thor/phase4/contracts.py",
+                "src/embodied_memory_thor/phase4/planners.py",
+                "src/embodied_memory_thor/phase4/runner.py",
+            )
+        )
+        self.assertNotIn("phase5_anchor_registry", planner_path)
+        self.assertNotIn("configs/evaluator_only", planner_path)
+
     def test_geometry_rejects_edge_and_obstacle_then_ranks_clear_points(self) -> None:
         target = _box(
             "Book|1", x=0, y=1, z=0, sx=0.5, sy=0.06, sz=0.5,

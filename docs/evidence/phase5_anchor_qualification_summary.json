@@ -1,0 +1,42 @@
+{
+  "anchor_id": "FloorPlan1_R1_stale_Book_anchor_001",
+  "candidate_order": 4,
+  "candidate_plan_digest": "676e3019b62ce2c07b039ef40739c8610461c53b6a8090fd5087b4fed651b61a",
+  "candidate_trial_count": 4,
+  "claim_boundary": "pre-qualified relocation anchor QA; not a memory comparison",
+  "code_revision": "8165c87842258c0df23a7e0c5a79486d2fffcafb",
+  "coordinates_exposed": false,
+  "coverage_route": {
+    "action_count": 210,
+    "digest": "5e3c77a3bf865c8c5015a4283eb3475061aa98660d4ba1d5f4dcb6c040c32576",
+    "discovery_step": 20,
+    "pickup_step": 22,
+    "scan_waypoint_count": 19,
+    "target_or_anchor_input_used": false,
+    "version": "phase5-target-independent-spaced-waypoints-v2"
+  },
+  "environment": {
+    "ai2thor_version": "5.0.0",
+    "images_saved": false,
+    "scene": "FloorPlan1",
+    "working_tree_dirty": false
+  },
+  "failed_candidates_retained_before_anchor": 3,
+  "gates": {
+    "first_physical_trial": true,
+    "fresh_reset_replay": true,
+    "no_non_support_overlap": true,
+    "old_view_invisible": true,
+    "reset_restoration": true,
+    "stable_three_samples": true,
+    "target_independent_fallback_rediscovery_and_pickup": true
+  },
+  "passed": true,
+  "private_registry_digest": "d6955e8bd49dfdd95b9aff4a85f6c8b3402b4aafbb7bc29e7a819f7fda45af4c",
+  "protocol_decision": {
+    "anchor_qualified": true,
+    "formal_stale_panel_allowed": false,
+    "next_gate": "integrate the exact qualified coverage route into all three variants and pass parity/leakage tests"
+  },
+  "qualification_version": "phase5-anchor-qualification-v1"
+}

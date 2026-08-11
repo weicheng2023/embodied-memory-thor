@@ -324,6 +324,21 @@ instead of receiving a guaranteed-overshoot 90-degree turn; the audit recomputes
 memory-navigation tolerance remains unchanged. The change is common to every
 variant and passed the complete offline regression before another batch.
 
+Third frozen anchor-batch result (`8165c87`): candidate 4 became
+`FloorPlan1_R1_stale_Book_anchor_001`. Candidates 1-3 retained their native
+placement failures. Candidate 4 passed native placement, same-Book identity,
+minimum movement, old-view invisibility, expected support, zero non-support AABB
+overlap, three stable samples, target-independent rediscovery at search action
+20, pickup at action 22, fresh-reset placement replay, and reset restoration.
+The coordinate-free summary passed a field audit.
+
+The exact point is frozen only in the local, Git-ignored
+`configs/evaluator_only/phase5_anchor_registry.json`; ordinary GitHub evidence
+records the opaque ID and digests. The registry deliberately
+sets `formal_use_allowed=false`: one anchor qualification does not complete the
+six-configuration pool, and the exact 210-action route still requires formal
+three-variant integration plus parity/leakage acceptance.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
