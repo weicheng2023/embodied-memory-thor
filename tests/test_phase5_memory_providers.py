@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
 from embodied_memory_thor.phase4.contracts import PlannerRequest, audit_planner_request
 from embodied_memory_thor.phase4.planners import ThorBookReacquirePlanner
-from embodied_memory_thor.phase4.runner import ThorEpisodeConfig
+from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
 from embodied_memory_thor.phase4.spatial_memory import build_thor_memory
+from embodied_memory_thor.phase4.task import BookReacquireProgress
+from tests.test_phase4_single_case import _SingleCaseThorEnv
 
 
 def _observation(*, book_visible: bool, yaw: float, marker: str) -> dict:
@@ -134,6 +139,101 @@ class Phase5MemoryProviderTests(unittest.TestCase):
 
     def test_phase4_runner_contract_accepts_exact_phase5_variant_name(self) -> None:
         ThorEpisodeConfig(memory="short_memory_k2").validate()
+
+    def test_phase4_distraction_retry_semantics_remain_unchanged(self) -> None:
+        progress = BookReacquireProgress()
+        visible = _observation(book_visible=True, yaw=0.0, marker="visible")
+        progress.initialize(visible)
+        progress.observe_action(
+            step=1,
+            action={"action": "RotateRight"},
+            success=False,
+            observation_after=visible,
+        )
+        self.assertEqual(progress.stage, "controlled_distraction")
+        self.assertEqual(progress.snapshot()["distraction_error"], "")
+
+    def test_phase5_r1_evicts_k2_and_preserves_shared_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            summaries = {}
+            traces = {}
+            for variant in ("no_memory", "short_memory_k2", "object_memory"):
+                output_dir = root / variant
+                summaries[variant] = ThorEpisodeRunner(
+                    ThorEpisodeConfig(
+                        task="thor_book_reacquire_k2",
+                        memory=variant,
+                        mode="formal",
+                        max_steps=10,
+                        output_dir=output_dir,
+                        save_frames=False,
+                        trace_html=False,
+                        visualize=False,
+                    ),
+                    env=_SingleCaseThorEnv(),
+                ).run()
+                traces[variant] = [
+                    json.loads(line)
+                    for line in (output_dir / "episode.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()
+                ]
+
+        for summary in summaries.values():
+            self.assertTrue(summary["success"])
+            self.assertTrue(summary["information_boundary_passed"])
+            self.assertEqual(
+                summary["task_progress"]["distraction_transition_count"], 3
+            )
+            self.assertTrue(
+                summary["task_progress"]["short_memory_k2_eviction_ready"]
+            )
+
+        expected_distraction = ["RotateRight", "LookDown", "LookUp"]
+        for trace in traces.values():
+            self.assertEqual(
+                [item["planner_decision"]["action"]["action"] for item in trace[:3]],
+                expected_distraction,
+            )
+            self.assertTrue(
+                all(
+                    not any(
+                        obj["objectType"] == "Book"
+                        for obj in item["environment_feedback"][
+                            "post_action_observation"
+                        ]["objects"]
+                    )
+                    for item in trace[:3]
+                )
+            )
+
+        no_step4 = traces["no_memory"][3]
+        short_step4 = traces["short_memory_k2"][3]
+        object_step4 = traces["object_memory"][3]
+        self.assertEqual(
+            short_step4["planner_input"]["request"]["retrieved_memory"], []
+        )
+        self.assertEqual(
+            no_step4["planner_decision"]["action"],
+            short_step4["planner_decision"]["action"],
+        )
+        self.assertEqual(
+            no_step4["planner_decision"]["reason_code"], "systematic_search"
+        )
+        self.assertEqual(
+            short_step4["planner_decision"]["reason_code"], "systematic_search"
+        )
+        self.assertEqual(
+            object_step4["planner_input"]["request"]["retrieved_memory"][0][
+                "source_observation_id"
+            ],
+            "observation:0",
+        )
+        self.assertTrue(object_step4["planner_decision"]["memory_guided"])
+        self.assertEqual(summaries["object_memory"]["steps"], 5)
+        self.assertEqual(summaries["no_memory"]["steps"], 7)
+        self.assertEqual(summaries["short_memory_k2"]["steps"], 7)
 
     @staticmethod
     def _request(observation: dict, records: list[dict]) -> PlannerRequest:

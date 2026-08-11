@@ -14,10 +14,12 @@ No Phase 5 AI2-THOR episode or comparative result has run. The ordered second
 task, stale intervention, metrics, scene qualification, and frozen manifest remain
 future gates before the single three-variant engineering dry run.
 
-The first provider slice passes 5/5 targeted tests and the complete offline suite
-passes 65/65. The existing Phase 4 Book task is deliberately not a Phase 5 dry-run
-task: its one-turn distraction does not evict observation 0 from K=2. R1 must add
-at least three declared transitions before any matched comparison is allowed.
+The provider and R1 slices pass 7/7 targeted tests and the complete offline suite
+passes 67/67. The accepted Phase 4 Book task and its retry behavior remain
+unchanged. A separate Phase 5
+candidate uses `RotateRight -> LookDown -> LookUp`, requires Book to stay hidden,
+evicts observation 0 from K=2, and preserves identical no/short fallback. This
+sequence still requires real scene qualification before any matched comparison.
 
 ## Implemented
 

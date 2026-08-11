@@ -8,8 +8,11 @@ Implementation checkpoint: the runner now accepts `no_memory`, exact
 `short_memory_k2`, and `object_memory`. The K=2 provider retains only the latest
 two planner-safe observation snapshots, uses the same visible-derived record
 schema as object memory, and falls back through the same planner path when the
-target record is evicted. This checkpoint is infrastructure only; R1 still needs
-the protocol's longer distraction sequence before a three-variant dry run.
+target record is evicted. This checkpoint is infrastructure only. The separate R1
+candidate `thor_book_reacquire_k2` now uses the frozen shared sequence
+`RotateRight -> LookDown -> LookUp`; offline traces prove continuous hiddenness,
+observation-0 K=2 eviction, and common no/short fallback. Real scene qualification
+must still verify these properties before a three-variant dry run.
 
 ## Research question
 
@@ -56,6 +59,9 @@ requires a new protocol version and complete matched rerun; never selectively
 rerun unfavorable episodes.
 
 ## Tasks and conditions
+
+The R1 implementation name is `thor_book_reacquire_k2`. The accepted one-turn
+Phase 4 `thor_book_reacquire` remains unchanged and is not a comparison task.
 
 ### R1 stable — Book reacquisition
 

@@ -8,6 +8,11 @@ planner path, but no Phase 5 comparison episode has run. The ordered second task
 stale intervention, scene qualification, metrics, and clean manifest remain gates
 before the first excluded engineering dry run.
 
+The offline R1 candidate is `thor_book_reacquire_k2`. Its shared distraction
+sequence is `RotateRight -> LookDown -> LookUp`, after which K=2 has evicted the
+initial Book observation. This candidate has not yet passed real-scene
+qualification and must not be treated as a comparison result.
+
 ## Status
 
 Phases 0–3 are complete. The formal `phase3-v2` controlled pilot ran 54/54 successful episodes from a clean revision, with all information-boundary and protocol checks passing. Results are descriptive E1 mock evidence, not a real AI2-THOR memory claim. LLM planners remain later work.

@@ -32,16 +32,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--scene", default="FloorPlan1")
     parser.add_argument(
         "--planner",
-        choices=("object_memory", "no_memory", "deterministic", "openai_compatible"),
+        choices=(
+            "object_memory",
+            "short_memory_k2",
+            "no_memory",
+            "deterministic",
+            "openai_compatible",
+        ),
         default="object_memory",
         help=(
-            "object_memory/no_memory select the deterministic reference planner "
+            "object_memory/short_memory_k2/no_memory select the deterministic reference planner "
             "with that history boundary"
         ),
     )
     parser.add_argument(
         "--memory",
-        choices=("object_memory", "no_memory"),
+        choices=("object_memory", "short_memory_k2", "no_memory"),
         help="explicit memory mode; mainly used with deterministic/openai_compatible",
     )
     parser.add_argument("--mode", choices=("formal", "debug"), default="formal")
@@ -76,14 +82,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _planner_and_memory(args: argparse.Namespace) -> tuple[str, str]:
-    if args.planner == "object_memory":
-        if args.memory and args.memory != "object_memory":
-            raise ValueError("--planner object_memory conflicts with --memory no_memory")
-        return "deterministic", "object_memory"
-    if args.planner == "no_memory":
-        if args.memory and args.memory != "no_memory":
-            raise ValueError("--planner no_memory conflicts with --memory object_memory")
-        return "deterministic", "no_memory"
+    memory_aliases = {"object_memory", "short_memory_k2", "no_memory"}
+    if args.planner in memory_aliases:
+        if args.memory and args.memory != args.planner:
+            raise ValueError(
+                f"--planner {args.planner} conflicts with --memory {args.memory}"
+            )
+        return "deterministic", args.planner
     return args.planner, args.memory or "object_memory"
 
 

@@ -10,3 +10,14 @@ tasks:
         field: isPickedUp
         equals: true
     max_steps: 12
+  thor_book_reacquire_k2:
+    task_name: thor_book_reacquire_k2
+    natural_language_instruction: Observe the Book, complete the frozen three-transition visual distraction, then reacquire and pick it up.
+    required_objects:
+      - Book
+    goal_conditions:
+      - type: object_state
+        object_type: Book
+        field: isPickedUp
+        equals: true
+    max_steps: 12

@@ -12,6 +12,7 @@ from embodied_memory_thor.phase4.spatial_memory import (
     NoThorMemory,
     ThorObjectMemory,
     ThorObjectMemoryRecord,
+    ThorShortMemory,
     build_thor_memory,
 )
 from embodied_memory_thor.phase4.planners import (
@@ -33,6 +34,7 @@ __all__ = [
     "RGB_BOUNDARY_LABEL",
     "ThorObjectMemory",
     "ThorObjectMemoryRecord",
+    "ThorShortMemory",
     "ThorBookReacquirePlanner",
     "ThorEpisodeConfig",
     "ThorEpisodeRunner",

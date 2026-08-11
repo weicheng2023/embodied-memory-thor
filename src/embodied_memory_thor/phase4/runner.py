@@ -49,6 +49,7 @@ from embodied_memory_thor.utils.serialization import to_jsonable
 
 PHASE4_PROTOCOL_VERSION = "phase4-v3"
 PHASE4_TASKS_PATH = Path(__file__).resolve().parents[3] / "configs" / "phase4_tasks.yaml"
+SUPPORTED_BOOK_TASKS = {"thor_book_reacquire", "thor_book_reacquire_k2"}
 THOR_BOOK_SETUP_ACTIONS: tuple[dict[str, str], ...] = (
     {"action": "RotateRight"},
     {"action": "MoveAhead"},
@@ -130,8 +131,8 @@ class ThorEpisodeConfig:
     )
 
     def validate(self) -> None:
-        if self.task != "thor_book_reacquire":
-            raise ValueError("Phase 4 currently supports only thor_book_reacquire")
+        if self.task not in SUPPORTED_BOOK_TASKS:
+            raise ValueError(f"unsupported real Book task: {self.task}")
         if not self.scene.strip():
             raise ValueError("scene must be non-empty")
         if self.planner not in {"deterministic", "openai_compatible"}:
@@ -239,7 +240,11 @@ class ThorEpisodeRunner:
             }
         writer.write_manifest(manifest)
 
-        progress = BookReacquireProgress()
+        progress = (
+            BookReacquireProgress.phase5_k2()
+            if config.task == "thor_book_reacquire_k2"
+            else BookReacquireProgress()
+        )
         visible_history: dict[str, set[str]] = {}
         action_history: list[dict[str, Any]] = []
         planning_latencies: list[float] = []

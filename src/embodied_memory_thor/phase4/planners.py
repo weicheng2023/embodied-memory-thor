@@ -105,6 +105,22 @@ class ThorBookReacquirePlanner:
                 rationale="Rotate away until the initially observed Book leaves view.",
             )
 
+        phase5_distraction_actions = {
+            "controlled_distraction_1": ("RotateRight", "rotate_away"),
+            "controlled_distraction_2": ("LookDown", "change_camera_horizon"),
+            "controlled_distraction_3": ("LookUp", "restore_camera_horizon"),
+        }
+        if stage in phase5_distraction_actions:
+            action_name, reason_suffix = phase5_distraction_actions[stage]
+            return self._decision(
+                {"action": action_name},
+                reason_code=f"controlled_distraction_{reason_suffix}",
+                rationale=(
+                    "Execute the frozen shared distraction sequence before "
+                    "target reacquisition."
+                ),
+            )
+
         if stage == "pickup_book" and visible_book is not None:
             approach = self._approach_visible_book(request, visible_book)
             if approach is not None:
