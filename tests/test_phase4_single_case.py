@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import io
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -16,6 +17,7 @@ from embodied_memory_thor.env.base import EmbodiedEnv
 from embodied_memory_thor.phase4.contracts import EVALUATOR_CANARY
 from embodied_memory_thor.phase4.parity import compare_trace_parity
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
+from embodied_memory_thor.phase4.trace import LiveFrameViewer, ViewerDisplayResult
 
 
 class _TinyRgbFrame:
@@ -155,6 +157,57 @@ class _SetupFailureThorEnv(_SingleCaseThorEnv):
             )
             return self.last_event
         return super().step(action_dict)
+
+
+def _viewer_worker_crashes_after_one_frame(
+    frame_queue: Any,
+    status_queue: Any,
+    title: str,
+    stderr_path: str | None,
+) -> None:
+    """Test worker that proves a native-style process exit remains isolated."""
+
+    del title, stderr_path
+    status_queue.put({"kind": "ready"})
+    frame_queue.get()
+    status_queue.put({"kind": "displayed"})
+    frame_queue.get()
+    os._exit(17)
+
+
+class _UnavailableViewer:
+    def __init__(self, **kwargs: Any) -> None:
+        del kwargs
+        self.startup_status = ViewerDisplayResult(
+            available=False,
+            failure_reason="viewer_startup_error:simulated_xcb_failure",
+        )
+
+    def show(self, rgb_frame: Any, *, step_delay: float) -> ViewerDisplayResult:
+        raise AssertionError("unavailable viewer must never receive a frame")
+
+    def close(self) -> None:
+        return None
+
+
+class _ViewerFailsAfterOneFrame:
+    def __init__(self, **kwargs: Any) -> None:
+        del kwargs
+        self.startup_status = ViewerDisplayResult(available=True)
+        self.calls = 0
+
+    def show(self, rgb_frame: Any, *, step_delay: float) -> ViewerDisplayResult:
+        del rgb_frame, step_delay
+        self.calls += 1
+        if self.calls == 1:
+            return ViewerDisplayResult(available=True, displayed=True)
+        return ViewerDisplayResult(
+            available=False,
+            failure_reason="viewer_process_exited_during_display:exit_code=-6",
+        )
+
+    def close(self) -> None:
+        return None
 
 
 class Phase4SingleCaseTests(unittest.TestCase):
@@ -316,6 +369,114 @@ class Phase4SingleCaseTests(unittest.TestCase):
             )
             self.assertFalse((formal_dir / "frames").exists())
             self.assertFalse((debug_dir / "frames").exists())
+
+    def test_native_viewer_process_death_is_detected_without_parent_abort(self) -> None:
+        viewer = LiveFrameViewer(
+            worker_target=_viewer_worker_crashes_after_one_frame,
+            startup_timeout_seconds=3.0,
+            response_grace_seconds=1.0,
+        )
+        try:
+            self.assertTrue(viewer.startup_status.available)
+            first = viewer.show(_TinyRgbFrame(), step_delay=0.0)
+            self.assertTrue(first.displayed)
+            second = viewer.show(_TinyRgbFrame(), step_delay=0.0)
+            self.assertFalse(second.available)
+            self.assertIn("exit_code=17", second.failure_reason)
+        finally:
+            viewer.close()
+
+    def test_viewer_startup_failure_does_not_change_episode_outcome(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            output_dir = Path(temporary_dir) / "viewer_startup_failure"
+            with redirect_stdout(io.StringIO()):
+                summary = ThorEpisodeRunner(
+                    ThorEpisodeConfig(
+                        mode="debug",
+                        output_dir=output_dir,
+                        save_frames=False,
+                        trace_html=True,
+                        visualize=True,
+                    ),
+                    env=_SingleCaseThorEnv(),
+                    viewer_factory=_UnavailableViewer,
+                ).run()
+
+            self.assertTrue(summary["success"])
+            self.assertEqual(summary["steps"], 3)
+            self.assertTrue(summary["visualization_requested"])
+            self.assertFalse(summary["visualization_started"])
+            self.assertFalse(summary["visualization_available"])
+            self.assertEqual(summary["visualization_displayed_frame_count"], 0)
+            self.assertIn("simulated_xcb_failure", summary["visualization_failure_reason"])
+            self.assertTrue(summary["episode_continued_after_viewer_failure"])
+            self.assertFalse((output_dir / "frames").exists())
+            self.assertTrue((output_dir / "summary.json").is_file())
+            self.assertTrue((output_dir / "trace.html").is_file())
+
+    def test_mid_episode_viewer_failure_preserves_formal_trace_parity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            formal_dir = root / "formal"
+            debug_dir = root / "debug_viewer_failure"
+            shared = {
+                "output_dir": formal_dir,
+                "save_frames": False,
+                "trace_html": False,
+                "max_steps": 6,
+            }
+            formal = ThorEpisodeRunner(
+                ThorEpisodeConfig(mode="formal", visualize=False, **shared),
+                env=_SingleCaseThorEnv(),
+            ).run()
+            with redirect_stdout(io.StringIO()):
+                debug = ThorEpisodeRunner(
+                    ThorEpisodeConfig(
+                        mode="debug",
+                        visualize=True,
+                        output_dir=debug_dir,
+                        save_frames=False,
+                        trace_html=False,
+                        max_steps=6,
+                    ),
+                    env=_SingleCaseThorEnv(),
+                    viewer_factory=_ViewerFailsAfterOneFrame,
+                ).run()
+
+            self.assertTrue(formal["success"])
+            self.assertTrue(debug["success"])
+            self.assertEqual(debug["steps"], 3)
+            self.assertEqual(debug["visualization_displayed_frame_count"], 1)
+            self.assertFalse(debug["visualization_available"])
+            self.assertTrue(debug["episode_continued_after_viewer_failure"])
+            parity = compare_trace_parity(
+                formal_dir / "episode.jsonl", debug_dir / "episode.jsonl"
+            )
+            self.assertTrue(parity["passed"], parity["mismatches"])
+
+    def test_formal_mode_never_constructs_gui_viewer(self) -> None:
+        calls: list[dict[str, Any]] = []
+
+        def forbidden_viewer_factory(**kwargs: Any) -> Any:
+            calls.append(kwargs)
+            raise AssertionError("formal mode must not construct the GUI viewer")
+
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            summary = ThorEpisodeRunner(
+                ThorEpisodeConfig(
+                    mode="formal",
+                    visualize=False,
+                    output_dir=Path(temporary_dir) / "formal_no_gui",
+                    save_frames=False,
+                    trace_html=False,
+                ),
+                env=_SingleCaseThorEnv(),
+                viewer_factory=forbidden_viewer_factory,
+            ).run()
+
+        self.assertTrue(summary["success"])
+        self.assertFalse(summary["visualization_requested"])
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":

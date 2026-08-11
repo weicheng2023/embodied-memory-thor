@@ -219,6 +219,11 @@ only to a separately labeled file when `--save-evaluator-debug` is explicitly se
 See [`docs/phase4_execution_trace.md`](docs/phase4_execution_trace.md) for the
 contracts, artifact schema, information boundary, and the one-case test gate.
 
+For a human visual sanity run that does not depend on Qt/xcb, use debug mode with
+`--save-frames --trace-html` and omit `--visualize`. Protocol v3 runs an explicitly
+requested OpenCV viewer in a separate process; if the GUI plugin fails, the THOR
+episode continues and records the viewer failure instead of losing the summary.
+
 ## Repository layout
 
 ```text

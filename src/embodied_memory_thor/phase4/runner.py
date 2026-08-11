@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 from embodied_memory_thor.actions import ActionExecutor, ActionSpace
 from embodied_memory_thor.env import EmbodiedEnv, ThorEnv
@@ -47,7 +47,7 @@ from embodied_memory_thor.phase4.trace import (
 from embodied_memory_thor.utils.serialization import to_jsonable
 
 
-PHASE4_PROTOCOL_VERSION = "phase4-v2"
+PHASE4_PROTOCOL_VERSION = "phase4-v3"
 PHASE4_TASKS_PATH = Path(__file__).resolve().parents[3] / "configs" / "phase4_tasks.yaml"
 THOR_BOOK_SETUP_ACTIONS: tuple[dict[str, str], ...] = (
     {"action": "RotateRight"},
@@ -160,6 +160,7 @@ class ThorEpisodeRunner:
         env: EmbodiedEnv | None = None,
         planner: StructuredPlanner | None = None,
         memory: ThorMemoryProvider | None = None,
+        viewer_factory: Callable[..., LiveFrameViewer] | None = None,
     ) -> None:
         config.validate()
         self.config = config
@@ -170,6 +171,7 @@ class ThorEpisodeRunner:
         self.memory = memory or build_thor_memory(config.memory)
         self.action_space = ActionSpace()
         self.executor = ActionExecutor(self.action_space)
+        self.viewer_factory = viewer_factory or LiveFrameViewer
 
     def run(self) -> dict[str, Any]:
         config = self.config
@@ -197,6 +199,12 @@ class ThorEpisodeRunner:
             "trace_html": config.trace_html,
             "visualize": config.visualize,
             "step_delay": config.step_delay,
+            "visualization_policy": {
+                "process_isolation": True,
+                "viewer_failure_changes_episode_semantics": False,
+                "fallback": "continue_with_configured_non_gui_artifacts",
+                "native_stderr_captured_separately": True,
+            },
             "save_evaluator_debug": config.save_evaluator_debug,
             "task_setup": {
                 "policy": "fixed_planner_independent_visible_observation_sequence",
@@ -249,11 +257,52 @@ class ThorEpisodeRunner:
         success = False
         failure_reason = ""
         viewer: LiveFrameViewer | None = None
+        visualization_requested = config.visualize
+        visualization_started = False
+        visualization_available = False
+        visualization_failure_reason = ""
+        visualization_user_stopped = False
+        visualization_displayed_frame_count = 0
+        episode_continued_after_viewer_failure = False
+        episode_continued_after_viewer_stop = False
+        visualization_diagnostic_path = (
+            writer.output_dir / "visualization_stderr.log"
+            if config.visualize
+            else None
+        )
         episode_started = perf_counter()
 
         try:
             if config.visualize:
-                viewer = LiveFrameViewer()
+                try:
+                    viewer = self.viewer_factory(
+                        diagnostic_log=visualization_diagnostic_path
+                    )
+                    startup_status = viewer.startup_status
+                    visualization_started = bool(startup_status.available)
+                    visualization_available = bool(startup_status.available)
+                    if not startup_status.available:
+                        visualization_failure_reason = (
+                            startup_status.failure_reason
+                            or "viewer_unavailable_at_startup"
+                        )
+                        print(
+                            "Visualization unavailable; continuing the episode "
+                            f"without a live viewer: {visualization_failure_reason}"
+                        )
+                        episode_continued_after_viewer_failure = True
+                        viewer.close()
+                        viewer = None
+                except Exception as exc:
+                    visualization_failure_reason = (
+                        f"viewer_initialization_error:{type(exc).__name__}:{exc}"
+                    )
+                    print(
+                        "Visualization initialization failed; continuing the "
+                        f"episode without a live viewer: {visualization_failure_reason}"
+                    )
+                    episode_continued_after_viewer_failure = True
+                    viewer = None
 
             self.env.reset(config.scene)
             (
@@ -421,9 +470,51 @@ class ThorEpisodeRunner:
                 if config.mode == "debug":
                     render_console_step(record)
                 if viewer is not None:
-                    if not viewer.show(pre_action_frame, step_delay=config.step_delay):
-                        failure_reason = "debug_viewer_stopped_by_user"
-                        break
+                    try:
+                        display_result = viewer.show(
+                            pre_action_frame, step_delay=config.step_delay
+                        )
+                    except Exception as exc:
+                        display_result = None
+                        visualization_failure_reason = (
+                            f"viewer_show_error:{type(exc).__name__}:{exc}"
+                        )
+                        visualization_available = False
+                        episode_continued_after_viewer_failure = True
+                        print(
+                            "Live viewer raised an error; continuing the episode "
+                            f"with non-GUI artifacts: {visualization_failure_reason}"
+                        )
+                    if display_result is not None and display_result.displayed:
+                        visualization_displayed_frame_count += 1
+                    if display_result is not None and display_result.user_stopped:
+                        visualization_user_stopped = True
+                        visualization_available = False
+                        episode_continued_after_viewer_stop = True
+                        print(
+                            "Live viewer closed by user; the episode will continue "
+                            "and retain non-GUI artifacts."
+                        )
+                    elif display_result is not None and not display_result.available:
+                        visualization_failure_reason = (
+                            display_result.failure_reason or "viewer_became_unavailable"
+                        )
+                        visualization_available = False
+                        episode_continued_after_viewer_failure = True
+                        print(
+                            "Live viewer failed; continuing the episode with "
+                            f"non-GUI artifacts: {visualization_failure_reason}"
+                        )
+                    if (
+                        display_result is None
+                        or display_result.user_stopped
+                        or not display_result.available
+                    ):
+                        try:
+                            viewer.close()
+                        except Exception:
+                            pass
+                        viewer = None
 
             if not success and not failure_reason:
                 failure_reason = "max_steps_exceeded"
@@ -446,6 +537,26 @@ class ThorEpisodeRunner:
             "planner": config.planner,
             "memory": config.memory,
             "mode": config.mode,
+            "visualization_requested": visualization_requested,
+            "visualization_started": visualization_started,
+            "visualization_available": visualization_available,
+            "visualization_displayed_frame_count": (
+                visualization_displayed_frame_count
+            ),
+            "visualization_failure_reason": visualization_failure_reason,
+            "visualization_user_stopped": visualization_user_stopped,
+            "episode_continued_after_viewer_failure": (
+                episode_continued_after_viewer_failure
+            ),
+            "episode_continued_after_viewer_stop": (
+                episode_continued_after_viewer_stop
+            ),
+            "visualization_isolated_process": visualization_requested,
+            "visualization_diagnostic_log": (
+                str(visualization_diagnostic_path)
+                if visualization_diagnostic_path is not None
+                else None
+            ),
             "success": success,
             "failure_reason": "" if success else failure_reason,
             "steps": steps,

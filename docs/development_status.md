@@ -103,3 +103,11 @@ and the corrected single live case passed; full offline regression and mode-pari
 acceptance remain pending.
 
 This status page distinguishes implemented work from intended interfaces. Planned items must not be moved into the implemented section until their acceptance commands have been run.
+
+### Phase 4V viewer hardening
+
+Protocol v3 isolates OpenCV/Qt GUI calls in a spawned child process after a manual
+`xcb` failure aborted an otherwise healthy debug episode after Step 1. Viewer
+startup failure and mid-episode native death now degrade to non-GUI artifacts and
+cannot change the planner trace or final task outcome. Seven targeted Phase 4 tests
+and all 60 offline tests pass. A manual v3 visual rerun remains pending.

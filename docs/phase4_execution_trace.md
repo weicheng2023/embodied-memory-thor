@@ -1,6 +1,6 @@
 # Phase 4 Real-THOR Execution and Trace
 
-Implementation status: protocol-v2 corrected single live case passed; broader offline acceptance remains pending.
+Implementation status: protocol-v2 corrected single live case passed. Protocol-v3 crash-isolates the optional OpenCV/Qt viewer after a reported xcb abort; 7/7 targeted and 60/60 offline tests pass, but the v3 manual visual rerun remains pending.
 
 Phase 4 connects the visible-observation memory path to a real AI2-THOR episode
 while preserving a strict planner/evaluator boundary. A successful first run will
@@ -56,7 +56,8 @@ memory update, and success checking. Formal and debug modes call this same engin
 
 - Formal mode adds no window or artificial delay.
 - Debug mode prints the four trace panels to the console.
-- `--visualize` optionally opens only the current RGB frame through OpenCV.
+- `--visualize` sends current RGB frames to an isolated child process. A native
+  OpenCV/Qt abort cannot terminate or change the main episode.
 - Frame saving, console output, HTML rendering, and delay occur outside the planner.
 - `compare_trace_parity` can compare formal/debug semantic records while ignoring
   timestamps, frame paths, and presentation timing.
@@ -72,6 +73,7 @@ outputs/thor_runs/<timestamp>/<episode_id>/
   frames/                     # optional; absent by default
     step_001_observation.png
   trace.html
+  visualization_stderr.log  # only when --visualize is requested
   evaluator_debug.jsonl    # only when explicitly enabled
 ```
 
@@ -142,3 +144,33 @@ All seven direct RGB arrays were `300x300x3`, had distinct hashes and nonzero
 variation, and were not classified as all black. The information-boundary audit
 passed with zero invalid actions. This is one-case E2 evidence only; offline
 failure/parity/regression gates still precede any Phase 5 comparison.
+
+## Protocol-v3 viewer failure isolation
+
+A manual debug attempt completed THOR setup and Step 1, then the old in-process
+`cv2.imshow()` path hit Qt's `Could not load the Qt platform plugin "xcb"` fatal
+error. This was a presentation-layer abort, not an AI2-THOR, planner, memory, or
+action failure, but it could prevent Step 2 and final summary generation.
+
+Protocol v3 moves every OpenCV GUI call into a spawned child process and captures
+native stderr in `visualization_stderr.log`. Startup failure, native process death,
+display exception, timeout, or `Q`/`Esc` closes only the viewer. The main episode
+continues with its configured console, direct `event.frame` files, JSONL, summary,
+and HTML outputs. Summary fields record viewer availability, displayed-frame count,
+failure reason, and whether execution continued.
+
+The safest human-audit command does not depend on Qt:
+
+```bash
+python scripts/run_thor_episode.py \
+  --scene FloorPlan1 \
+  --task thor_book_reacquire \
+  --planner object_memory \
+  --mode debug \
+  --save-frames \
+  --trace-html
+```
+
+Live display is optional. Add `--visualize --step-delay 2` to request it; if xcb is
+still unavailable, the episode must finish and the saved frames/trace remain the
+human visual evidence.

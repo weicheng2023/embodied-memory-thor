@@ -1,4 +1,4 @@
-protocol_version: phase4-v2
+protocol_version: phase4-v3
 purpose: >-
   Cautious Phase 4 runner acceptance only. This single case is not a Phase 5
   memory/no-memory research comparison.
