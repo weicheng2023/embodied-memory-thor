@@ -49,7 +49,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir")
     parser.add_argument("--save-frames", action="store_true")
     parser.add_argument("--trace-html", action="store_true")
-    parser.add_argument("--visualize", action="store_true")
+    parser.add_argument(
+        "--visualize",
+        action="store_true",
+        help=(
+            "request the crash-isolated OpenCV debug viewer; GUI/Qt failure is "
+            "logged and the episode continues, so pair with --save-frames for fallback"
+        ),
+    )
     parser.add_argument("--step-delay", type=float, default=0.0)
     parser.add_argument(
         "--save-evaluator-debug",

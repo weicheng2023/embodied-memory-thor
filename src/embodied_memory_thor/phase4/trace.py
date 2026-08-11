@@ -5,7 +5,12 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import multiprocessing
+import os
+from dataclasses import dataclass
 from pathlib import Path
+from queue import Empty, Full
+from time import monotonic
 from typing import Any, Mapping
 
 from embodied_memory_thor.phase4.contracts import EVALUATOR_ONLY_LABEL, RGB_BOUNDARY_LABEL
@@ -269,25 +274,211 @@ def render_console_step(record: Mapping[str, Any]) -> None:
     )
 
 
-class LiveFrameViewer:
-    """Optional OpenCV RGB window used only by the debug presentation layer."""
+@dataclass(frozen=True)
+class ViewerDisplayResult:
+    """One safe status message from the optional presentation process."""
 
-    def __init__(self, title: str = "Embodied-Memory-THOR Phase 4") -> None:
+    available: bool
+    displayed: bool = False
+    user_stopped: bool = False
+    failure_reason: str = ""
+
+
+def _redirect_native_stderr(path: str | None) -> None:
+    """Capture native Qt/OpenCV diagnostics that bypass Python ``sys.stderr``."""
+
+    if not path:
+        return
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
+    try:
+        os.dup2(descriptor, 2)
+    finally:
+        os.close(descriptor)
+
+
+def _opencv_viewer_worker(
+    frame_queue: Any,
+    status_queue: Any,
+    title: str,
+    stderr_path: str | None,
+) -> None:
+    """Own all Qt/OpenCV GUI calls so a native abort cannot kill the episode."""
+
+    try:
+        _redirect_native_stderr(stderr_path)
+        import cv2
+    except BaseException as exc:
+        status_queue.put(
+            {
+                "kind": "startup_error",
+                "reason": f"{type(exc).__name__}: {exc}",
+            }
+        )
+        return
+
+    status_queue.put({"kind": "ready"})
+    try:
+        while True:
+            payload = frame_queue.get()
+            if payload is None:
+                break
+            rgb_frame, delay_ms = payload
+            try:
+                bgr = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
+                cv2.imshow(title, bgr)
+                key = int(cv2.waitKey(int(delay_ms))) & 0xFF
+            except BaseException as exc:
+                status_queue.put(
+                    {
+                        "kind": "display_error",
+                        "reason": f"{type(exc).__name__}: {exc}",
+                    }
+                )
+                break
+            if key in (27, ord("q")):
+                status_queue.put({"kind": "user_stopped"})
+                break
+            status_queue.put({"kind": "displayed"})
+    finally:
         try:
-            import cv2
-        except (ImportError, ModuleNotFoundError) as exc:
-            raise RuntimeError("OpenCV is required for --visualize") from exc
-        self.cv2 = cv2
-        self.title = title
+            cv2.destroyAllWindows()
+        except BaseException:
+            pass
 
-    def show(self, rgb_frame: Any, *, step_delay: float) -> bool:
+
+class LiveFrameViewer:
+    """Crash-isolated optional OpenCV viewer for the debug presentation layer."""
+
+    def __init__(
+        self,
+        title: str = "Embodied-Memory-THOR Phase 4",
+        *,
+        diagnostic_log: str | Path | None = None,
+        startup_timeout_seconds: float = 5.0,
+        response_grace_seconds: float = 3.0,
+        worker_target: Any = _opencv_viewer_worker,
+    ) -> None:
+        self.title = title
+        self.diagnostic_log = (
+            str(Path(diagnostic_log).expanduser().resolve())
+            if diagnostic_log is not None
+            else None
+        )
+        self.response_grace_seconds = max(0.5, float(response_grace_seconds))
+        self._context = multiprocessing.get_context("spawn")
+        self._frames = self._context.Queue(maxsize=1)
+        self._statuses = self._context.Queue()
+        self._process = self._context.Process(
+            target=worker_target,
+            args=(self._frames, self._statuses, self.title, self.diagnostic_log),
+            name="phase4-opencv-viewer",
+            daemon=True,
+        )
+        try:
+            self._process.start()
+            self.startup_status = self._await_status(
+                timeout_seconds=max(0.5, float(startup_timeout_seconds)),
+                phase="startup",
+            )
+        except BaseException as exc:
+            self.startup_status = ViewerDisplayResult(
+                available=False,
+                failure_reason=f"viewer_start_failed:{type(exc).__name__}:{exc}",
+            )
+            self._stop_process()
+
+    @property
+    def available(self) -> bool:
+        return bool(
+            self.startup_status.available
+            and self._process is not None
+            and self._process.is_alive()
+        )
+
+    def show(self, rgb_frame: Any, *, step_delay: float) -> ViewerDisplayResult:
+        if not self.available:
+            reason = self.startup_status.failure_reason or self._exit_reason("display")
+            return ViewerDisplayResult(available=False, failure_reason=reason)
         if rgb_frame is None:
-            raise RuntimeError("AI2-THOR event has no RGB frame for visualization")
-        bgr = self.cv2.cvtColor(rgb_frame, self.cv2.COLOR_RGB2BGR)
-        self.cv2.imshow(self.title, bgr)
+            return ViewerDisplayResult(
+                available=False,
+                failure_reason="viewer_frame_missing:AI2-THOR event has no RGB frame",
+            )
+
         delay_ms = max(1, int(max(0.0, step_delay) * 1000))
-        key = int(self.cv2.waitKey(delay_ms)) & 0xFF
-        return key not in (27, ord("q"))
+        try:
+            self._frames.put((rgb_frame, delay_ms), timeout=1.0)
+        except Full:
+            return ViewerDisplayResult(
+                available=False,
+                failure_reason="viewer_frame_queue_full",
+            )
+        return self._await_status(
+            timeout_seconds=(delay_ms / 1000.0) + self.response_grace_seconds,
+            phase="display",
+        )
+
+    def _await_status(self, *, timeout_seconds: float, phase: str) -> ViewerDisplayResult:
+        deadline = monotonic() + timeout_seconds
+        while True:
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                self._stop_process()
+                return ViewerDisplayResult(
+                    available=False,
+                    failure_reason=f"viewer_{phase}_timeout",
+                )
+            try:
+                message = self._statuses.get(timeout=min(0.1, remaining))
+            except Empty:
+                if not self._process.is_alive():
+                    return ViewerDisplayResult(
+                        available=False,
+                        failure_reason=self._exit_reason(phase),
+                    )
+                continue
+
+            kind = str(message.get("kind", "")) if isinstance(message, Mapping) else ""
+            reason = str(message.get("reason", "")) if isinstance(message, Mapping) else ""
+            if kind == "ready":
+                return ViewerDisplayResult(available=True)
+            if kind == "displayed":
+                return ViewerDisplayResult(available=True, displayed=True)
+            if kind == "user_stopped":
+                return ViewerDisplayResult(available=False, user_stopped=True)
+            if kind in {"startup_error", "display_error"}:
+                return ViewerDisplayResult(
+                    available=False,
+                    failure_reason=f"viewer_{kind}:{reason}",
+                )
+
+    def _exit_reason(self, phase: str) -> str:
+        exit_code = self._process.exitcode if self._process is not None else None
+        suffix = f"; diagnostic_log={self.diagnostic_log}" if self.diagnostic_log else ""
+        return f"viewer_process_exited_during_{phase}:exit_code={exit_code}{suffix}"
+
+    def _stop_process(self) -> None:
+        process = getattr(self, "_process", None)
+        if process is None:
+            return
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=2.0)
 
     def close(self) -> None:
-        self.cv2.destroyWindow(self.title)
+        process = getattr(self, "_process", None)
+        if process is not None and process.is_alive():
+            try:
+                self._frames.put(None, timeout=0.5)
+            except Full:
+                pass
+            process.join(timeout=2.0)
+        self._stop_process()
+        for queue in (getattr(self, "_frames", None), getattr(self, "_statuses", None)):
+            if queue is None:
+                continue
+            try:
+                queue.close()
+                queue.cancel_join_thread()
+            except (AttributeError, OSError, ValueError):
+                pass
