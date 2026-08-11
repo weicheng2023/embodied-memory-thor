@@ -427,6 +427,23 @@ so presence does not qualify a start. The next gate uses evaluator-only
 native `PickupObject` success under a predeclared deterministic pose order. Exact
 poses and object IDs remain private.
 
+Start qualification at clean revision `12978db` passed all six candidates. For
+each scene, the first pose under the declared order passed native teleport,
+current-view visibility, and native Book pickup. Exact poses are retained only
+in the ignored evaluator registry; the public record contains counts and pose
+digests.
+
+The next target-independent route-length gate exposed a rejection before any
+anchor placement. Under the already frozen 240-action maximum, only
+`FloorPlan202` passed at 225 actions. The other five required 330, 630, 368,
+369, and 386 actions respectively. Those scenes remain presence/start evidence
+but cannot enter the fully qualified first six under the current fallback
+contract. Qualification stopped without raising the cap, changing scan spacing,
+or trying relocation anchors. The existing declared-order rule should next
+screen later presence candidates for start and route eligibility, retaining all
+rejections; changing the route contract would instead require a new protocol
+version and fresh qualification.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

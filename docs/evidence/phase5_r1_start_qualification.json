@@ -1,0 +1,57 @@
+{
+  "qualification_version": "phase5-r1-start-qualification-v1",
+  "claim_boundary": "coordinate-free evaluator-only visible-and-pickupable start QA; not anchor, route, task, or memory qualification",
+  "code_revision": "12978dbbae23c30d747ac7144efb6c6a3f2777e7",
+  "working_tree_dirty": false,
+  "ai2thor_version": "5.0.0",
+  "images_saved": false,
+  "memory_agents_run": false,
+  "selection_rule": "first normalized interactable pose in xyz-rotation-horizon-standing order that passes native TeleportFull, visibility, and PickupObject",
+  "qualified_count": 6,
+  "all_six_start_qualified": true,
+  "rows": [
+    {
+      "scene": "FloorPlan201",
+      "interactable_pose_count": 355,
+      "selected_pose_order": 1,
+      "selected_pose_digest": "53e3d26142ded683e46b04dacb8e031c7eeee48621d60d6cb7c5f8a854776eae",
+      "qualified": true
+    },
+    {
+      "scene": "FloorPlan202",
+      "interactable_pose_count": 380,
+      "selected_pose_order": 1,
+      "selected_pose_digest": "ad6f9e9552cded910a35e6ae3c9963200a85665535a274cf90cb36e1fda10b3d",
+      "qualified": true
+    },
+    {
+      "scene": "FloorPlan203",
+      "interactable_pose_count": 460,
+      "selected_pose_order": 1,
+      "selected_pose_digest": "2cc5950e6079538346e7ea16e9c56ed02a0036001054fe18e0a53177171f7c01",
+      "qualified": true
+    },
+    {
+      "scene": "FloorPlan209",
+      "interactable_pose_count": 314,
+      "selected_pose_order": 1,
+      "selected_pose_digest": "aececceb4f4e25e823337fa12daeda2e44267f4cb6a641a9d24662e1c0169b19",
+      "qualified": true
+    },
+    {
+      "scene": "FloorPlan213",
+      "interactable_pose_count": 424,
+      "selected_pose_order": 1,
+      "selected_pose_digest": "60bd12b11d9b79a5abbc1a0bb6cf3c910113462ef5d007056018a9537e58f3af",
+      "qualified": true
+    },
+    {
+      "scene": "FloorPlan224",
+      "interactable_pose_count": 437,
+      "selected_pose_order": 1,
+      "selected_pose_digest": "2c137fc671f4a4d4c0752bd34c8c2700004d77d47af9d5c79813c59a2111f314",
+      "qualified": true
+    }
+  ],
+  "privacy": "exact poses and object IDs remain only in the ignored evaluator-only registry"
+}

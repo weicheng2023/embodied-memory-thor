@@ -65,6 +65,13 @@ FloorPlan209, FloorPlan213, and FloorPlan224. None has a default-view visible
 Book, so evaluator-only visible-and-pickupable start qualification is the next
 gate; this is not a memory result.
 
+That start gate passed 6/6 on clean revision `12978db`, but the subsequent
+target-independent route gate passed only FloorPlan202: 225 actions versus the
+frozen 240 maximum. The other five routes require 330-630 actions. No anchor or
+memory episode ran after this finding. The next safe batch is to continue down
+the already declared scene order and retain later candidates that pass both
+start and route gates before spending compute on anchor trials.
+
 ## Implemented
 
 ### Phase 0
