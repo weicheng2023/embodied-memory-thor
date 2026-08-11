@@ -17,6 +17,13 @@ from .protocol import (
     select_first_passing,
     validate_formal_manifest,
 )
+from .search import (
+    SEARCH_ROUTE_SCHEMA_VERSION,
+    FrozenSearchRoute,
+    FrozenSearchRouteState,
+    SearchRouteError,
+    load_frozen_search_route,
+)
 
 __all__ = [
     "ANCHOR_QUALIFICATION_VERSION",
@@ -26,10 +33,15 @@ __all__ = [
     "PHASE5_PROTOCOL_VERSION",
     "PHASE5_REQUIRED_METRICS",
     "QualificationRecord",
+    "SEARCH_ROUTE_SCHEMA_VERSION",
+    "FrozenSearchRoute",
+    "FrozenSearchRouteState",
+    "SearchRouteError",
     "build_geometry_candidate_plan",
     "build_target_independent_coverage_route",
     "build_formal_manifest",
     "public_anchor_reference",
+    "load_frozen_search_route",
     "select_first_passing",
     "validate_formal_manifest",
 ]

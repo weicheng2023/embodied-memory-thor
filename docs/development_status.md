@@ -37,6 +37,16 @@ Phase 5 targeted tests pass 15/15 and the full offline regression passes 75/75.
 The actual AI2-THOR 5.0.0 relocation action and
 per-scene valid destinations are deliberately not frozen before qualification.
 
+The first FloorPlan1 stale relocation anchor is now physically qualified, and
+its exact 210-action target-independent route is integrated as a coordinate-free
+public action sequence. The runner supplies the same coverage indexes/actions to
+no memory, exact K=2, and object memory after a shared route-entry check based
+only on observation-0 agent pose. Offline matched parity, leakage, route digest,
+and route-failure tests pass; the Phase 5 related suite is 33/33 and the complete
+offline regression is 93/93. This is not a
+real memory result. The first-six R1/R2 qualification pool and one excluded real
+three-variant dry run still block the formal matrix.
+
 ## Implemented
 
 ### Phase 0

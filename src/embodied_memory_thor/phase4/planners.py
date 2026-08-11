@@ -193,6 +193,8 @@ class ThorBookReacquirePlanner:
                 return self._memory_navigation(
                     request, request.retrieved_memory[0], target_type="Cup"
                 )
+            if request.shared_search is not None:
+                return self._shared_search_decision(request, target_type="Cup")
             return self._decision(
                 {"action": "RotateRight"},
                 target_object_type="Cup",
@@ -217,6 +219,8 @@ class ThorBookReacquirePlanner:
             if request.retrieved_memory:
                 record = request.retrieved_memory[0]
                 return self._memory_navigation(request, record)
+            if request.shared_search is not None:
+                return self._shared_search_decision(request, target_type="Book")
             return self._decision(
                 {"action": "RotateRight"},
                 target_object_type="Book",
@@ -228,6 +232,35 @@ class ThorBookReacquirePlanner:
             {"action": "Pass"},
             reason_code=stage,
             rationale=f"No executable task action is defined for stage {stage!r}.",
+        )
+
+    def _shared_search_decision(
+        self,
+        request: PlannerRequest,
+        *,
+        target_type: str,
+    ) -> PlannerDecision:
+        directive = request.shared_search or {}
+        raw_action = directive.get("action", {})
+        action = dict(raw_action) if isinstance(raw_action, Mapping) else {}
+        phase = str(directive.get("phase", ""))
+        if phase == "route_entry_alignment":
+            reason_code = "shared_search_route_entry_alignment"
+            rationale = (
+                "Align with the precommitted route-entry heading using shared "
+                "target-independent control state."
+            )
+        else:
+            reason_code = "shared_search_coverage"
+            rationale = (
+                "Execute the next primitive action in the precommitted "
+                "target-independent coverage route."
+            )
+        return self._decision(
+            action,
+            target_object_type=target_type,
+            reason_code=reason_code,
+            rationale=rationale,
         )
 
     def _approach_visible_book(
@@ -449,6 +482,14 @@ def validate_planner_decision(
         errors.append("missing_reason_code")
     if not decision.rationale.strip():
         errors.append("missing_rationale")
+    if request.shared_search is not None:
+        expected = request.shared_search.get("action")
+        if not isinstance(expected, Mapping) or dict(decision.action) != dict(expected):
+            errors.append("decision_diverges_from_shared_search_directive")
+        if decision.memory_guided or decision.memory_record_ids:
+            errors.append("shared_search_decision_cannot_be_memory_guided")
+        if not decision.reason_code.startswith("shared_search_"):
+            errors.append("shared_search_reason_code_missing")
     return not errors, tuple(errors)
 
 

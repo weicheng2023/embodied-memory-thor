@@ -74,6 +74,11 @@ def _case_config(
         scene=str(case.get("scene", "FloorPlan1")),
         planner=str(case.get("planner", "deterministic")),
         memory=str(case.get("memory", "object_memory")),
+        search_route_id=(
+            str(case["search_route_id"])
+            if case.get("search_route_id")
+            else None
+        ),
         mode=mode,
         max_steps=int(case.get("max_steps", 12)),
         output_dir=output_dir,

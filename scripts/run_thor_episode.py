@@ -50,6 +50,13 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("object_memory", "short_memory_k2", "no_memory"),
         help="explicit memory mode; mainly used with deterministic/openai_compatible",
     )
+    parser.add_argument(
+        "--search-route-id",
+        help=(
+            "public target-independent Phase 5 route ID; currently qualified "
+            "only for the frozen FloorPlan1 R1 configuration"
+        ),
+    )
     parser.add_argument("--mode", choices=("formal", "debug"), default="formal")
     parser.add_argument("--max-steps", type=int, default=12)
     parser.add_argument("--output-dir")
@@ -104,6 +111,7 @@ def _build_config(args: argparse.Namespace) -> ThorEpisodeConfig:
         scene=args.scene,
         planner=planner,
         memory=memory,
+        search_route_id=args.search_route_id,
         mode=args.mode,
         max_steps=args.max_steps,
         output_dir=output_dir,

@@ -50,6 +50,12 @@ from embodied_memory_thor.phase4.trace import (
     rgb_array_diagnostics,
 )
 from embodied_memory_thor.phase5.interventions import EvaluatorIntervention
+from embodied_memory_thor.phase5.search import (
+    FrozenSearchRoute,
+    FrozenSearchRouteState,
+    SearchRouteError,
+    load_frozen_search_route,
+)
 from embodied_memory_thor.utils.serialization import to_jsonable
 
 
@@ -142,6 +148,7 @@ class ThorEpisodeConfig:
     scene: str = "FloorPlan1"
     planner: str = "deterministic"
     memory: str = "object_memory"
+    search_route_id: str | None = None
     condition: str = "stable"
     mode: str = "formal"
     max_steps: int = 12
@@ -176,6 +183,16 @@ class ThorEpisodeConfig:
             raise ValueError(f"unsupported planner: {self.planner}")
         if self.memory not in {"no_memory", "short_memory_k2", "object_memory"}:
             raise ValueError(f"unsupported memory mode: {self.memory}")
+        if self.search_route_id is not None:
+            if not self.search_route_id.strip():
+                raise ValueError("search_route_id cannot be empty")
+            if self.planner != "deterministic":
+                raise ValueError("frozen search routes require the deterministic planner")
+            if self.task != "thor_book_reacquire_k2":
+                raise ValueError(
+                    "the currently qualified frozen route requires "
+                    "thor_book_reacquire_k2"
+                )
         if self.condition not in {"stable", "stale_r1"}:
             raise ValueError(f"unsupported condition: {self.condition}")
         if self.condition == "stale_r1" and self.task != "thor_book_reacquire_k2":
@@ -203,6 +220,7 @@ class ThorEpisodeRunner:
         planner: StructuredPlanner | None = None,
         memory: ThorMemoryProvider | None = None,
         intervention: EvaluatorIntervention | None = None,
+        search_route: FrozenSearchRoute | None = None,
         viewer_factory: Callable[..., LiveFrameViewer] | None = None,
     ) -> None:
         config.validate()
@@ -212,6 +230,17 @@ class ThorEpisodeRunner:
             config.planner, model=config.model, base_url=config.base_url
         )
         self.memory = memory or build_thor_memory(config.memory)
+        if search_route is not None and config.search_route_id != search_route.route_id:
+            raise ValueError("injected search route does not match search_route_id")
+        self.search_route = search_route
+        if self.search_route is None and config.search_route_id is not None:
+            self.search_route = load_frozen_search_route(config.search_route_id)
+        if self.search_route is not None:
+            self.search_route.validate()
+            if self.search_route.task != config.task:
+                raise ValueError("frozen search route task does not match episode task")
+            if self.search_route.scene != config.scene:
+                raise ValueError("frozen search route scene does not match episode scene")
         if config.condition == "stale_r1" and intervention is None:
             raise ValueError("stale_r1 requires an evaluator intervention")
         if config.condition == "stable" and intervention is not None:
@@ -243,6 +272,11 @@ class ThorEpisodeRunner:
             "scene": config.scene,
             "planner": config.planner,
             "memory": config.memory,
+            "search_route": (
+                self.search_route.public_reference()
+                if self.search_route is not None
+                else None
+            ),
             "condition": config.condition,
             "mode": config.mode,
             "max_steps": config.max_steps,
@@ -281,6 +315,16 @@ class ThorEpisodeRunner:
             ),
             **_git_state(),
         }
+        if self.search_route is not None:
+            manifest["shared_search_policy"] = {
+                "same_route_available_to_all_memory_variants": True,
+                "route_entry_pose_source": (
+                    "planner_safe_observation_0_agent_pose_only"
+                ),
+                "target_object_history_retained": False,
+                "route_coordinates_in_planner_input": False,
+                "route_action_failure_policy": "invalidate_episode",
+            }
         if self.intervention is not None:
             manifest["intervention"] = {
                 "intervention_id": self.intervention.intervention_id,
@@ -337,6 +381,12 @@ class ThorEpisodeRunner:
         intervention_count = 0
         intervention_failure_count = 0
         planner_call_count = 0
+        shared_search_alignment_action_count = 0
+        shared_search_coverage_action_count = 0
+        shared_search_route_entry_mismatch_count = 0
+        shared_search_route_exhausted_count = 0
+        shared_search_action_failure_count = 0
+        search_route_state: FrozenSearchRouteState | None = None
         setup_action_count = 0
         setup_action_latencies: list[float] = []
         setup_completed = False
@@ -405,6 +455,11 @@ class ThorEpisodeRunner:
             self.memory.observe(
                 current_observation, step=0, observation_id="observation:0"
             )
+            if self.search_route is not None:
+                search_route_state = FrozenSearchRouteState(
+                    self.search_route,
+                    initial_observation=current_observation,
+                )
             initial_viewpoint = self._viewpoint_key(current_observation)
             if initial_viewpoint is not None:
                 visited_viewpoints.add(initial_viewpoint)
@@ -439,6 +494,23 @@ class ThorEpisodeRunner:
                     and not retrieved
                 ):
                     short_memory_evicted_before_reacquisition = True
+                shared_search = None
+                if (
+                    search_route_state is not None
+                    and progress.stage == "reacquire_book"
+                    and not retrieved
+                ):
+                    try:
+                        shared_search = search_route_state.next_directive(
+                            current_observation
+                        )
+                    except SearchRouteError as exc:
+                        if str(exc) == "frozen search route exhausted":
+                            shared_search_route_exhausted_count += 1
+                        else:
+                            shared_search_route_entry_mismatch_count += 1
+                        failure_reason = f"shared_search_unavailable:{exc}"
+                        break
                 request = PlannerRequest(
                     task_name=task.task_name,
                     instruction=task.natural_language_instruction,
@@ -449,6 +521,7 @@ class ThorEpisodeRunner:
                     allowed_actions=runtime_spec.allowed_actions,
                     retrieved_memory=retrieved,
                     recent_action_results=tuple(deepcopy(action_history[-5:])),
+                    shared_search=deepcopy(shared_search),
                 )
                 audit = self._audit_with_provenance(
                     audit_planner_request(request), request, visible_history
@@ -494,12 +567,28 @@ class ThorEpisodeRunner:
                 execution = self.executor.execute(self.env, decision.action)
                 action_latency = perf_counter() - action_started
                 action_latencies.append(action_latency)
+                if shared_search is not None and search_route_state is not None:
+                    if shared_search.get("phase") == "route_entry_alignment":
+                        shared_search_alignment_action_count += 1
+                    elif shared_search.get("phase") == "coverage":
+                        shared_search_coverage_action_count += 1
+                    try:
+                        search_route_state.record_result(
+                            shared_search,
+                            action=execution.action,
+                            success=execution.success,
+                        )
+                    except SearchRouteError as exc:
+                        shared_search_action_failure_count += 1
+                        failure_reason = f"shared_search_action_failed:{exc}"
                 if execution.invalid_action:
                     invalid_action_count += 1
                 action_name = str(execution.action.get("action", ""))
                 if (
                     action_name in {"RotateLeft", "RotateRight"}
                     and "search" in decision.reason_code
+                    and decision.reason_code
+                    != "shared_search_route_entry_alignment"
                 ):
                     search_rotation_count += 1
                 if (
@@ -673,6 +762,22 @@ class ThorEpisodeRunner:
                         "memory_marked_stale_record_ids": marked_stale_ids,
                         "memory_recovered_record_ids": sorted(recovered_ids),
                         "memory_after": memory_after,
+                        "shared_search_result": (
+                            {
+                                "route_id": self.search_route.route_id,
+                                "phase": shared_search.get("phase"),
+                                "action_index": shared_search.get("action_index"),
+                                "coverage_cursor_after": (
+                                    search_route_state.coverage_cursor
+                                    if search_route_state is not None
+                                    else None
+                                ),
+                                "action_accepted": execution.success,
+                            }
+                            if shared_search is not None
+                            and self.search_route is not None
+                            else None
+                        ),
                         "task_progress": progress.snapshot(),
                         "task_success": success,
                         "evaluator_state_success": success_result.success,
@@ -793,6 +898,29 @@ class ThorEpisodeRunner:
             "failure_reason": "" if success else failure_reason,
             "steps": steps,
             "planner_call_count": planner_call_count,
+            "shared_search_route_id": (
+                self.search_route.route_id if self.search_route is not None else None
+            ),
+            "shared_search_action_sequence_digest": (
+                self.search_route.action_sequence_digest
+                if self.search_route is not None
+                else None
+            ),
+            "shared_search_alignment_action_count": (
+                shared_search_alignment_action_count
+            ),
+            "shared_search_coverage_action_count": (
+                shared_search_coverage_action_count
+            ),
+            "shared_search_route_entry_mismatch_count": (
+                shared_search_route_entry_mismatch_count
+            ),
+            "shared_search_route_exhausted_count": (
+                shared_search_route_exhausted_count
+            ),
+            "shared_search_action_failure_count": (
+                shared_search_action_failure_count
+            ),
             "setup_completed": setup_completed,
             "setup_failure_reason": setup_failure_reason,
             "setup_action_count": setup_action_count,

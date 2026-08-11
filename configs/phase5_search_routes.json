@@ -1,0 +1,17 @@
+{
+  "schema_version": "phase5-search-route-v1",
+  "routes": [
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan1_R1_fixed_start_001_coverage_v2",
+      "task": "thor_book_reacquire_k2",
+      "scene": "FloorPlan1",
+      "source_qualification_route_digest": "5e3c77a3bf865c8c5015a4283eb3475061aa98660d4ba1d5f4dcb6c040c32576",
+      "action_sequence_digest": "00f638bd2ae07bac41ad176fcd221ad94f0e2241440946ce34a0f894a4a51ba8",
+      "action_codes": "RRRRRFFFRFRRRRRRFRFFFRRRRFFFRFRRRRRRFRFFFRRRRRRFFRFFFRRRRFFFRFRRRRRRFRFFLFRFRRRRLFFFFRRRRFFFFRRRRFLFFFRRRRRFLFFFRRRRRFFFRFRRRRRFLFFFRRRRFFFRFRRRRLFFRFFFFRRRRFFFFRRRRFFFFFFRFFRRRRRFFFFFFFFFFFFFFFLFFFFFFFFFFFRRRR",
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
+    }
+  ]
+}

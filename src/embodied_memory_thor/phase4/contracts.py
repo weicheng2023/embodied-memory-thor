@@ -115,6 +115,7 @@ class PlannerRequest:
     allowed_actions: tuple[str, ...]
     retrieved_memory: tuple[dict[str, Any], ...] = ()
     recent_action_results: tuple[dict[str, Any], ...] = ()
+    shared_search: dict[str, Any] | None = None
     schema_version: str = TRACE_SCHEMA_VERSION
     rgb_consumed_by_planner: bool = False
 
@@ -154,6 +155,7 @@ class PlannerInputAudit:
     violations: tuple[str, ...] = field(default_factory=tuple)
     visible_object_ids: tuple[str, ...] = field(default_factory=tuple)
     memory_record_ids: tuple[str, ...] = field(default_factory=tuple)
+    shared_search_route_id: str | None = None
     input_digest: str = ""
 
     def snapshot(self) -> dict[str, Any]:
@@ -206,11 +208,58 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
         if record.get("observed_visible") is not True:
             violations.append(f"memory_record_not_visible_derived:{index}")
 
+    shared_route_id: str | None = None
+    if request.shared_search is not None:
+        shared = request.shared_search
+        allowed_search_keys = {
+            "action",
+            "action_index",
+            "action_sequence_digest",
+            "phase",
+            "policy",
+            "route_id",
+        }
+        unknown_keys = sorted(set(map(str, shared)) - allowed_search_keys)
+        if unknown_keys:
+            violations.extend(
+                f"shared_search_unknown_key:{key}" for key in unknown_keys
+            )
+        if shared.get("policy") != "frozen_target_independent_route":
+            violations.append("shared_search_policy")
+        shared_route_id = str(shared.get("route_id", "")) or None
+        if shared_route_id is None:
+            violations.append("shared_search_route_id")
+        digest = str(shared.get("action_sequence_digest", ""))
+        if len(digest) != 64 or any(
+            character not in "0123456789abcdef" for character in digest
+        ):
+            violations.append("shared_search_action_sequence_digest")
+        phase = shared.get("phase")
+        action_index = shared.get("action_index")
+        if phase not in {"route_entry_alignment", "coverage"}:
+            violations.append("shared_search_phase")
+        elif phase == "route_entry_alignment" and action_index is not None:
+            violations.append("shared_search_alignment_index")
+        elif phase == "coverage" and (
+            not isinstance(action_index, int) or action_index < 0
+        ):
+            violations.append("shared_search_coverage_index")
+        action = shared.get("action")
+        if not isinstance(action, Mapping) or set(action) != {"action"}:
+            violations.append("shared_search_action_schema")
+        elif action.get("action") not in {
+            "MoveAhead",
+            "RotateLeft",
+            "RotateRight",
+        }:
+            violations.append("shared_search_action_not_navigation_only")
+
     return PlannerInputAudit(
         passed=not violations,
         violations=tuple(violations),
         visible_object_ids=visible_object_ids(request.observation),
         memory_record_ids=tuple(record_ids),
+        shared_search_route_id=shared_route_id,
         input_digest=request.input_digest,
     )
 

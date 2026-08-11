@@ -36,7 +36,22 @@
   "protocol_decision": {
     "anchor_qualified": true,
     "formal_stale_panel_allowed": false,
-    "next_gate": "integrate the exact qualified coverage route into all three variants and pass parity/leakage tests"
+    "next_gate": "complete the frozen first-six configuration pool, then inspect one excluded real three-variant engineering dry run"
+  },
+  "route_integration": {
+    "action_sequence_digest": "00f638bd2ae07bac41ad176fcd221ad94f0e2241440946ce34a0f894a4a51ba8",
+    "coordinates_in_public_route": false,
+    "exact_qualified_action_count": 210,
+    "matched_variants": [
+      "no_memory",
+      "short_memory_k2",
+      "object_memory"
+    ],
+    "offline_information_boundary_passed": true,
+    "offline_full_regression_passed": "93/93",
+    "offline_route_action_parity_passed": true,
+    "real_three_variant_dry_run_completed": false,
+    "route_id": "FloorPlan1_R1_fixed_start_001_coverage_v2"
   },
   "qualification_version": "phase5-anchor-qualification-v1"
 }

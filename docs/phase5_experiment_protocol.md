@@ -151,6 +151,8 @@ Integrity and memory outcomes:
 
 - invalid/failed actions and failure taxonomy;
 - information-boundary, memory-provenance, ordered-subgoal, and intervention audits;
+- shared-route alignment/coverage actions, entry mismatch, exhaustion, and
+  frozen-action failure;
 - retrieval/useful-retrieval and memory-guided action counts;
 - K=2 eviction, stale use, old-viewpoint miss, fallback, rediscovery, and correction.
 
@@ -338,6 +340,44 @@ records the opaque ID and digests. The registry deliberately
 sets `formal_use_allowed=false`: one anchor qualification does not complete the
 six-configuration pool, and the exact 210-action route still requires formal
 three-variant integration plus parity/leakage acceptance.
+
+### Exact route integration checkpoint
+
+The coordinate-free public route is now frozen as
+`FloorPlan1_R1_fixed_start_001_coverage_v2` in
+`configs/phase5_search_routes.json`. Its 210 primitive actions have action-only
+digest `00f638bd2ae07bac41ad176fcd221ad94f0e2241440946ce34a0f894a4a51ba8`
+and bind back to the retained qualification-route digest. The public artifact
+contains only `MoveAhead`, `RotateLeft`, and `RotateRight` codes: no Book ID,
+anchor ID, support, destination, world coordinate, or reachable-position list.
+
+The runner exposes one action at a time through a strictly whitelisted
+`shared_search` planner field. The deterministic planner must execute that exact
+action, and any route action failure invalidates the episode instead of skipping,
+replanning, or querying hidden state. Route progress and route-entry failures are
+ordinary metrics. All evaluated actions, including route-entry alignment, remain
+inside the episode step count.
+
+The route was qualified from the planner-safe observation-0 agent pose. A shared
+controller may retain only that agent pose as task/control state; it retains no
+object observation or target position. A no/short-memory agent that is still at
+the post-distraction heading performs the required fixed alignment action. An
+object-memory agent that has already returned to observation 0 after a stale miss
+can enter coverage directly. In both cases coverage starts at action index 0 from
+the same pose, and the coverage action sequence is identical.
+
+Offline acceptance executes the same route through `no_memory`, exact K=2, and
+object memory under one matched stale fixture. All three used coverage indexes
+0, 1, and 2 with identical actions before rediscovery; planner-input audits
+passed, ordinary traces contained no intervention destination or anchor fields,
+and a negative route-action test produced a hard failure. The Phase 5 related
+suite passed 33/33 and the complete offline regression passed 93/93. These are software parity/leakage checks, not real-THOR
+comparison evidence.
+
+This clears the earlier route-integration blocker only. The local registry stays
+`formal_use_allowed=false` because five more distinct R1 configurations, all R2
+qualification, and the excluded real three-variant engineering dry run remain.
+No formal stable or stale comparison has run.
 
 ## Gate before formal comparisons
 
