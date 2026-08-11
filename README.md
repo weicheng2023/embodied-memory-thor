@@ -2,6 +2,12 @@
 
 A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-THOR.
 
+Phase 5A infrastructure is under development. The real-THOR runner now exposes
+`no_memory`, exact `short_memory_k2`, and `object_memory` through one deterministic
+planner path, but no Phase 5 comparison episode has run. The ordered second task,
+stale intervention, scene qualification, metrics, and clean manifest remain gates
+before the first excluded engineering dry run.
+
 ## Status
 
 Phases 0–3 are complete. The formal `phase3-v2` controlled pilot ran 54/54 successful episodes from a clean revision, with all information-boundary and protocol checks passing. Results are descriptive E1 mock evidence, not a real AI2-THOR memory claim. LLM planners remain later work.

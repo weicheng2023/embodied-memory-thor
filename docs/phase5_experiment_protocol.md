@@ -1,6 +1,15 @@
 # Phase 5 Real AI2-THOR Memory Comparison Protocol
 
-Status: protocol v1 frozen before Phase 5 implementation or comparison runs.
+Status: protocol v1 frozen before comparison runs. Phase 5A1 implementation has
+started with offline-only memory-provider and parity tests; no Phase 5 episode or
+comparison has run.
+
+Implementation checkpoint: the runner now accepts `no_memory`, exact
+`short_memory_k2`, and `object_memory`. The K=2 provider retains only the latest
+two planner-safe observation snapshots, uses the same visible-derived record
+schema as object memory, and falls back through the same planner path when the
+target record is evicted. This checkpoint is infrastructure only; R1 still needs
+the protocol's longer distraction sequence before a three-variant dry run.
 
 ## Research question
 
@@ -156,4 +165,3 @@ Formal Phase 5 results require:
 - completed scene qualification with the frozen first-six rule;
 - inspected one-configuration three-variant engineering dry run;
 - a committed manifest on a clean revision.
-

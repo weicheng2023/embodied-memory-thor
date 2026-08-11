@@ -1,5 +1,24 @@
 # Development Status
 
+## Phase 5A1 started
+
+The manual Phase 4 protocol-v3 case completed successfully even though the
+isolated live viewer reported `viewer_display_timeout`; all non-GUI artifacts and
+the final summary survived. Phase 4V is therefore closed.
+
+Phase 5A1 has begun offline. The real runner accepts no memory, exact K=2 short
+memory, and persistent object memory behind the same deterministic planner. Unit
+tests lock K=2 eviction, persistent/no-memory semantics, common record schema,
+memory-guided action parity, and identical systematic fallback after eviction.
+No Phase 5 AI2-THOR episode or comparative result has run. The ordered second
+task, stale intervention, metrics, scene qualification, and frozen manifest remain
+future gates before the single three-variant engineering dry run.
+
+The first provider slice passes 5/5 targeted tests and the complete offline suite
+passes 65/65. The existing Phase 4 Book task is deliberately not a Phase 5 dry-run
+task: its one-turn distraction does not evict observation 0 from K=2. R1 must add
+at least three declared transitions before any matched comparison is allowed.
+
 ## Implemented
 
 ### Phase 0

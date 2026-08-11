@@ -136,7 +136,7 @@ class ThorEpisodeConfig:
             raise ValueError("scene must be non-empty")
         if self.planner not in {"deterministic", "openai_compatible"}:
             raise ValueError(f"unsupported planner: {self.planner}")
-        if self.memory not in {"no_memory", "object_memory"}:
+        if self.memory not in {"no_memory", "short_memory_k2", "object_memory"}:
             raise ValueError(f"unsupported memory mode: {self.memory}")
         if self.mode not in {"formal", "debug"}:
             raise ValueError("mode must be formal or debug")
