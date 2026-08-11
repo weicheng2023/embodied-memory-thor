@@ -444,6 +444,13 @@ screen later presence candidates for start and route eligibility, retaining all
 rejections; changing the route contract would instead require a new protocol
 version and fresh qualification.
 
+The remaining-candidate prescreen is fixed before execution: inspect all 29
+presence candidates after positions 1-6 in their existing declared order. Each
+candidate uses the same maximum of 32 deterministically sorted interactable-pose
+trials and the unchanged target-independent route-v2 builder with the unchanged
+240-action limit. Start or route rejection is retained and the batch continues;
+no anchor placement or agent episode is permitted during this prescreen.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
