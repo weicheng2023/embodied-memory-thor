@@ -40,6 +40,41 @@ def place_object_at_point_action(
     }
 
 
+def select_centered_spawn_destination(
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    support_center: Mapping[str, Any],
+    before_position: Mapping[str, Any],
+    minimum_move_meters: float = 0.5,
+) -> dict[str, float]:
+    """Choose a deterministic interior-biased point without forcing collisions."""
+
+    if minimum_move_meters <= 0:
+        raise ValueError("minimum_move_meters must be positive")
+    normalized: list[dict[str, float]] = []
+    for candidate in candidates:
+        try:
+            point = {axis: float(candidate[axis]) for axis in ("x", "y", "z")}
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not all(math.isfinite(value) for value in point.values()):
+            continue
+        moved = _xz_distance(before_position, point)
+        if moved is not None and moved >= minimum_move_meters:
+            normalized.append(point)
+    if not normalized:
+        raise ValueError("no numeric spawn point satisfies minimum move distance")
+    return min(
+        normalized,
+        key=lambda point: (
+            _xz_distance(support_center, point),
+            -float(_xz_distance(before_position, point) or 0.0),
+            point["x"],
+            point["z"],
+        ),
+    )
+
+
 def assess_relocation_probe(
     *,
     target_object_id: str,

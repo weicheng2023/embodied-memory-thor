@@ -24,12 +24,13 @@ from embodied_memory_thor.phase4.runner import THOR_BOOK_SETUP_ACTIONS  # noqa: 
 from embodied_memory_thor.phase5.qualification import (  # noqa: E402
     assess_relocation_probe,
     place_object_at_point_action,
+    select_centered_spawn_destination,
     spawn_coordinate_query,
 )
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-PROBE_VERSION = "phase5-real-relocation-probe-v2"
+PROBE_VERSION = "phase5-real-relocation-probe-v3"
 OPEN_SUPPORT_TYPES = frozenset(
     {"CounterTop", "DiningTable", "CoffeeTable", "SideTable", "Desk"}
 )
@@ -184,27 +185,6 @@ def _query_first_spawn_surface(
     return None, [], query_records
 
 
-def _select_destination(
-    candidates: Sequence[Mapping[str, Any]], *, before_position: Mapping[str, Any],
-    agent_position: Mapping[str, Any],
-) -> Mapping[str, Any]:
-    valid = [
-        point for point in candidates
-        if all(isinstance(point.get(axis), (int, float)) for axis in ("x", "y", "z"))
-    ]
-    if not valid:
-        raise RuntimeError("spawn coordinate response has no numeric xyz point")
-    return max(
-        valid,
-        key=lambda point: (
-            min(_xz_distance(before_position, point), _xz_distance(agent_position, point)),
-            _xz_distance(before_position, point),
-            float(point["x"]),
-            float(point["z"]),
-        ),
-    )
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scene", default="FloorPlan1")
@@ -239,7 +219,6 @@ def main(argv: list[str] | None = None) -> int:
         object_id = str(book["objectId"])
         before_position = dict(book["position"])
         parent_ids = [str(value) for value in book.get("parentReceptacles") or []]
-        agent_position = dict(before_metadata["agent"]["position"])
         private["target_before"] = {
             "objectId": object_id,
             "position": before_position,
@@ -256,16 +235,27 @@ def main(argv: list[str] | None = None) -> int:
         private["spawn_queries"] = query_records
         if receptacle is None:
             raise RuntimeError("no ranked open support returned a valid spawn coordinate")
-        destination = _select_destination(
+        support_bounds = receptacle.get("axisAlignedBoundingBox", {})
+        support_center = (
+            support_bounds.get("center", {})
+            if isinstance(support_bounds, Mapping)
+            else {}
+        )
+        if not isinstance(support_center, Mapping) or not support_center:
+            support_center = receptacle["position"]
+        destination = select_centered_spawn_destination(
             spawn_candidates,
             before_position=before_position,
-            agent_position=agent_position,
+            support_center=support_center,
         )
         private["selected_receptacle"] = {
             "objectId": receptacle.get("objectId"),
             "objectType": receptacle.get("objectType"),
         }
         private["selected_destination"] = dict(destination)
+        private["destination_selection_rule"] = (
+            "closest_to_support_center_with_minimum_0.5m_move_no_force_action"
+        )
 
         placement_action = place_object_at_point_action(object_id, destination)
         placement_event = env.step(placement_action)

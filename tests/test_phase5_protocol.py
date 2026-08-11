@@ -16,6 +16,7 @@ from embodied_memory_thor.phase5.protocol import (
 from embodied_memory_thor.phase5.qualification import (
     assess_relocation_probe,
     place_object_at_point_action,
+    select_centered_spawn_destination,
     spawn_coordinate_query,
 )
 
@@ -178,6 +179,20 @@ class Phase5ProtocolTests(unittest.TestCase):
                 "insufficient_stability_samples",
             },
         )
+
+    def test_spawn_destination_is_center_biased_and_keeps_move_distance(self) -> None:
+        selected = select_centered_spawn_destination(
+            [
+                {"x": 2.9, "y": 1.0, "z": 2.9},
+                {"x": 2.1, "y": 1.0, "z": 2.1},
+                {"x": 2.0, "y": 1.0, "z": 2.0},
+                {"x": 0.1, "y": 1.0, "z": 0.1},
+            ],
+            support_center={"x": 2.0, "y": 1.0, "z": 2.0},
+            before_position={"x": 0.0, "y": 1.0, "z": 0.0},
+            minimum_move_meters=0.5,
+        )
+        self.assertEqual(selected, {"x": 2.0, "y": 1.0, "z": 2.0})
 
     @staticmethod
     def _manifest() -> dict:

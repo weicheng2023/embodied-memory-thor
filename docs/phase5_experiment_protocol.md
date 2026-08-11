@@ -201,6 +201,14 @@ off-camera use case: it restricts candidates to declared open support types and
 uses evaluator-only `anywhere=true`. It also retains every query result on the
 failure path. The failed v1 artifact remains excluded from comparison evidence.
 
+Probe v2 qualification finding: off-camera query succeeded on the first ranked
+CounterTop and returned 441 coordinates, but the farthest-point rule chose an
+edge coordinate whose Book-sized spawn volume intersected a Wall. Native
+placement failed, the Book did not move, and reset reproducibility passed. Probe
+v3 replaces only this flawed selector with a tested center-biased point at least
+0.5 m from the old Book location. It does not use `forceAction` and retains v2 as
+a failed qualification artifact.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
