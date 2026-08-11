@@ -54,6 +54,11 @@ kitchen-only R1 first-six pool is therefore impossible. No further anchor trial
 or memory episode ran. R1 scene-family scope must be revised and precommitted
 before qualification continues; R2 presence alone is not full qualification.
 
+The pre-outcome protocol decision is to retain Book and expand R1 to the ordered
+living-room then bedroom pool in `configs/phase5_r1_scene_pool.json`. A dedicated
+coordinate-free census script records presence feasibility without running an
+agent. Full task and anchor qualification still require separate gates.
+
 ## Implemented
 
 ### Phase 0

@@ -399,6 +399,24 @@ the six-configuration design. Repeating unqualified starts or silently changing
 the target is prohibited. The coordinate-free census record is retained in
 `docs/evidence/phase5_kitchen_scene_census.json`.
 
+### R1 scene-family decision and precommitted census order
+
+R1 retains Book rather than choosing a kitchen object after observing the
+kitchen census. Its versioned candidate pool is now declared in
+`configs/phase5_r1_scene_pool.json`: living rooms `FloorPlan201`-`FloorPlan230`
+in ascending order, followed by bedrooms `FloorPlan301`-`FloorPlan330` in
+ascending order. The presence census must inspect all 60 candidates and preserve
+that order. Later task qualification may freeze only the first six distinct
+passing configurations under the existing first-six rule.
+
+The census is evaluator-only setup QA. Its public record may retain scene-level
+counts but no object IDs or coordinates. Passing requires a pickupable Book, at
+least one declared open support, and at least one reachable position. It cannot
+establish initial visibility, safe relocation, fallback coverage, pickup success,
+or memory improvement. R2 remains in kitchens and is compared only within its
+own matched panel; R1/R2 absolute task costs are not treated as a controlled
+cross-scene comparison.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
