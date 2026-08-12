@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import unittest
 import json
+import importlib.util
+import tempfile
 from pathlib import Path
 
 from embodied_memory_thor.phase5.anchors import (
@@ -39,6 +41,81 @@ def _box(
 
 
 class Phase5AnchorTests(unittest.TestCase):
+    @staticmethod
+    def _qualifier_module():
+        root = Path(__file__).resolve().parents[1]
+        path = root / "scripts" / "qualify_phase5_anchors.py"
+        spec = importlib.util.spec_from_file_location("qualify_phase5_anchors", path)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_candidate_contract_and_private_start_bind_scene_and_digest(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        module = self._qualifier_module()
+        contract_path = root / "configs" / "phase5_r1_anchor_candidates.json"
+        contract = module._load_candidate_contract(contract_path, "FloorPlan301")
+        self.assertEqual(contract["configuration_id"], "FloorPlan301_R1_fixed_start_001")
+        self.assertEqual(contract["coverage_route_action_count"], 106)
+        self.assertEqual(
+            module.stable_digest({"x": 1.0, "y": 0.9, "z": 2.0}),
+            stable_digest({"x": 1.0, "y": 0.9, "z": 2.0}),
+        )
+        with self.assertRaisesRegex(ValueError, "exactly one row"):
+            module._load_candidate_contract(contract_path, "FloorPlan999")
+
+    def test_public_anchor_candidate_contract_has_no_exact_pose_or_object_id(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        raw = json.loads(
+            (root / "configs" / "phase5_r1_anchor_candidates.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(raw["candidates"]), 6)
+        self.assertEqual(
+            [row["candidate_order"] for row in raw["candidates"]],
+            [1, 2, 3, 4, 5, 6],
+        )
+        self.assertNotIn("selected_pose", str(raw))
+        self.assertNotIn("target_object_id", str(raw))
+        self.assertNotIn("target_point", str(raw))
+
+    def test_private_start_digest_mismatch_stops_before_environment_creation(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        module = self._qualifier_module()
+        contract_path = root / "configs" / "phase5_r1_anchor_candidates.json"
+        pose = {
+            "x": 0.0,
+            "y": 0.9,
+            "z": 0.0,
+            "rotation": 0.0,
+            "horizon": 0.0,
+            "standing": True,
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            registry_path = Path(temp_dir) / "registry.json"
+            registry_path.write_text(
+                json.dumps(
+                    {
+                        "rows": [
+                            {
+                                "scene": "FloorPlan301",
+                                "qualified": True,
+                                "selected_pose": pose,
+                                "selected_pose_digest": stable_digest(pose),
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "public candidate contract"):
+                module._setup_actions_for_candidate(
+                    scene="FloorPlan301",
+                    candidate_contract=contract_path,
+                    start_registries=[registry_path],
+                )
+
     def test_local_private_registry_is_ignored_and_not_imported_by_planner_path(self) -> None:
         root = Path(__file__).resolve().parents[1]
         private_path = root / "configs" / "evaluator_only" / "phase5_anchor_registry.json"

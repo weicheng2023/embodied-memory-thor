@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pre-qualify one frozen FloorPlan1 Book relocation anchor."""
+"""Pre-qualify one frozen real-THOR Book relocation anchor."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ from embodied_memory_thor.phase5.qualification import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v3"
+SCRIPT_VERSION = "phase5-anchor-batch-v4"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -127,9 +127,11 @@ def _visible_book(metadata: Mapping[str, Any]) -> Mapping[str, Any]:
     return books[0]
 
 
-def _run_setup(env: ThorEnv) -> list[dict[str, Any]]:
+def _run_setup(
+    env: ThorEnv, setup_actions: Sequence[Mapping[str, Any]]
+) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for index, action in enumerate(THOR_BOOK_SETUP_ACTIONS, start=1):
+    for index, action in enumerate(setup_actions, start=1):
         event = env.step(action)
         record = {
             "index": index,
@@ -143,10 +145,86 @@ def _run_setup(env: ThorEnv) -> list[dict[str, Any]]:
     return records
 
 
-def _reset_setup(env: ThorEnv, scene: str) -> tuple[Mapping[str, Any], list[dict[str, Any]]]:
+def _reset_setup(
+    env: ThorEnv, scene: str, setup_actions: Sequence[Mapping[str, Any]]
+) -> tuple[Mapping[str, Any], list[dict[str, Any]]]:
     env.reset(scene)
-    setup = _run_setup(env)
+    setup = _run_setup(env, setup_actions)
     return env.get_evaluator_state(), setup
+
+
+def _load_candidate_contract(path: Path, scene: str) -> dict[str, Any]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    candidates = raw.get("candidates", []) if isinstance(raw, Mapping) else []
+    matches = [
+        dict(item)
+        for item in candidates
+        if isinstance(item, Mapping) and item.get("scene") == scene
+    ]
+    if len(matches) != 1:
+        raise ValueError(f"candidate contract requires exactly one row for {scene}")
+    return matches[0]
+
+
+def _load_private_start(paths: Sequence[Path], scene: str) -> dict[str, Any]:
+    matches: list[dict[str, Any]] = []
+    for path in paths:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        for row in raw.get("rows", []) if isinstance(raw, Mapping) else []:
+            if not isinstance(row, Mapping) or row.get("scene") != scene:
+                continue
+            source = row.get("start_qualification", row)
+            if not isinstance(source, Mapping) or source.get("passed", source.get("qualified")) is not True:
+                continue
+            pose = source.get("selected_pose")
+            if isinstance(pose, Mapping):
+                matches.append(
+                    {
+                        "scene": scene,
+                        "selected_pose": dict(pose),
+                        "selected_pose_digest": str(source.get("selected_pose_digest", "")),
+                    }
+                )
+    if len(matches) != 1:
+        raise ValueError(f"private start registries require exactly one passing row for {scene}")
+    return matches[0]
+
+
+def _setup_actions_for_candidate(
+    *, scene: str, candidate_contract: Path | None,
+    start_registries: Sequence[Path],
+) -> tuple[
+    tuple[dict[str, Any], ...], str, str, str | None, int | None
+]:
+    if candidate_contract is not None:
+        if not start_registries:
+            raise ValueError("--candidate-contract requires at least one --start-registry")
+        contract = _load_candidate_contract(candidate_contract.resolve(), scene)
+        start = _load_private_start(
+            [path.resolve() for path in start_registries], scene
+        )
+        pose = dict(start["selected_pose"])
+        pose_digest = stable_digest(pose)
+        if pose_digest != start["selected_pose_digest"]:
+            raise ValueError("private start pose does not match its retained digest")
+        if pose_digest != contract.get("start_pose_digest"):
+            raise ValueError("private start pose does not match the public candidate contract")
+        return (
+            ({"action": "TeleportFull", **pose},),
+            str(contract["configuration_id"]),
+            str(contract["anchor_id"]),
+            str(contract["coverage_route_digest"]),
+            int(contract["coverage_route_action_count"]),
+        )
+    if scene != "FloorPlan1":
+        raise ValueError("non-FloorPlan1 qualification requires frozen candidate inputs")
+    return (
+        tuple(dict(action) for action in THOR_BOOK_SETUP_ACTIONS),
+        "FloorPlan1_R1_fixed_start_001",
+        "FloorPlan1_R1_stale_Book_anchor_001",
+        None,
+        None,
+    )
 
 
 def _position(obj: Mapping[str, Any] | None) -> dict[str, float] | None:
@@ -186,9 +264,12 @@ def _rank_supports(
 
 
 def _collect_precommitted_plan(
-    env: ThorEnv, *, scene: str, output_dir: Path, git_state: Mapping[str, Any]
+    env: ThorEnv, *, scene: str, output_dir: Path, git_state: Mapping[str, Any],
+    setup_actions: Sequence[Mapping[str, Any]], configuration_id: str,
+    expected_route_digest: str | None = None,
+    expected_route_action_count: int | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], Mapping[str, Any]]:
-    metadata, setup = _reset_setup(env, scene)
+    metadata, setup = _reset_setup(env, scene, setup_actions)
     book = _visible_book(metadata)
     before_position = _position(book)
     if before_position is None:
@@ -234,6 +315,18 @@ def _collect_precommitted_plan(
             f"{len(coverage_route['actions'])}>{MAX_FALLBACK_ACTIONS}"
         )
     route_digest = stable_digest(coverage_route)
+    if expected_route_digest and route_digest != expected_route_digest:
+        raise RuntimeError(
+            f"coverage route digest mismatch: {route_digest}!={expected_route_digest}"
+        )
+    if (
+        expected_route_action_count is not None
+        and len(coverage_route["actions"]) != expected_route_action_count
+    ):
+        raise RuntimeError(
+            "coverage route action count mismatch: "
+            f"{len(coverage_route['actions'])}!={expected_route_action_count}"
+        )
     _write_json(output_dir / "coverage_route.json", coverage_route)
 
     geometry = build_geometry_candidate_plan(
@@ -251,7 +344,7 @@ def _collect_precommitted_plan(
         "placement_outcomes_used_for_ordering": False,
         "boundary": BOUNDARY,
         "scene": scene,
-        "configuration_id": "FloorPlan1_R1_fixed_start_001",
+        "configuration_id": configuration_id,
         "controller_settings": CONTROLLER_SETTINGS,
         "setup_actions": setup,
         "target": {
@@ -326,8 +419,9 @@ def _physical_placement_trial(
     before_position: Mapping[str, Any],
     support_id: str,
     point: Mapping[str, Any],
+    setup_actions: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    metadata, setup = _reset_setup(env, scene)
+    metadata, setup = _reset_setup(env, scene, setup_actions)
     initial = _target(metadata, target_id)
     reasons: list[str] = []
     if initial is None or initial.get("visible") is not True:
@@ -501,9 +595,10 @@ def _fallback_rediscovery_audit(
 
 
 def _reset_restoration_check(
-    env: ThorEnv, *, scene: str, target_id: str, before_position: Mapping[str, Any]
+    env: ThorEnv, *, scene: str, target_id: str, before_position: Mapping[str, Any],
+    setup_actions: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    metadata, setup = _reset_setup(env, scene)
+    metadata, setup = _reset_setup(env, scene, setup_actions)
     target = _target(metadata, target_id)
     position = _position(target)
     delta = _xz_distance(before_position, position) if position else None
@@ -526,6 +621,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scene", default="FloorPlan1")
     parser.add_argument("--output-dir")
+    parser.add_argument("--candidate-contract", type=Path)
+    parser.add_argument("--start-registry", type=Path, action="append", default=[])
     args = parser.parse_args(argv)
     output_dir = (
         Path(args.output_dir).expanduser().resolve()
@@ -544,6 +641,18 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(summary, indent=2))
         return 2
 
+    (
+        setup_actions,
+        configuration_id,
+        anchor_id,
+        expected_route_digest,
+        expected_route_action_count,
+    ) = _setup_actions_for_candidate(
+        scene=args.scene,
+        candidate_contract=args.candidate_contract,
+        start_registries=args.start_registry,
+    )
+
     env = ThorEnv(controller_kwargs=CONTROLLER_SETTINGS)
     trial_records: list[dict[str, Any]] = []
     primary_anchor: dict[str, Any] | None = None
@@ -552,7 +661,10 @@ def main(argv: list[str] | None = None) -> int:
     fatal_error = ""
     try:
         plan, route, _ = _collect_precommitted_plan(
-            env, scene=args.scene, output_dir=output_dir, git_state=git_state
+            env, scene=args.scene, output_dir=output_dir, git_state=git_state,
+            setup_actions=setup_actions, configuration_id=configuration_id,
+            expected_route_digest=expected_route_digest,
+            expected_route_action_count=expected_route_action_count,
         )
         target_id = str(plan["target"]["object_id"])
         before_position = dict(plan["target"]["before_position"])
@@ -571,6 +683,7 @@ def main(argv: list[str] | None = None) -> int:
                 before_position=before_position,
                 support_id=str(candidate["support_id"]),
                 point=candidate["point"],
+                setup_actions=setup_actions,
             )
             candidate_record["first_physical_trial"] = first
             if first["passed"]:
@@ -589,6 +702,7 @@ def main(argv: list[str] | None = None) -> int:
                     before_position=before_position,
                     support_id=str(candidate["support_id"]),
                     point=candidate["point"],
+                    setup_actions=setup_actions,
                 )
             else:
                 replay = {"passed": False, "rejection_reasons": ["skipped_after_prior_failure"]}
@@ -598,6 +712,7 @@ def main(argv: list[str] | None = None) -> int:
                 scene=args.scene,
                 target_id=target_id,
                 before_position=before_position,
+                setup_actions=setup_actions,
             )
             candidate_record["reset_restoration"] = restoration
             passed = bool(
@@ -614,7 +729,7 @@ def main(argv: list[str] | None = None) -> int:
             trial_records.append(candidate_record)
             if passed:
                 primary_anchor = {
-                    "anchor_id": "FloorPlan1_R1_stale_Book_anchor_001",
+                    "anchor_id": anchor_id,
                     "configuration_id": plan["configuration_id"],
                     "scene": args.scene,
                     "target_object_id": target_id,
