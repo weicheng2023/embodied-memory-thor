@@ -940,6 +940,41 @@ cohort and its combination/decision rule before execution. Public evidence is
 focused evidence tests passed 10/10 and complete offline regression passed
 154/154.
 
+### Shelf-4 independent replication precommit
+
+The next attribution gate is a new fixed-N cohort, not an extension or pooled
+analysis of the observed 12 pairs. It remains a post-hoc diagnostic of the
+previously selected FloorPlan302 Shelf ordinal 4 and cannot become formal task
+selection evidence. The prior cohort is used only for sample-size planning;
+its observations do not enter the replication mean, variance, interval, or
+classification.
+
+The independent cohort freezes 24 pairs (48 fresh-reset trials), with 12
+query/pass and 12 pass/query pairs in alternating balanced order. Every trial
+has five settling `Pass` actions and exactly one measured action. Queries remain
+`anywhere=true` and qualification-aligned. All 48 trials complete in memory
+before any private/public output or statistical result is written; interim
+analysis, optional extension, and partial-cohort output are prohibited.
+
+Endpoints, margins, multiplicity correction, and decision semantics are
+unchanged. With 24 pairs, the corrected one-sided 97.5% t bound uses `df=23`
+and `t=2.068657610419041`. The prior cohort's observed rotation difference SD
+of 0.12543 degrees implies an anticipated half-width of 0.05297 degrees. If its
+0.02636-degree mean repeated, the anticipated upper bound would be 0.07933
+degrees. These are planning quantities only, not evidence in the new decision.
+
+The replication alone can support a material effect, support both endpoints
+below their practical margins, or remain inconclusive under the existing
+logical/identity/failure rules. A below-margin replication makes census v3
+eligible only for a separate committed review; the probe never launches it.
+Any other result stops. No other scene, placement, pickup, fallback, memory
+agent, image, force action, coordinate exposure, or census run is authorized.
+
+Focused pre-run acceptance passed 7/7, including fixed-N independence,
+sample-size recomputation, AB/BA balance, target/action scope, privacy, and a
+failure-path assertion proving that an incomplete cohort writes no output.
+Complete offline regression passed 161/161.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

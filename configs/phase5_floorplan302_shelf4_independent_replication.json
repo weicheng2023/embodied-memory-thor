@@ -1,0 +1,96 @@
+{
+  "protocol_version": "phase5-floorplan302-shelf4-independent-replication-v1",
+  "claim_scope": "independent fixed-N replication of a post-hoc Shelf-4 diagnostic; not formal task-selection evidence and not pooled with the prior cohort",
+  "scene": "FloorPlan302",
+  "target_support_type": "Shelf",
+  "target_support_ordinal": 4,
+  "expected_target_support_count": 5,
+  "settling_pass_count": 5,
+  "pair_count": 24,
+  "pair_orders": [
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query"
+  ],
+  "spawn_query_anywhere": true,
+  "qualifier_query_anywhere": true,
+  "query_parameter_alignment_with_qualifier": true,
+  "continuous_endpoints": {
+    "max_rotation_component_delta_degrees": {
+      "practical_margin": 0.1
+    },
+    "max_position_delta_meters": {
+      "practical_margin": 0.001
+    }
+  },
+  "statistics": {
+    "familywise_alpha": 0.05,
+    "continuous_endpoint_count": 2,
+    "per_endpoint_one_sided_alpha": 0.025,
+    "confidence_level": 0.975,
+    "degrees_of_freedom": 23,
+    "t_critical": 2.068657610419041
+  },
+  "prior_cohort": {
+    "public_evidence": "docs/evidence/phase5_floorplan302_shelf4_paired_attribution.json",
+    "pair_count": 12,
+    "used_for_sample_size_planning": true,
+    "used_for_decision": false,
+    "pooled_with_replication": false,
+    "planning_rotation_mean_difference_degrees": 0.026360829671223957,
+    "planning_rotation_sd_difference_degrees": 0.12543277731798144,
+    "anticipated_replication_half_width_degrees": 0.052965616647166223,
+    "anticipated_rotation_upper_bound_degrees": 0.07932644631839018
+  },
+  "execution_policy": {
+    "fixed_pair_count": true,
+    "interim_analysis_allowed": false,
+    "interim_output_allowed": false,
+    "optional_sample_extension_allowed": false,
+    "write_outputs_only_after_all_trials": true
+  },
+  "allowed_actions": [
+    "GetSpawnCoordinatesAboveReceptacle",
+    "Pass"
+  ],
+  "constraints": {
+    "other_scenes_allowed": false,
+    "one_followup_action_per_reset": true,
+    "placement_allowed": false,
+    "pickup_allowed": false,
+    "fallback_allowed": false,
+    "memory_agents_allowed": false,
+    "images_allowed": false,
+    "force_action_allowed": false,
+    "census_v3_allowed_during_probe": false
+  },
+  "decision_rule": {
+    "decision_data": "replication cohort only; prior cohort is not pooled or used for classification",
+    "query_effect": "support query effect only if a replication query-only logical/identity change occurs or a Bonferroni-corrected lower paired bound exceeds the frozen practical margin for at least one continuous endpoint",
+    "no_material_query_effect": "supported only if replication corrected upper paired bounds are below both frozen practical margins and no logical/identity change occurs",
+    "inconclusive": "all other complete replication outcomes remain inconclusive; failed queries or control logical/identity changes have explicit non-causal classifications",
+    "census_v3_gate": "no_material_query_effect_supported makes census v3 eligible for a separate committed review only; it never launches automatically"
+  },
+  "privacy": "public evidence contains replication pair/order labels, types, ordinals, counts, digests, anonymous deltas, intervals, and booleans only; no objectId, coordinates, exact poses, target points, or registry content"
+}
