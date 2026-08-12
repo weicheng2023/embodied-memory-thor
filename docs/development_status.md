@@ -376,3 +376,15 @@ FloorPlan301 feasible. FloorPlan302 requires a separately precommitted
 scene-level failure-and-skip rule.
 Result-focused tests pass 26/26 and the complete offline regression passes
 182/182.
+
+Qualification v6 precommits the scene-level successor rule for FloorPlan302.
+Only complete balanced-prefix exhaustion with no fatal, query, route, or reset
+restoration failure permits skipping a failed predecessor. FloorPlan301 v5
+meets that rule; runtime/integrity failures never permit a skip. The next scene
+is fixed as FloorPlan302 by the declared order. Candidate ranking and all native
+gates are unchanged, but a clean coordinate-free route-v4 precommit must pass
+and be committed before any FloorPlan302 placement. This contract authorizes no
+later scene, memory agent, image, force action, or Book rotation. Offline
+acceptance is pending.
+Focused transition tests pass 27/27 and the complete offline regression passes
+183/183. FloorPlan302 route-only construction has not started.

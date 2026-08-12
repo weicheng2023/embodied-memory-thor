@@ -1264,6 +1264,31 @@ Public coordinate-free evidence is
 Result-focused tests passed 26/26 and the complete offline regression passed
 182/182.
 
+### FloorPlan302 scene-successor qualification-v6 precommit
+
+The scene-level rule is now explicit. A scene may be recorded as failed and
+skipped only when its independently frozen, support-type-balanced 12-candidate
+prefix completes without an anchor and with no fatal error, query failure,
+route failure, or reset-restoration failure. Runtime and integrity failures stop
+the sequence and cannot be treated as scene infeasibility. FloorPlan301 v5
+satisfies the exhausted-failure condition, so the declared successor is
+FloorPlan302; no later scene may be selected instead.
+
+Qualification/registry advance to v6 solely to bind this scene transition.
+Support policy v3, type-balanced candidate ranking v2, within-type ranking v1,
+geometry diagnostic v2, route v4, the 12-trial limit, native acceptance gates,
+fresh resets, privacy, and all action prohibitions remain unchanged. The
+FloorPlan301 outcome does not influence FloorPlan302 candidate ordering.
+
+Before any FloorPlan302 spawn query or placement, run route-only absolute
+horizon v4 construction from its already retained private start. The public
+route count and digest must be committed on a clean revision and then bound into
+a scene-specific candidate contract. A route mismatch or action count above 240
+stops. The executable transition contract is
+`configs/phase5_r1_native_qualification_v6_floorplan302.json`.
+Focused transition tests passed 27/27 and the complete offline regression
+passed 183/183. No FloorPlan302 route, query, or placement has run yet.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
