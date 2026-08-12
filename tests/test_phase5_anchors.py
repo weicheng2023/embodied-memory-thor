@@ -240,6 +240,67 @@ class Phase5AnchorTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan301_v3_geometry_stop_has_no_native_trial_or_private_state(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan301_support_policy_v3_geometry_stop.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            evidence["code_revision"],
+            "596e1c2db5f7ef23ab37254b886bd5c5ecdc7761",
+        )
+        self.assertFalse(evidence["passed"])
+        self.assertEqual(
+            evidence["classification"],
+            "no_geometry_candidate_after_precommitted_filter",
+        )
+        protocol = evidence["support_query_protocol"]
+        self.assertEqual(protocol["query_count"], 8)
+        self.assertTrue(protocol["one_query_per_fresh_reset"])
+        self.assertTrue(protocol["all_queries_succeeded"])
+        self.assertFalse(protocol["query_state_reused"])
+        self.assertTrue(protocol["post_query_clean_reset_before_route_and_geometry"])
+        self.assertEqual(
+            sum(row["coordinate_count"] for row in evidence["support_type_query_summary"]),
+            3969,
+        )
+        self.assertEqual(
+            sum(row["count"] for row in evidence["geometry_rejection_summary"]),
+            3969,
+        )
+        self.assertEqual(evidence["accepted_geometry_candidate_count"], 0)
+        self.assertEqual(evidence["candidate_trial_count"], 0)
+        for key in (
+            "placement_actions_run",
+            "pickup_actions_run",
+            "fallback_route_run",
+            "fresh_reset_replay_run",
+            "memory_agents_run",
+            "images_saved",
+            "anchor_frozen",
+            "floorplan301_qualified",
+            "later_scenes_started",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+            "private_registry",
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_candidate_queries_are_fresh_reset_isolated_before_clean_planning(self) -> None:
         module = self._qualifier_module()
         env = _FreshSupportQueryEnv()

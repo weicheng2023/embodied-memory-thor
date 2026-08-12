@@ -328,3 +328,11 @@ read-only, but the run was not retried under the stop-on-problem rule. This is
 not a candidate failure: resets, queries, planning, placement, fallback, replay,
 memory, and images all remained zero. Candidate 1 is still pending. Focused
 evidence tests pass 19/19 and complete regression passes 175/175.
+
+The corrected FloorPlan301 v3 diagnostic then completed eight isolated queries
+on clean `596e1c2`: Desk 882 coordinates, Dresser 441, and six Shelves 2,646.
+After a clean reset, geometry v2 rejected all 3,969 as Book footprint crossing
+the support boundary, so candidate 1 did not exist. No native placement,
+fallback, replay, memory, image, anchor, full qualification, or later scene ran.
+FloorPlan301 remains blocked on a new precommitted geometry/protocol decision.
+Focused evidence tests pass 20/20 and complete regression passes 176/176.

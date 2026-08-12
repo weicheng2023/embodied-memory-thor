@@ -1127,6 +1127,32 @@ Coordinate-free evidence is
 `docs/evidence/phase5_floorplan301_support_policy_v3_launch_stop.json`. Focused
 evidence tests passed 19/19 and the complete offline regression passed 175/175.
 
+### FloorPlan301 support-policy-v3 geometry stop
+
+The corrected diagnostic ran on clean revision `596e1c2` with the retained
+FloorPlan301 start whose digest matches the public route contract. Qualification
+v3 issued eight `anywhere=true` support queries, each behind its own reset and
+setup: one Desk, one Dresser, and six Shelf instances. All eight queries
+succeeded. They returned 882, 441, and 2,646 coordinates respectively, for
+3,969 total; coordinates remain private and are represented publicly only by
+type-level counts.
+
+A final clean reset preceded route and geometry construction. Query state was
+not reused. The unchanged axis-aware geometry-v2 filter rejected all 3,969
+points as `book_footprint_crosses_support_boundary`: Desk 882, Dresser 441, and
+Shelf 2,646. Therefore geometry candidate 1 did not exist. The diagnostic
+selector stopped before any native candidate trial.
+
+This shows that expanding semantic support eligibility and isolating query
+state did not solve FloorPlan301 under the preserved Book orientation, AABB
+footprint, and 0.02 m margin. It is a geometry feasibility stop, not a placement
+or fallback failure. No placement, pickup, fallback, replay, memory agent,
+image, anchor, full qualification, or later scene ran. Do not try another
+candidate, loosen the margin, rotate the Book, or continue the batch without a
+new precommitted protocol decision. Coordinate-free evidence is
+`docs/evidence/phase5_floorplan301_support_policy_v3_geometry_stop.json`.
+Focused evidence tests passed 20/20 and complete regression passed 176/176.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

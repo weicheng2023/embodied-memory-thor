@@ -1,0 +1,78 @@
+{
+  "record_version": "phase5-floorplan301-support-policy-v3-geometry-stop-v1",
+  "code_revision": "596e1c2db5f7ef23ab37254b886bd5c5ecdc7761",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan301",
+  "support_policy_version": "phase5-r1-support-policy-v3",
+  "qualification_version": "phase5-anchor-qualification-v3",
+  "geometry_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "script_version": "phase5-anchor-batch-v10",
+  "diagnostic_candidate_order_requested": 1,
+  "passed": false,
+  "classification": "no_geometry_candidate_after_precommitted_filter",
+  "candidate_plan_created_before_native_placement": true,
+  "placement_outcomes_used_for_candidate_ordering": false,
+  "support_query_protocol": {
+    "query_count": 8,
+    "one_query_per_fresh_reset": true,
+    "query_anywhere": true,
+    "all_queries_succeeded": true,
+    "query_state_reused": false,
+    "post_query_clean_reset_before_route_and_geometry": true
+  },
+  "support_type_query_summary": [
+    {
+      "support_type": "Desk",
+      "instance_count": 1,
+      "successful_query_count": 1,
+      "coordinate_count": 882
+    },
+    {
+      "support_type": "Dresser",
+      "instance_count": 1,
+      "successful_query_count": 1,
+      "coordinate_count": 441
+    },
+    {
+      "support_type": "Shelf",
+      "instance_count": 6,
+      "successful_query_count": 6,
+      "coordinate_count": 2646
+    }
+  ],
+  "total_coordinate_count": 3969,
+  "accepted_geometry_candidate_count": 0,
+  "geometry_rejection_summary": [
+    {
+      "support_type": "Desk",
+      "reason": "book_footprint_crosses_support_boundary",
+      "count": 882
+    },
+    {
+      "support_type": "Dresser",
+      "reason": "book_footprint_crosses_support_boundary",
+      "count": 441
+    },
+    {
+      "support_type": "Shelf",
+      "reason": "book_footprint_crosses_support_boundary",
+      "count": 2646
+    }
+  ],
+  "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+  "coverage_route_action_count": 108,
+  "coverage_route_digest": "09e3d64b7adb1afe2df76c573211a60caad4435ab4e1f84433d1d168191cd30b",
+  "candidate_plan_digest": "0e7ddbefb36fbbdc13f37ed271cb7219d52ee5c1a5d079980010a0888dfdb5ee",
+  "candidate_trial_count": 0,
+  "placement_actions_run": false,
+  "pickup_actions_run": false,
+  "fallback_route_run": false,
+  "fresh_reset_replay_run": false,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "anchor_frozen": false,
+  "floorplan301_qualified": false,
+  "later_scenes_started": false,
+  "coordinates_exposed": false,
+  "next_gate": "new precommitted protocol decision required; do not try another candidate, alter margin, rotate the Book, or start full qualification"
+}
