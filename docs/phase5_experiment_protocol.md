@@ -850,6 +850,30 @@ This precommit authorizes no other scene, placement, pickup, fallback, memory
 agent, image, or census run. Focused compile/tests passed 15/15 before complete
 regression; complete offline regression then passed 143/143.
 
+### FloorPlan302 mutation-isolation execution stop
+
+The only authorized real probe ran on clean revision `b8a1b70`. All three
+matched one-`Pass` controls were material under the frozen 0.1 degree threshold:
+their maximum rotation-component changes were 0.469, 0.605, and 0.316 degrees.
+The anonymous natural-control envelope therefore reached 0.605 degrees and
+0.0001041 m. There were no identity, parentage, or logical-state changes.
+
+All nine reset-isolated `anywhere=true` queries succeeded and were measured.
+Eight stayed within the control envelope. Shelf ordinal 4 returned a positive
+query and reached 0.712 degrees and 0.0001186 m, exceeding the three-control
+envelope without identity or logical change. Under the precommitted rule this is
+`mixed_material_variation_inconclusive`: neither Case A nor Case B is supported.
+The difference is small relative to the observed natural spread, but the result
+must not be relabelled after seeing it.
+
+Census v3 did not run and is not authorized by this mixed result. No other
+scene, placement, pickup, fallback, memory agent, image, or coordinate exposure
+occurred. Thresholds remain unchanged. Further attribution would require a new
+pre-outcome protocol with stronger replication or paired/randomized controls;
+it is a new gate, not an automatic rerun. Public evidence is
+`docs/evidence/phase5_floorplan302_support_mutation_isolation.json`. Post-run
+evidence tests passed 8/8 and complete offline regression passed 144/144.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

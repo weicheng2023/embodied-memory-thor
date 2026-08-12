@@ -15,6 +15,12 @@ SCRIPT_PATH = ROOT / "scripts" / "isolate_phase5_floorplan302_support_mutation.p
 PROTOCOL_PATH = (
     ROOT / "configs" / "phase5_floorplan302_support_mutation_isolation.json"
 )
+EVIDENCE_PATH = (
+    ROOT
+    / "docs"
+    / "evidence"
+    / "phase5_floorplan302_support_mutation_isolation.json"
+)
 
 
 def _load_module() -> Any:
@@ -217,6 +223,30 @@ class Phase5FloorPlan302MutationIsolationTests(unittest.TestCase):
         self.assertFalse(summary["other_scenes_started"])
         self.assertFalse(summary["placement_actions_run"])
         self.assertFalse(summary["memory_agents_run"])
+
+    def test_real_result_is_mixed_and_blocks_census_v3(self) -> None:
+        evidence = json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
+        self.module.audit_public_summary(evidence)
+        review = evidence["post_run_review"]
+        self.assertEqual(
+            evidence["classification"], "mixed_material_variation_inconclusive"
+        )
+        self.assertEqual(evidence["control_envelope"]["material_control_count"], 3)
+        self.assertEqual(evidence["material_query_trial_count"], 9)
+        self.assertEqual(evidence["query_exceeding_control_envelope_count"], 1)
+        self.assertEqual(evidence["failed_query_trial_count"], 0)
+        self.assertFalse(review["case_a_supported"])
+        self.assertFalse(review["case_b_supported"])
+        self.assertFalse(review["census_v3_run_allowed"])
+        self.assertTrue(review["stop_required"])
+        self.assertTrue(evidence["spawn_query_anywhere"])
+        self.assertTrue(evidence["query_parameter_alignment_with_qualifier"])
+        self.assertFalse(evidence["other_scenes_started"])
+        self.assertFalse(evidence["placement_actions_run"])
+        self.assertFalse(evidence["pickup_actions_run"])
+        self.assertFalse(evidence["fallback_route_run"])
+        self.assertFalse(evidence["memory_agents_run"])
+        self.assertFalse(evidence["images_saved"])
 
 
 if __name__ == "__main__":
