@@ -287,3 +287,14 @@ memory variants, six qualified configurations, stable and stale panels, and a
 54-episode clean-revision formal matrix. Phase 5A implementation and qualification
 must pass before the one-configuration engineering dry run; no Phase 5 result
 currently exists.
+
+The support-census blocker now has an offline-tested paired-causal successor.
+Every `anywhere=true` support query has a fresh-reset measured-Pass control;
+pair order alternates and only positive query-minus-control excess decides pose
+effects. Absolute one-action jitter is diagnostic only. The frozen scope stays
+FloorPlan202 plus FloorPlan301-305 and eight declared support types. Placement,
+pickup, fallback, memory, images, and force actions remain disabled.
+Successor-specific tests pass 8/8 (24/24 with adjacent census/replication
+tests), and the complete offline regression passes 170/170. The real six-scene
+census has not started, so support policy v3 and FloorPlan301 candidate 1 remain
+blocked.

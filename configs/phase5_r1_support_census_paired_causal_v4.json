@@ -1,0 +1,58 @@
+{
+  "census_version": "phase5-r1-support-census-paired-causal-v4",
+  "inspected_scenes": [
+    "FloorPlan202",
+    "FloorPlan301",
+    "FloorPlan302",
+    "FloorPlan303",
+    "FloorPlan304",
+    "FloorPlan305"
+  ],
+  "candidate_receptacle_types": [
+    "Bed",
+    "CoffeeTable",
+    "CounterTop",
+    "Desk",
+    "DiningTable",
+    "Dresser",
+    "Shelf",
+    "SideTable"
+  ],
+  "settling_pass_count": 5,
+  "one_query_and_one_matched_pass_per_receptacle": true,
+  "fresh_reset_per_trial": true,
+  "pair_order_rule": "alternate query_then_pass and pass_then_query by one-based pair ordinal within each scene",
+  "spawn_query_anywhere": true,
+  "qualifier_query_anywhere": true,
+  "query_parameter_alignment_with_qualifier": true,
+  "causal_excess_thresholds": {
+    "position_delta_meters": 0.001,
+    "rotation_component_delta_degrees": 0.1
+  },
+  "mutation_rule": "ignore absolute one-action pose changes; fail only for query-only logical/identity change or positive Query-minus-matched-Pass pose excess above a frozen threshold; matched Pass logical/identity change is a background-integrity failure",
+  "allowed_actions": [
+    "GetReachablePositions",
+    "GetSpawnCoordinatesAboveReceptacle",
+    "Pass"
+  ],
+  "support_policy_candidate_rule": {
+    "policy_version": "phase5-r1-support-policy-v3-candidate",
+    "minimum_receptacle_presence_scenes": 1,
+    "minimum_positive_spawn_scenes": 1,
+    "selection_rule": "predeclared semantic Book support type, present as a receptacle, with a positive reset-isolated qualification-aligned spawn query in at least one inspected scene and zero paired-causal query effects",
+    "placement_outcomes_used": false,
+    "safety_margin_meters": 0.02,
+    "route_version": "phase5-target-independent-absolute-horizon-v4",
+    "formal_use_allowed": false
+  },
+  "constraints": {
+    "placement_allowed": false,
+    "pickup_allowed": false,
+    "fallback_allowed": false,
+    "memory_agents_allowed": false,
+    "images_allowed": false,
+    "force_action_allowed": false
+  },
+  "execution_gate": "run only from a clean committed revision; stop immediately on a paired-causal query effect or matched-control background-integrity failure",
+  "privacy": "public evidence contains scene/type/ordinal counts, pair orders, booleans, digests, categorized errors, anonymous absolute diagnostics, and Query-minus-Pass excesses only; no objectId, coordinates, exact poses, target points, or registry content"
+}

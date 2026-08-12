@@ -153,6 +153,81 @@ def compare_object_snapshots(
     }
 
 
+def compare_query_to_matched_control(
+    query_comparison: Mapping[str, Any],
+    control_comparison: Mapping[str, Any],
+    *,
+    position_excess_threshold: float,
+    rotation_excess_threshold: float,
+) -> dict[str, Any]:
+    """Measure only change added by a query beyond a fresh-reset Pass control."""
+
+    if position_excess_threshold < 0 or rotation_excess_threshold < 0:
+        raise ValueError("causal excess thresholds must be non-negative")
+    required = (
+        "identity_set_changed",
+        "logical_digest_changed",
+        "max_position_delta_meters",
+        "max_rotation_component_delta_degrees",
+    )
+    for label, comparison in (
+        ("query", query_comparison),
+        ("control", control_comparison),
+    ):
+        missing = [key for key in required if key not in comparison]
+        if missing:
+            raise ValueError(f"{label} comparison missing fields: {missing}")
+
+    control_integrity_change = bool(
+        control_comparison["identity_set_changed"]
+        or control_comparison["logical_digest_changed"]
+    )
+    query_only_identity_change = bool(
+        query_comparison["identity_set_changed"]
+        and not control_comparison["identity_set_changed"]
+    )
+    query_only_logical_change = bool(
+        query_comparison["logical_digest_changed"]
+        and not control_comparison["logical_digest_changed"]
+    )
+    position_difference = float(
+        query_comparison["max_position_delta_meters"]
+    ) - float(control_comparison["max_position_delta_meters"])
+    rotation_difference = float(
+        query_comparison["max_rotation_component_delta_degrees"]
+    ) - float(control_comparison["max_rotation_component_delta_degrees"])
+    positive_position_excess = max(0.0, position_difference)
+    positive_rotation_excess = max(0.0, rotation_difference)
+    material_query_effect = bool(
+        not control_integrity_change
+        and (
+            query_only_identity_change
+            or query_only_logical_change
+            or positive_position_excess > position_excess_threshold
+            or positive_rotation_excess > rotation_excess_threshold
+        )
+    )
+    return {
+        "comparison_contract": "query-minus-matched-pass-v1",
+        "control_background_integrity_change": control_integrity_change,
+        "query_only_identity_change": query_only_identity_change,
+        "query_only_logical_change": query_only_logical_change,
+        "query_minus_control_position_delta_meters": position_difference,
+        "query_minus_control_rotation_delta_degrees": rotation_difference,
+        "positive_position_excess_meters": positive_position_excess,
+        "positive_rotation_excess_degrees": positive_rotation_excess,
+        "position_excess_threshold_meters": position_excess_threshold,
+        "rotation_excess_threshold_degrees": rotation_excess_threshold,
+        "causal_material_query_effect": material_query_effect,
+        "absolute_query_material_change_ignored": bool(
+            query_comparison.get("material_change", False)
+        ),
+        "absolute_control_material_change_ignored": bool(
+            control_comparison.get("material_change", False)
+        ),
+    }
+
+
 def _vector(value: Any) -> dict[str, float] | None:
     if not isinstance(value, Mapping):
         return None

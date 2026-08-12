@@ -1008,6 +1008,36 @@ multi-scene census. Public evidence is
 Post-run evidence tests passed 8/8 and complete offline regression passed
 162/162.
 
+### Paired-causal support census successor precommit
+
+The blocked absolute-threshold census v3 is superseded by
+`phase5-r1-support-census-paired-causal-v4`. The frozen scene sequence is the
+six-scene set FloorPlan202 and FloorPlan301-FloorPlan305, not every numeric
+scene between 202 and 305. The eight semantic support types and order remain
+unchanged.
+
+Every exact receptacle query is one matched pair: a fresh reset, five settling
+`Pass` actions, and one qualification-aligned `anywhere=true` spawn query; plus
+a separate fresh reset, the same settling actions, and one measured `Pass`.
+Pair order alternates query/pass and pass/query within each scene. No trial
+reuses another trial's state.
+
+The decision ignores each trial's absolute pose change. It uses only positive
+query-minus-matched-Pass excess, with unchanged 0.001 m position and 0.1 degree
+rotation thresholds. Query-only identity or logical changes are causal
+failures. A matched-Pass identity or logical change is a background-integrity
+failure. Query API failure remains negative availability evidence unless it
+also produces a causal state effect.
+
+Only reset, `Pass`, `GetReachablePositions`, and
+`GetSpawnCoordinatesAboveReceptacle` are in scope. Placement, pickup, fallback,
+memory, images, force actions, coordinates in public evidence, and policy use
+before a complete pass remain prohibited. A complete pass may produce only a
+non-formal support-policy-v3 candidate; formal recommendation requires a
+separate committed freeze before FloorPlan301 candidate 1. Successor-specific
+offline tests passed 8/8, the adjacent focused regression passed 24/24, and the
+complete offline regression passed 170/170.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
