@@ -243,6 +243,29 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertNotIn("position", str(reference))
         self.assertNotIn("target_point", str(reference))
 
+    def test_diagnostic_selector_runs_exactly_one_frozen_candidate(self) -> None:
+        module = self._qualifier_module()
+        candidates = [
+            {"candidate_order": order, "private_point": {"x": float(order)}}
+            for order in range(1, 15)
+        ]
+        batch = module._select_candidate_trials(
+            candidates, diagnostic_candidate_order=None
+        )
+        self.assertEqual(len(batch), module.MAX_CANDIDATE_TRIALS)
+        selected = module._select_candidate_trials(
+            candidates, diagnostic_candidate_order=4
+        )
+        self.assertEqual([row["candidate_order"] for row in selected], [4])
+        with self.assertRaisesRegex(ValueError, "positive"):
+            module._select_candidate_trials(
+                candidates, diagnostic_candidate_order=0
+            )
+        with self.assertRaisesRegex(ValueError, "exactly one"):
+            module._select_candidate_trials(
+                candidates, diagnostic_candidate_order=13
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

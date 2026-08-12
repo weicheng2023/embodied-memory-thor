@@ -49,7 +49,7 @@ from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v5"
+SCRIPT_VERSION = "phase5-anchor-batch-v6"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -700,17 +700,58 @@ def _aggregate_target_lock_metrics(
     }
 
 
+def _select_candidate_trials(
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    diagnostic_candidate_order: int | None,
+) -> list[Mapping[str, Any]]:
+    """Select the frozen batch prefix or exactly one diagnostic candidate."""
+
+    frozen_prefix = list(candidates[:MAX_CANDIDATE_TRIALS])
+    if diagnostic_candidate_order is None:
+        return frozen_prefix
+    if diagnostic_candidate_order < 1:
+        raise ValueError("diagnostic candidate order must be positive")
+    selected = [
+        row
+        for row in frozen_prefix
+        if row.get("candidate_order") == diagnostic_candidate_order
+    ]
+    if len(selected) != 1:
+        raise ValueError(
+            "diagnostic candidate order must identify exactly one candidate "
+            f"within the frozen first {MAX_CANDIDATE_TRIALS}"
+        )
+    return selected
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scene", default="FloorPlan1")
     parser.add_argument("--output-dir")
     parser.add_argument("--candidate-contract", type=Path)
     parser.add_argument("--start-registry", type=Path, action="append", default=[])
+    parser.add_argument(
+        "--diagnostic-candidate-order",
+        type=int,
+        help=(
+            "Run exactly one frozen candidate as target-lock diagnostic QA; "
+            "does not freeze an anchor or perform fresh-reset replay."
+        ),
+    )
     args = parser.parse_args(argv)
+    diagnostic_mode = args.diagnostic_candidate_order is not None
     output_dir = (
         Path(args.output_dir).expanduser().resolve()
         if args.output_dir
-        else PROJECT_ROOT / "outputs" / "phase5_anchor_qualification" / _slug()
+        else PROJECT_ROOT
+        / "outputs"
+        / (
+            "phase5_target_lock_diagnostic"
+            if diagnostic_mode
+            else "phase5_anchor_qualification"
+        )
+        / _slug()
     )
     output_dir.mkdir(parents=True, exist_ok=False)
     git_state = _git_state()
@@ -742,6 +783,7 @@ def main(argv: list[str] | None = None) -> int:
     plan: dict[str, Any] | None = None
     route: dict[str, Any] | None = None
     fatal_error = ""
+    diagnostic_passed = False
     try:
         plan, route, _ = _collect_precommitted_plan(
             env, scene=args.scene, output_dir=output_dir, git_state=git_state,
@@ -751,7 +793,10 @@ def main(argv: list[str] | None = None) -> int:
         )
         target_id = str(plan["target"]["object_id"])
         before_position = dict(plan["target"]["before_position"])
-        candidates = plan["geometry"]["accepted_candidates"][:MAX_CANDIDATE_TRIALS]
+        candidates = _select_candidate_trials(
+            plan["geometry"]["accepted_candidates"],
+            diagnostic_candidate_order=args.diagnostic_candidate_order,
+        )
         for candidate in candidates:
             candidate_record: dict[str, Any] = {
                 "candidate_order": candidate["candidate_order"],
@@ -777,7 +822,13 @@ def main(argv: list[str] | None = None) -> int:
                 fallback = {"passed": False, "reason": "skipped_after_physical_failure"}
             candidate_record["common_fallback_audit"] = fallback
 
-            if first["passed"] and fallback["passed"]:
+            if diagnostic_mode:
+                replay = {
+                    "passed": False,
+                    "skipped": True,
+                    "reason": "single_probe_does_not_run_fresh_reset_replay",
+                }
+            elif first["passed"] and fallback["passed"]:
                 replay = _physical_placement_trial(
                     env,
                     scene=args.scene,
@@ -799,17 +850,24 @@ def main(argv: list[str] | None = None) -> int:
             )
             candidate_record["reset_restoration"] = restoration
             passed = bool(
-                first["passed"] and fallback["passed"] and replay["passed"] and restoration["passed"]
+                first["passed"]
+                and fallback["passed"]
+                and restoration["passed"]
+                and (diagnostic_mode or replay["passed"])
             )
             candidate_record["passed"] = passed
             rejection_reasons = list(first.get("rejection_reasons", []))
             if not fallback["passed"]:
                 rejection_reasons.append(str(fallback.get("reason", "fallback_failed")))
-            rejection_reasons.extend(replay.get("rejection_reasons", []))
+            if not diagnostic_mode:
+                rejection_reasons.extend(replay.get("rejection_reasons", []))
             if not restoration["passed"]:
                 rejection_reasons.append("reset_restoration_failed")
             candidate_record["rejection_reasons"] = rejection_reasons
             trial_records.append(candidate_record)
+            if diagnostic_mode:
+                diagnostic_passed = passed
+                break
             if passed:
                 primary_anchor = {
                     "anchor_id": anchor_id,
@@ -846,22 +904,46 @@ def main(argv: list[str] | None = None) -> int:
         "candidate_plan_digest": plan.get("candidate_plan_digest") if plan else None,
         "coverage_route_digest": plan.get("coverage_route_digest") if plan else None,
         "candidate_trial_records": trial_records,
-        "anchors": [primary_anchor] if primary_anchor else [],
+        "diagnostic_mode": diagnostic_mode,
+        "diagnostic_candidate_order": args.diagnostic_candidate_order,
+        "anchor_freezing_allowed": not diagnostic_mode,
+        "anchors": [primary_anchor] if primary_anchor and not diagnostic_mode else [],
         "fatal_error": fatal_error,
         **git_state,
     }
     registry_digest = stable_digest(registry)
     registry["private_registry_digest"] = registry_digest
-    registry_path = output_dir / "evaluator_only_anchor_registry.json"
+    registry_path = output_dir / (
+        "evaluator_only_target_lock_diagnostic.json"
+        if diagnostic_mode
+        else "evaluator_only_anchor_registry.json"
+    )
     _write_json(registry_path, registry)
-    passed = primary_anchor is not None and not fatal_error
+    passed = (
+        diagnostic_passed and not fatal_error
+        if diagnostic_mode
+        else primary_anchor is not None and not fatal_error
+    )
     target_lock_metrics = _aggregate_target_lock_metrics(trial_records)
     summary = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
-        "claim": "pre-qualified relocation anchor QA; not a memory comparison",
+        "claim": (
+            "single-candidate target-lock diagnostic; not anchor qualification "
+            "or a memory comparison"
+            if diagnostic_mode
+            else "pre-qualified relocation anchor QA; not a memory comparison"
+        ),
         "scene": args.scene,
         "passed": passed,
-        "anchor_id": primary_anchor["anchor_id"] if primary_anchor else None,
+        "diagnostic_mode": diagnostic_mode,
+        "diagnostic_candidate_order": args.diagnostic_candidate_order,
+        "memory_agents_run": False,
+        "anchor_frozen": primary_anchor is not None and not diagnostic_mode,
+        "anchor_id": (
+            primary_anchor["anchor_id"]
+            if primary_anchor is not None and not diagnostic_mode
+            else None
+        ),
         "candidate_plan_digest": plan.get("candidate_plan_digest") if plan else None,
         "coverage_route_digest": plan.get("coverage_route_digest") if plan else None,
         "private_registry_digest": registry_digest,
