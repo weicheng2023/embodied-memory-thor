@@ -144,6 +144,29 @@ class Phase5SupportMutationIsolationTests(unittest.TestCase):
         self.assertTrue(baseline["strict_only_or_subthreshold_change"])
         self.assertFalse(baseline["material_change"])
 
+    def test_rotation_wraparound_is_a_small_circular_delta(self) -> None:
+        before = {
+            "Book|private": {
+                "position": {"x": 0.0, "y": 1.0, "z": 0.0},
+                "rotation": {"x": 0.0, "y": 359.99, "z": 0.0},
+                "parentReceptacles": None,
+                "isMoving": False,
+            }
+        }
+        after = deepcopy(before)
+        after["Book|private"]["rotation"]["y"] = 0.01
+        comparison = self.module.compare_snapshots(
+            before,
+            after,
+            position_threshold=0.001,
+            rotation_threshold=0.1,
+        )
+        self.assertAlmostEqual(
+            comparison["max_rotation_component_delta_degrees"], 0.02, places=6
+        )
+        self.assertTrue(comparison["strict_digest_changed"])
+        self.assertFalse(comparison["material_change"])
+
     def test_failed_query_is_still_isolated_and_assessed(self) -> None:
         env = _IsolationEnv(failed_query_types={"Shelf", "SideTable"})
         result = self.module.run_isolation(env, self.protocol)
@@ -182,6 +205,24 @@ class Phase5SupportMutationIsolationTests(unittest.TestCase):
         self.assertFalse(summary["placement_actions_run"])
         self.assertFalse(summary["memory_agents_run"])
         self.assertFalse(summary["images_saved"])
+
+    def test_real_public_evidence_records_case_b_without_private_fields(self) -> None:
+        evidence = json.loads(
+            (
+                ROOT
+                / "docs"
+                / "evidence"
+                / "phase5_r1_support_mutation_isolation.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.module.audit_public_summary(evidence)
+        self.assertTrue(evidence["case_b_supported"])
+        self.assertFalse(evidence["case_a_supported"])
+        self.assertFalse(
+            evidence["review"]["query_specific_material_change_detected"]
+        )
+        self.assertFalse(evidence["other_scenes_started"])
+        self.assertFalse(evidence["placement_actions_run"])
 
 
 if __name__ == "__main__":

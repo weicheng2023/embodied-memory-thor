@@ -737,6 +737,30 @@ its immediate state effect remains measurable. Only `Pass` and
 `GetSpawnCoordinatesAboveReceptacle` are permitted; no placement, pickup,
 fallback, memory, image, force action, FloorPlan301, or later scene is allowed.
 
+The clean `6f21829` probe supports Case B. The Pass-only baseline changed its
+strict digest before any support query, while its logical digest remained
+identical. It showed sub-millimetre position settling and `isMoving` changes.
+The original comparator also exposed a representation bug: direct Euler
+subtraction treated a crossing near 0/360 degrees as 359.9888 degrees. The
+post-run comparator is corrected to circular angular distance and covered by an
+offline regression; the original measured evidence is retained rather than
+silently rewritten.
+
+CoffeeTable query succeeded with 143 coordinates; Shelf and SideTable queries
+failed. All three isolated attempts retained identical logical digests and had
+no identity, parentage, or above-threshold pose change. Their maximum position
+changes were 0.0000357, 0.0000333, and 0.0000542 m, respectively, and their
+maximum rotation-component changes were below 0.027 degrees. Therefore no
+query-specific substantive mutation was observed. The old census stop was
+caused by a digest that was too sensitive to natural physics settling,
+`isMoving`, and angular representation—not evidence that the query changed the
+scene materially.
+
+This result does not itself restart the census or authorize FloorPlan301. A
+future census protocol should use logical digests plus circular, thresholded
+pose comparisons and retain query failure categories. No other scene was
+started in this probe.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

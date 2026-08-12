@@ -26,7 +26,7 @@ from embodied_memory_thor.phase5.qualification import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-r1-support-mutation-isolation-script-v1"
+SCRIPT_VERSION = "phase5-r1-support-mutation-isolation-script-v2"
 CONTROLLER_SETTINGS = {
     "width": 300,
     "height": 300,
@@ -176,6 +176,12 @@ def _vector(value: Any) -> dict[str, float] | None:
     return result if all(math.isfinite(number) for number in result.values()) else None
 
 
+def _circular_angle_delta(left: float, right: float) -> float:
+    """Return the smallest absolute Euler-component delta modulo 360 degrees."""
+
+    return abs((left - right + 180.0) % 360.0 - 180.0)
+
+
 def compare_snapshots(
     before: Mapping[str, Mapping[str, Any]],
     after: Mapping[str, Mapping[str, Any]],
@@ -216,7 +222,9 @@ def compare_snapshots(
             rotation_delta = math.inf if left_rotation != right_rotation else 0.0
         else:
             rotation_delta = max(
-                abs(left_rotation[axis] - right_rotation[axis])
+                _circular_angle_delta(
+                    left_rotation[axis], right_rotation[axis]
+                )
                 for axis in ("x", "y", "z")
             )
         max_rotation_delta = max(max_rotation_delta, rotation_delta)
