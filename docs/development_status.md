@@ -106,6 +106,22 @@ that candidate without widening this change. FloorPlan202 requalification and
 the anchor/stale-panel gate remain blocked on one bounded real diagnostic or an
 explicitly scoped single-candidate runner.
 
+That explicitly scoped runner is now implemented as diagnostic-only qualifier
+mode and was used exactly once on clean revision `e5c3533`: FloorPlan202 fixed
+start 001, frozen geometry candidate 4, no other candidate, no memory variant,
+no image, no fresh-reset replay, and no anchor freezing. Physical placement and
+reset restoration passed. The common route rediscovered Book after action 197;
+target lock then issued immediate `PickupObject` at action 198 and succeeded.
+All 198 ordinary actions succeeded. The former successful `MoveAhead` followed
+by visibility loss was therefore avoided rather than recovered from.
+
+This is real single-case evidence that immediate target lock removes candidate
+4's old failure path. Because transient loss never occurred, it is not real
+evidence for the `MoveBack`/local-scan recovery branch. It also does not qualify
+an anchor: fresh-reset replay was intentionally excluded, and the eight
+previously never-visible candidates remain unresolved. No further THOR run was
+started.
+
 ## Implemented
 
 ### Phase 0

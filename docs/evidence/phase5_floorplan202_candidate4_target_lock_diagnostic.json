@@ -1,0 +1,44 @@
+{
+  "evidence_version": "phase5-floorplan202-candidate4-target-lock-diagnostic-v1",
+  "claim_boundary": "one real shared-fallback diagnostic; not anchor qualification or a memory comparison",
+  "scene": "FloorPlan202",
+  "configuration_id": "FloorPlan202_R1_fixed_start_001",
+  "diagnostic_candidate_order": 4,
+  "code_revision": "e5c35330a7dcf511e9fa701d50612b311c3afe8a",
+  "working_tree_dirty": false,
+  "ai2thor_version": "5.0.0",
+  "script_version": "phase5-anchor-batch-v6",
+  "images_saved": false,
+  "memory_agents_run": false,
+  "anchor_frozen": false,
+  "fresh_reset_replay_run": false,
+  "candidate_trial_count": 1,
+  "result": {
+    "passed": true,
+    "physical_placement_passed": true,
+    "common_fallback_passed": true,
+    "reset_restoration_passed": true,
+    "route_discovery_step": 197,
+    "pickup_step": 198,
+    "fallback_action_count": 198,
+    "failed_action_count": 0,
+    "terminal_action": "PickupObject",
+    "terminal_reason_code": "target_lock_pickup_attempt"
+  },
+  "target_lock_metrics": {
+    "target_visible_event_count": 1,
+    "target_lock_entered_count": 1,
+    "target_lock_pickup_attempt_count": 1,
+    "transient_visibility_loss_count": 0,
+    "local_recovery_action_count": 0,
+    "target_reacquired_after_loss_count": 0,
+    "picked_after_target_lock": true,
+    "target_lock_failed_reason": ""
+  },
+  "interpretation": "candidate 4 no longer followed the old MoveAhead-and-lose-visibility path because target lock attempted immediate pickup and succeeded; the real MoveBack/local-scan recovery branch was not exercised",
+  "remaining_blockers": [
+    "this diagnostic did not run the fresh-reset replay required to freeze an anchor",
+    "the eight previously never-visible candidates are not addressed by target lock",
+    "the transient-loss recovery branch remains offline-tested but not real-THOR-tested"
+  ]
+}

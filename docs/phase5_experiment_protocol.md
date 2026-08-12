@@ -533,6 +533,18 @@ remains authoritative real evidence. A future bounded real diagnostic may test
 whether transient recovery is repaired, but even success would not by itself
 qualify an anchor or unlock the stale panel.
 
+The authorized bounded follow-up added `--diagnostic-candidate-order` without
+changing ordinary first-12 qualification behavior. On clean revision `e5c3533`,
+exactly one real probe selected FloorPlan202 fixed-start candidate 4. It ran no
+memory agent, saved no image, performed no fresh-reset replay, and prohibited
+anchor freezing. Placement and reset restoration passed; the unchanged common
+route exposed Book after action 197, and target lock immediately picked it up at
+action 198 with no failed action. Consequently transient loss and local recovery
+counts were both zero. The old candidate-4 failure path is removed by pickup
+priority, but real-THOR evidence for the loss-recovery branch is still absent.
+The coordinate-free record is
+`docs/evidence/phase5_floorplan202_candidate4_target_lock_diagnostic.json`.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
