@@ -17,6 +17,12 @@ SCRIPT_PATH = (
 CONFIG_PATH = (
     ROOT / "configs" / "phase5_r1_support_census_paired_causal_v4.json"
 )
+EVIDENCE_PATH = (
+    ROOT
+    / "docs"
+    / "evidence"
+    / "phase5_r1_support_census_paired_causal_v4.json"
+)
 
 
 def _load_module() -> Any:
@@ -338,6 +344,80 @@ class Phase5SupportCensusPairedCausalV4Tests(unittest.TestCase):
             "PlaceObjectAtPoint",
             "PickupObject",
             "forceAction",
+        ):
+            self.assertNotIn(forbidden, serialized)
+
+    def test_real_census_stops_on_floorplan302_shelf1_without_scope_expansion(self) -> None:
+        evidence = json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(
+            evidence["code_revision"],
+            "3b5e8d789a83124fa40180f9897022714fedae2f",
+        )
+        self.assertFalse(evidence["passed"])
+        self.assertFalse(evidence["census_complete"])
+        self.assertEqual(evidence["scene_count"], 3)
+        self.assertEqual(
+            evidence["fatal_error_category"], "causal_material_query_effect"
+        )
+        self.assertEqual(
+            [scene["scene"] for scene in evidence["scenes"]],
+            ["FloorPlan202", "FloorPlan301", "FloorPlan302"],
+        )
+        first, second, stopped = evidence["scenes"]
+        self.assertTrue(first["scene_complete"])
+        self.assertEqual((first["completed_pair_count"], first["expected_pair_count"]), (3, 3))
+        self.assertTrue(second["scene_complete"])
+        self.assertEqual((second["completed_pair_count"], second["expected_pair_count"]), (9, 9))
+        self.assertFalse(stopped["scene_complete"])
+        self.assertEqual(
+            (stopped["completed_pair_count"], stopped["expected_pair_count"]),
+            (3, 9),
+        )
+        self.assertEqual(stopped["stop_category"], "causal_material_query_effect")
+        shelf = next(
+            row
+            for row in stopped["support_types"]
+            if row["support_type"] == "Shelf"
+        )
+        pair = shelf["pairs"][0]
+        self.assertEqual(pair["support_ordinal"], 1)
+        self.assertEqual(pair["pair_ordinal"], 3)
+        self.assertEqual(pair["pair_order"], "query_then_pass")
+        self.assertTrue(pair["query_trial"]["query_success"])
+        self.assertEqual(pair["query_trial"]["spawn_coordinate_count"], 441)
+        causal = pair["causal_comparison"]
+        self.assertTrue(causal["causal_material_query_effect"])
+        self.assertFalse(causal["control_background_integrity_change"])
+        self.assertFalse(causal["query_only_identity_change"])
+        self.assertFalse(causal["query_only_logical_change"])
+        self.assertAlmostEqual(
+            causal["positive_rotation_excess_degrees"],
+            0.2617340087890625,
+        )
+        self.assertLess(
+            causal["positive_position_excess_meters"],
+            causal["position_excess_threshold_meters"],
+        )
+        self.assertIsNone(evidence["support_policy_candidate"])
+        self.assertFalse(evidence["support_policy_recommendation_available"])
+        for key in (
+            "placement_actions_run",
+            "pickup_actions_run",
+            "fallback_route_run",
+            "memory_agents_run",
+            "images_saved",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            '"objectId"',
+            '"position"',
+            '"rotation"',
+            '"x"',
+            '"y"',
+            '"z"',
+            "target_point",
+            "private_registry",
         ):
             self.assertNotIn(forbidden, serialized)
 

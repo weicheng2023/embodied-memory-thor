@@ -298,3 +298,13 @@ Successor-specific tests pass 8/8 (24/24 with adjacent census/replication
 tests), and the complete offline regression passes 170/170. The real six-scene
 census has not started, so support policy v3 and FloorPlan301 candidate 1 remain
 blocked.
+
+The real successor then ran on clean revision `3b5e8d7`. FloorPlan202 (3/3
+pairs) and FloorPlan301 (9/9) completed, but FloorPlan302 stopped after pair 3
+of 9 at Shelf ordinal 1. The successful query had 0.261734 degrees more maximum
+rotation change than its matched Pass control, above the frozen 0.1-degree
+gate; position excess was below threshold and logical/identity state was
+unchanged. The census is incomplete, policy v3 is not recommended, and
+FloorPlan301 candidate 1 remains blocked. No placement, pickup, fallback,
+memory, image, or later-scene run occurred. Post-run focused evidence tests
+pass 9/9 and the complete offline regression passes 171/171.

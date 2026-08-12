@@ -1038,6 +1038,35 @@ separate committed freeze before FloorPlan301 candidate 1. Successor-specific
 offline tests passed 8/8, the adjacent focused regression passed 24/24, and the
 complete offline regression passed 170/170.
 
+### Paired-causal support census result and stop
+
+The real successor ran on clean pushed revision `3b5e8d7` and stopped under its
+frozen rule. FloorPlan202 completed 3/3 pairs and FloorPlan301 completed 9/9
+pairs without a causal or control-integrity flag. FloorPlan302 completed only
+3/9 expected pairs: Bed ordinal 1, Desk ordinal 1, then Shelf ordinal 1. The
+Shelf pair was scene pair ordinal 3 in query-then-pass order.
+
+The Shelf query succeeded and returned 441 coordinates, which were counted and
+discarded. Its maximum rotation change was 0.261734 degrees while the matched
+Pass control's was 0, giving 0.261734 degrees positive excess above the frozen
+0.1-degree threshold. Position excess was 0.00005188 m, below 0.001 m. Neither
+trial changed object identity or logical state, and the Pass control did not
+fail its integrity gate.
+
+The protocol classification is `causal_material_query_effect`, so the census is
+incomplete and failed. This single pair is a stopping-rule exceedance, not a
+replicated estimate of a stable query effect; natural stochastic variation
+remains a plausible alternative explanation. FloorPlan303-305 were not
+started. No support-policy candidate or formal policy is available, and
+FloorPlan301 candidate 1 remains prohibited.
+
+No placement, pickup, fallback, memory agent, image, or force action ran. Any
+future investigation must be independently precommitted and replicated;
+neither adding trials to this observed run nor relaxing its threshold is
+allowed. Public evidence is
+`docs/evidence/phase5_r1_support_census_paired_causal_v4.json`. Post-run focused
+evidence tests passed 9/9 and the complete offline regression passed 171/171.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
