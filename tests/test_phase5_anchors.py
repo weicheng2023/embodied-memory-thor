@@ -15,12 +15,15 @@ from embodied_memory_thor.phase5.anchors import (
     ANCHOR_GEOMETRY_VERSION,
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
+    BOOK_SUPPORT_TYPE_ORDER,
     BOOK_SUPPORT_TYPES,
+    NATIVE_FIRST_CANDIDATE_POLICY_VERSION,
     NATIVE_CANDIDATE_POLICY_VERSION,
     SUPPORT_POLICY_VERSION,
     build_absolute_horizon_alignment_actions,
     build_geometry_candidate_plan,
     build_native_first_candidate_plan,
+    build_type_balanced_native_candidate_plan,
     build_target_independent_coverage_route,
     public_anchor_reference,
     stable_digest,
@@ -180,10 +183,10 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertEqual(policy["admitted_support_types"], expected)
         self.assertEqual(BOOK_SUPPORT_TYPES, frozenset(expected))
         self.assertEqual(
-            ANCHOR_QUALIFICATION_VERSION, "phase5-anchor-qualification-v4"
+            ANCHOR_QUALIFICATION_VERSION, "phase5-anchor-qualification-v5"
         )
         self.assertEqual(
-            ANCHOR_REGISTRY_VERSION, "phase5-private-anchor-registry-v4"
+            ANCHOR_REGISTRY_VERSION, "phase5-private-anchor-registry-v5"
         )
         self.assertTrue(policy["one_support_query_per_fresh_reset"])
         self.assertFalse(policy["query_state_reused_by_later_query_or_trial"])
@@ -208,7 +211,15 @@ class Phase5AnchorTests(unittest.TestCase):
         )
         self.assertEqual(protocol["scene"], "FloorPlan301")
         self.assertEqual(
-            protocol["candidate_policy_version"], NATIVE_CANDIDATE_POLICY_VERSION
+            protocol["candidate_policy_version"],
+            NATIVE_FIRST_CANDIDATE_POLICY_VERSION,
+        )
+        self.assertEqual(
+            protocol["qualification_version"], "phase5-anchor-qualification-v4"
+        )
+        self.assertEqual(
+            protocol["private_registry_version"],
+            "phase5-private-anchor-registry-v4",
         )
         self.assertEqual(protocol["maximum_native_candidate_trials"], 12)
         self.assertTrue(protocol["candidate_order_frozen_before_native_outcomes"])
@@ -219,6 +230,32 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertFalse(protocol["memory_agents_allowed"])
         self.assertFalse(protocol["later_scenes_allowed"])
         self.assertIn("retain every failure", protocol["batch_rule"])
+
+    def test_native_qualification_v5_freezes_type_balanced_batch(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        protocol = json.loads(
+            (root / "configs" / "phase5_r1_native_qualification_v5.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(protocol["scene"], "FloorPlan301")
+        self.assertEqual(protocol["qualification_version"], ANCHOR_QUALIFICATION_VERSION)
+        self.assertEqual(protocol["private_registry_version"], ANCHOR_REGISTRY_VERSION)
+        self.assertEqual(
+            protocol["candidate_policy_version"], NATIVE_CANDIDATE_POLICY_VERSION
+        )
+        self.assertEqual(protocol["maximum_native_candidate_trials"], 12)
+        self.assertTrue(protocol["candidate_order_frozen_before_native_outcomes"])
+        self.assertFalse(protocol["prior_v4_outcomes_used_to_select_candidates"])
+        self.assertFalse(protocol["v4_cohort_extended_or_pooled"])
+        self.assertEqual(
+            protocol["support_type_order"], list(BOOK_SUPPORT_TYPE_ORDER)
+        )
+        self.assertTrue(protocol["placement_trial_fresh_reset"])
+        self.assertFalse(protocol["force_action_allowed"])
+        self.assertFalse(protocol["book_rotation_action_allowed"])
+        self.assertFalse(protocol["memory_agents_allowed"])
+        self.assertFalse(protocol["later_scenes_allowed"])
 
     def test_floorplan301_v3_launch_stop_is_pre_environment_and_private_safe(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -777,7 +814,8 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(stable_digest(first), stable_digest(second))
         self.assertEqual(
-            first["candidate_policy_version"], NATIVE_CANDIDATE_POLICY_VERSION
+            first["candidate_policy_version"],
+            NATIVE_FIRST_CANDIDATE_POLICY_VERSION,
         )
         self.assertTrue(first["native_placement_is_acceptance_authority"])
         self.assertFalse(first["boundary_prediction_is_hard_rejection"])
@@ -802,6 +840,68 @@ class Phase5AnchorTests(unittest.TestCase):
                 row["advisory_obstacle_overlap_count"] > 0
                 for row in first["accepted_candidates"]
             )
+        )
+        self.assertNotIn("placement_success", str(first))
+
+    def test_type_balanced_native_plan_round_robins_present_semantic_types(self) -> None:
+        target = _box(
+            "Book|1", x=0, y=1, z=0, sx=0.5, sy=0.06, sz=0.2,
+            object_type="Book",
+        )
+        supports = [
+            _box(
+                "Shelf|1", x=6, y=1, z=0, sx=2, sy=0.1, sz=2,
+                object_type="Shelf",
+            ),
+            _box(
+                "Dresser|1", x=4, y=1, z=0, sx=2, sy=0.1, sz=2,
+                object_type="Dresser",
+            ),
+            _box(
+                "Desk|1", x=2, y=1, z=0, sx=2, sy=0.1, sz=2,
+                object_type="Desk",
+            ),
+        ]
+        queries = [
+            {
+                "support": support,
+                "coordinates": [
+                    {"x": support["position"]["x"], "y": 1.1, "z": -0.1},
+                    {"x": support["position"]["x"], "y": 1.1, "z": 0.1},
+                ],
+            }
+            for support in supports
+        ]
+        args = {
+            "target": target,
+            "support_queries": queries,
+            "all_objects": [target, *supports],
+        }
+        first = build_type_balanced_native_candidate_plan(**args)
+        second = build_type_balanced_native_candidate_plan(**args)
+        self.assertEqual(first, second)
+        self.assertEqual(stable_digest(first), stable_digest(second))
+        self.assertEqual(first["qualification_version"], ANCHOR_QUALIFICATION_VERSION)
+        self.assertEqual(
+            first["candidate_policy_version"], NATIVE_CANDIDATE_POLICY_VERSION
+        )
+        self.assertEqual(
+            first["source_within_type_policy_version"],
+            NATIVE_FIRST_CANDIDATE_POLICY_VERSION,
+        )
+        self.assertFalse(first["support_type_balancing_uses_native_outcomes"])
+        self.assertEqual(first["present_support_types"], ["Desk", "Dresser", "Shelf"])
+        self.assertEqual(
+            [row["support_type"] for row in first["accepted_candidates"]],
+            ["Desk", "Dresser", "Shelf", "Desk", "Dresser", "Shelf"],
+        )
+        self.assertEqual(
+            [row["within_type_order"] for row in first["accepted_candidates"]],
+            [1, 1, 1, 2, 2, 2],
+        )
+        self.assertEqual(
+            [row["candidate_order"] for row in first["accepted_candidates"]],
+            list(range(1, 7)),
         )
         self.assertNotIn("placement_success", str(first))
 

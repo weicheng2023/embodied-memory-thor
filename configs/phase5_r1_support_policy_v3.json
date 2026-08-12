@@ -32,7 +32,7 @@
     "reset restoration"
   ],
   "geometry_version": "phase5-axis-aware-rectangular-footprint-v2",
-  "candidate_policy_version": "phase5-native-first-advisory-ranking-v1",
+  "candidate_policy_version": "phase5-native-first-type-balanced-ranking-v2",
   "safety_margin_meters": 0.02,
   "route_version": "phase5-target-independent-absolute-horizon-v4",
   "planner_visible": false,

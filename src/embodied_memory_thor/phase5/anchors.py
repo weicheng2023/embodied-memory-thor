@@ -10,22 +10,24 @@ from typing import Any, Mapping, Sequence
 
 
 SUPPORT_POLICY_VERSION = "phase5-r1-support-policy-v3"
-ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v4"
-ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v4"
+ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v5"
+ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v5"
 ANCHOR_GEOMETRY_VERSION = "phase5-axis-aware-rectangular-footprint-v2"
-NATIVE_CANDIDATE_POLICY_VERSION = "phase5-native-first-advisory-ranking-v1"
-BOOK_SUPPORT_TYPES = frozenset(
-    {
-        "Bed",
-        "CoffeeTable",
-        "CounterTop",
-        "Desk",
-        "DiningTable",
-        "Dresser",
-        "Shelf",
-        "SideTable",
-    }
+NATIVE_FIRST_CANDIDATE_POLICY_VERSION = "phase5-native-first-advisory-ranking-v1"
+NATIVE_CANDIDATE_POLICY_VERSION = (
+    "phase5-native-first-type-balanced-ranking-v2"
 )
+BOOK_SUPPORT_TYPE_ORDER = (
+    "Bed",
+    "CoffeeTable",
+    "CounterTop",
+    "Desk",
+    "DiningTable",
+    "Dresser",
+    "Shelf",
+    "SideTable",
+)
+BOOK_SUPPORT_TYPES = frozenset(BOOK_SUPPORT_TYPE_ORDER)
 # Compatibility name for older imports. Policy v3 is semantic support
 # eligibility, not a claim that every receptacle is geometrically open.
 OPEN_SUPPORT_TYPES = BOOK_SUPPORT_TYPES
@@ -177,7 +179,7 @@ def build_geometry_candidate_plan(
     for index, item in enumerate(accepted, start=1):
         item["candidate_order"] = index
     return {
-        "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "qualification_version": "phase5-anchor-qualification-v4",
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
         "support_policy_version": SUPPORT_POLICY_VERSION,
         "orientation_policy": (
@@ -320,9 +322,9 @@ def build_native_first_candidate_plan(
     for index, item in enumerate(candidates, start=1):
         item["candidate_order"] = index
     return {
-        "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "qualification_version": "phase5-anchor-qualification-v4",
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
-        "candidate_policy_version": NATIVE_CANDIDATE_POLICY_VERSION,
+        "candidate_policy_version": NATIVE_FIRST_CANDIDATE_POLICY_VERSION,
         "support_policy_version": SUPPORT_POLICY_VERSION,
         "geometry_role": "advisory_pre_outcome_ranking_only",
         "native_placement_is_acceptance_authority": True,
@@ -349,6 +351,76 @@ def build_native_first_candidate_plan(
         "advisory_obstacle_overlap_count": sum(
             item["advisory_obstacle_overlap_count"] > 0 for item in candidates
         ),
+    }
+
+
+def build_type_balanced_native_candidate_plan(
+    *,
+    target: Mapping[str, Any],
+    support_queries: Sequence[Mapping[str, Any]],
+    all_objects: Sequence[Mapping[str, Any]],
+    minimum_move_meters: float = 0.5,
+    footprint_margin_meters: float = 0.02,
+) -> dict[str, Any]:
+    """Round-robin semantic support types over the frozen v4 within-type rank."""
+
+    base = build_native_first_candidate_plan(
+        target=target,
+        support_queries=support_queries,
+        all_objects=all_objects,
+        minimum_move_meters=minimum_move_meters,
+        footprint_margin_meters=footprint_margin_meters,
+    )
+    grouped: dict[str, list[dict[str, Any]]] = {
+        support_type: [] for support_type in BOOK_SUPPORT_TYPE_ORDER
+    }
+    for candidate in base["accepted_candidates"]:
+        support_type = str(candidate["support_type"])
+        if support_type in grouped:
+            row = deepcopy(candidate)
+            row["within_type_order"] = len(grouped[support_type]) + 1
+            grouped[support_type].append(row)
+
+    candidates: list[dict[str, Any]] = []
+    present_types = [
+        support_type
+        for support_type in BOOK_SUPPORT_TYPE_ORDER
+        if grouped[support_type]
+    ]
+    depth = 0
+    while True:
+        appended = False
+        for support_type in present_types:
+            rows = grouped[support_type]
+            if depth < len(rows):
+                candidates.append(rows[depth])
+                appended = True
+        if not appended:
+            break
+        depth += 1
+
+    for index, item in enumerate(candidates, start=1):
+        item["candidate_order"] = index
+    return {
+        **{
+            key: deepcopy(value)
+            for key, value in base.items()
+            if key != "accepted_candidates"
+        },
+        "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "candidate_policy_version": NATIVE_CANDIDATE_POLICY_VERSION,
+        "source_within_type_policy_version": (
+            NATIVE_FIRST_CANDIDATE_POLICY_VERSION
+        ),
+        "selection_rule": (
+            "round_robin_present_support_types_in_predeclared_semantic_order;"
+            "within_each_type_use_native_first_advisory_ranking_v1;"
+            "first_fully_qualified_anchor"
+        ),
+        "support_type_order": list(BOOK_SUPPORT_TYPE_ORDER),
+        "present_support_types": present_types,
+        "support_type_balancing_uses_native_outcomes": False,
+        "accepted_candidates": candidates,
     }
 
 

@@ -38,7 +38,7 @@ from embodied_memory_thor.phase5.anchors import (  # noqa: E402
     BOOK_SUPPORT_TYPES,
     NATIVE_CANDIDATE_POLICY_VERSION,
     SUPPORT_POLICY_VERSION,
-    build_native_first_candidate_plan,
+    build_type_balanced_native_candidate_plan,
     build_target_independent_coverage_route,
     stable_digest,
 )
@@ -52,7 +52,7 @@ from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v11"
+SCRIPT_VERSION = "phase5-anchor-batch-v12"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -376,7 +376,7 @@ def _collect_precommitted_plan(
         )
     _write_json(output_dir / "coverage_route.json", coverage_route)
 
-    geometry = build_native_first_candidate_plan(
+    geometry = build_type_balanced_native_candidate_plan(
         target=book,
         support_queries=support_queries,
         all_objects=_objects(metadata),

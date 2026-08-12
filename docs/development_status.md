@@ -354,3 +354,14 @@ passed 12/12, and no anchor was frozen. The fixed prefix therefore lacked
 support-type coverage. A continuation requires a separately precommitted
 balanced sampler; candidate 13 cannot be appended. Result-focused tests pass
 23/23 and the complete offline regression passes 179/179.
+
+Qualification v5 is the separately versioned type-balanced successor. It does
+not append or pool v4. Candidate construction remains independent of native
+outcomes: each present support type retains v4's within-type advisory rank, and
+types are round-robined in the eight-type semantic policy order. In
+FloorPlan301 this will alternate Desk, Dresser, and Shelf, giving four prefix
+positions to each when all 12 are needed. Native gates, fresh resets, route,
+margin, orientation, action boundaries, privacy, and stop-at-first-full-anchor
+remain unchanged. Offline acceptance is pending.
+Focused v5 acceptance now passes 25/25 and the complete offline regression
+passes 181/181. The real v5 batch has not started.

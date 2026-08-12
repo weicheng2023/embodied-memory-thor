@@ -1210,6 +1210,35 @@ episode ran. Public evidence is
 Result-focused tests passed 23/23 and the complete offline regression passed
 179/179.
 
+### Type-balanced native qualification-v5 precommit
+
+Qualification v5 is a new engineering qualification cohort, not candidate 13
+or an extension of v4. The failed v4 cohort is retained unchanged and cannot be
+pooled with v5. Its only protocol-level lesson is that a globally ranked prefix
+did not cover the present semantic support types; no candidate is selected or
+discarded because of its v4 native outcome.
+
+Candidate generation, hard exclusions, and advisory within-type ranking remain
+v4. Before native trials, candidates are partitioned by semantic support type.
+Present types are traversed round-robin in the predeclared policy-v3 order:
+Bed, CoffeeTable, CounterTop, Desk, DiningTable, Dresser, Shelf, SideTable.
+Within each type, the v4 advisory rank is preserved. FloorPlan301 has Desk,
+Dresser, and Shelf coordinates, so a complete 12-candidate prefix allocates four
+positions to each type.
+
+The frozen prefix still stops at the first fully qualified anchor or at 12
+failures. Every trial starts from reset/setup. No force action, Book rotation,
+margin change, outcome-dependent reordering, memory agent, image, later scene,
+or formal episode is authorized. Native placement and all existing physical,
+fallback, replay, and restoration gates remain unchanged. The executable
+contract is `configs/phase5_r1_native_qualification_v5.json`; qualification and
+private registry advance to v5, candidate ranking to
+`phase5-native-first-type-balanced-ranking-v2`, while support policy v3,
+geometry diagnostic v2, and route v4 remain fixed. A clean tested pushed
+precommit is required before the one FloorPlan301 v5 batch.
+Focused v5 acceptance passed 25/25 and the complete offline regression passed
+181/181. No v5 simulator outcome exists at this checkpoint.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
