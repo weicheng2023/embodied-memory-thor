@@ -747,6 +747,57 @@ class Phase5AnchorTests(unittest.TestCase):
             absolute_301["coverage_route_version"],
             "phase5-target-independent-absolute-horizon-v4",
         )
+        absolute_302 = module._load_candidate_contract(
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_absolute_v4_floorplan302.json",
+            "FloorPlan302",
+        )
+        self.assertEqual(absolute_302["coverage_route_action_count"], 61)
+        self.assertEqual(absolute_302["absolute_scan_horizon_degrees"], 0.0)
+        self.assertEqual(
+            absolute_302["coverage_route_version"],
+            "phase5-target-independent-absolute-horizon-v4",
+        )
+        self.assertEqual(
+            absolute_302["coverage_route_digest"],
+            "8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a",
+        )
+
+    def test_floorplan302_route_v4_public_precommit_is_read_only_and_private_safe(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan302_absolute_route_v4_precommit.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(evidence["passed"])
+        self.assertEqual(evidence["route_action_count"], 61)
+        self.assertLessEqual(evidence["route_action_count"], 240)
+        self.assertEqual(evidence["absolute_scan_horizon_degrees"], 0.0)
+        for key in (
+            "target_or_anchor_input_used",
+            "support_queries_run",
+            "placement_actions_run",
+            "memory_agents_run",
+            "images_saved",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+        ):
+            self.assertNotIn(forbidden, serialized)
 
     def test_public_anchor_candidate_contract_has_no_exact_pose_or_object_id(self) -> None:
         root = Path(__file__).resolve().parents[1]

@@ -1289,6 +1289,24 @@ stops. The executable transition contract is
 Focused transition tests passed 27/27 and the complete offline regression
 passed 183/183. No FloorPlan302 route, query, or placement has run yet.
 
+### FloorPlan302 absolute-horizon route-v4 result
+
+The route-only gate passed on clean `a9ce79f` with 61 actions under the 240
+limit and absolute scan horizon 0 degrees. Its digest is
+`8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a`.
+The builder used reachable positions and the retained start, but no Book,
+anchor, support, or candidate coordinate input. No support query, placement,
+memory agent, or image ran.
+
+The coordinate-free binding is
+`configs/phase5_r1_anchor_candidates_absolute_v4_floorplan302.json` and public
+evidence is
+`docs/evidence/phase5_floorplan302_absolute_route_v4_precommit.json`. The next
+gate is offline acceptance plus a clean pushed commit. Only then may the one
+FloorPlan302 v6 qualification batch begin.
+Route-contract tests passed 28/28 and the complete offline regression passed
+184/184.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

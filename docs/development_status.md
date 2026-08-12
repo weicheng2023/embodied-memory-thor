@@ -388,3 +388,12 @@ later scene, memory agent, image, force action, or Book rotation. Offline
 acceptance is pending.
 Focused transition tests pass 27/27 and the complete offline regression passes
 183/183. FloorPlan302 route-only construction has not started.
+
+FloorPlan302 route-only construction passed on clean `a9ce79f`: 61/240
+actions, absolute scan horizon 0 degrees, and route digest
+`8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a`.
+It used no target/anchor input and ran no support query, placement, memory agent,
+or image capture. The coordinate-free scene contract is prepared; offline
+acceptance and a clean push remain required before placement.
+Route-contract tests pass 28/28 and the complete offline regression passes
+184/184.
