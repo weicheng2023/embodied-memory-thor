@@ -625,6 +625,17 @@ with digest
 No placement, anchor selection, image, or memory agent ran. The coordinate-free
 contract is now frozen before its candidate-1 diagnostic.
 
+The FloorPlan301 candidate-1 diagnostic then stopped before placement on clean
+revision `a350eed`. AI2-THOR successfully returned 882 Desk placement
+coordinates, but the current conservative square-footprint filter rejected all
+882 as crossing the support boundary, leaving no candidate 1. No placement,
+fallback action, anchor, image, or memory agent ran. Route v4 remains passed;
+the blocker is the geometry model, which uses the Book's longest horizontal
+half-extent on both axes and therefore cannot represent a rotated rectangular
+Book on this narrow support. Do not try another candidate or FloorPlan302 under
+the current version. The coordinate-free stop record is
+`docs/evidence/phase5_floorplan301_candidate1_geometry_stop.json`.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
