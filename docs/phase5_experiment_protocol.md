@@ -659,6 +659,21 @@ route-v4 contract is unchanged. Only after the new FloorPlan202 candidate-1
 diagnostic and full qualification pass may FloorPlan301 restart from candidate
 1. FloorPlan302 remains gated on the complete FloorPlan301 result.
 
+On clean revision `a2b3629`, offline acceptance passed 15/15 focused geometry
+tests and 115/115 complete repository tests. FloorPlan202 qualification v2 then
+passed both candidate-1 diagnostic and full requalification; candidate 1
+remained the first passing anchor, and native placement, fallback pickup,
+fresh-reset replay, and reset restoration passed.
+
+FloorPlan301 qualification v2 still produced zero admitted candidates. The
+single Desk query succeeded with 882 coordinates, but all 882 crossed the
+support boundary after applying the Book's preserved-orientation rectangular
+footprint and frozen safety margin. Thus the square approximation was a real
+model defect but not the whole FloorPlan301 blocker. No candidate trial,
+placement, fallback action, anchor, image, or memory agent ran. Stop before
+FloorPlan302. Continuing now requires an explicit pre-outcome protocol decision
+about the admitted support set or safety margin, not another geometry retry.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
