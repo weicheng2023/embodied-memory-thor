@@ -674,6 +674,28 @@ placement, fallback action, anchor, image, or memory agent ran. Stop before
 FloorPlan302. Continuing now requires an explicit pre-outcome protocol decision
 about the admitted support set or safety margin, not another geometry retry.
 
+### Read-only first-six support census precommit
+
+The next gate is frozen as `phase5-r1-support-census-v1` over FloorPlan202 and
+FloorPlan301-305. The predeclared, lexicographically ordered candidate types are
+Bed, CoffeeTable, CounterTop, Desk, DiningTable, Dresser, Shelf, and SideTable.
+This includes every previous open-support type plus Book-plausible bedroom and
+living-room supports; it is declared before the census result.
+
+The census may reset scenes, read evaluator metadata, call
+`GetReachablePositions`, and call `GetSpawnCoordinatesAboveReceptacle` only to
+count availability. It discards returned coordinates, verifies that exact
+object-state digests remain unchanged across spawn queries, and isolates
+expected `lastAction` changes by resetting before the next scene. It cannot
+place or pick an object, execute fallback, freeze an anchor, run a memory agent,
+invoke force action, or save an image.
+
+The v3 policy candidate admits a predeclared semantic Book support only when it
+appears as a receptacle and produces a positive read-only spawn query in at
+least one inspected scene. Placement outcomes are not inputs, and the candidate
+remains non-formal until the public census is reviewed. The 0.02 m margin and
+route-v4 remain unchanged. No FloorPlan301 qualification follows automatically.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

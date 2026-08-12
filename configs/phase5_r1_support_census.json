@@ -1,0 +1,76 @@
+{
+  "census_version": "phase5-r1-support-census-v1",
+  "inspected_scenes": [
+    "FloorPlan202",
+    "FloorPlan301",
+    "FloorPlan302",
+    "FloorPlan303",
+    "FloorPlan304",
+    "FloorPlan305"
+  ],
+  "candidate_receptacle_types": [
+    {
+      "support_type": "Bed",
+      "semantic_book_support_candidate": true
+    },
+    {
+      "support_type": "CoffeeTable",
+      "semantic_book_support_candidate": true
+    },
+    {
+      "support_type": "CounterTop",
+      "semantic_book_support_candidate": true
+    },
+    {
+      "support_type": "Desk",
+      "semantic_book_support_candidate": true
+    },
+    {
+      "support_type": "DiningTable",
+      "semantic_book_support_candidate": true
+    },
+    {
+      "support_type": "Dresser",
+      "semantic_book_support_candidate": true
+    },
+    {
+      "support_type": "Shelf",
+      "semantic_book_support_candidate": true
+    },
+    {
+      "support_type": "SideTable",
+      "semantic_book_support_candidate": true
+    }
+  ],
+  "spawn_query": {
+    "action": "GetSpawnCoordinatesAboveReceptacle",
+    "anywhere": false
+  },
+  "support_policy_candidate_rule": {
+    "policy_version": "phase5-r1-support-policy-v3-candidate",
+    "minimum_receptacle_presence_scenes": 1,
+    "minimum_positive_spawn_scenes": 1,
+    "selection_rule": "predeclared semantic Book support candidate and present as a receptacle with a positive read-only spawn query in at least the frozen minimum number of inspected scenes",
+    "placement_outcomes_used": false,
+    "safety_margin_meters": 0.02,
+    "route_version": "phase5-target-independent-absolute-horizon-v4",
+    "formal_use_allowed": false
+  },
+  "execution_constraints": {
+    "read_only_metadata_census": true,
+    "placement_actions_allowed": false,
+    "pickup_actions_allowed": false,
+    "fallback_route_allowed": false,
+    "memory_agents_allowed": false,
+    "images_allowed": false,
+    "force_action_allowed": false
+  },
+  "public_output_policy": {
+    "allowed": "scene-level counts, support types, booleans, digests, and rejection summaries",
+    "exact_object_identifiers_allowed": false,
+    "exact_coordinates_allowed": false,
+    "exact_pose_allowed": false,
+    "target_points_allowed": false,
+    "evaluator_registry_content_allowed": false
+  }
+}
