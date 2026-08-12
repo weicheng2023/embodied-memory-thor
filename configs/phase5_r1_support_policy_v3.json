@@ -18,6 +18,8 @@
   "one_support_query_per_fresh_reset": true,
   "query_state_reused_by_later_query_or_trial": false,
   "placement_outcomes_used_for_support_type_admission": false,
+  "geometry_prediction_role": "advisory pre-outcome ranking only; boundary and obstacle predictions cannot veto a numeric materially moved query coordinate",
+  "native_anchor_qualification_is_acceptance_authority": true,
   "anchor_acceptance_gates": [
     "native placement without forceAction",
     "same target survives and moves materially",
@@ -30,6 +32,7 @@
     "reset restoration"
   ],
   "geometry_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "candidate_policy_version": "phase5-native-first-advisory-ranking-v1",
   "safety_margin_meters": 0.02,
   "route_version": "phase5-target-independent-absolute-horizon-v4",
   "planner_visible": false,

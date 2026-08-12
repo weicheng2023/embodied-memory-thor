@@ -16,9 +16,11 @@ from embodied_memory_thor.phase5.anchors import (
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
     BOOK_SUPPORT_TYPES,
+    NATIVE_CANDIDATE_POLICY_VERSION,
     SUPPORT_POLICY_VERSION,
     build_absolute_horizon_alignment_actions,
     build_geometry_candidate_plan,
+    build_native_first_candidate_plan,
     build_target_independent_coverage_route,
     public_anchor_reference,
     stable_digest,
@@ -178,20 +180,45 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertEqual(policy["admitted_support_types"], expected)
         self.assertEqual(BOOK_SUPPORT_TYPES, frozenset(expected))
         self.assertEqual(
-            ANCHOR_QUALIFICATION_VERSION, "phase5-anchor-qualification-v3"
+            ANCHOR_QUALIFICATION_VERSION, "phase5-anchor-qualification-v4"
         )
         self.assertEqual(
-            ANCHOR_REGISTRY_VERSION, "phase5-private-anchor-registry-v3"
+            ANCHOR_REGISTRY_VERSION, "phase5-private-anchor-registry-v4"
         )
         self.assertTrue(policy["one_support_query_per_fresh_reset"])
         self.assertFalse(policy["query_state_reused_by_later_query_or_trial"])
         self.assertFalse(policy["placement_outcomes_used_for_support_type_admission"])
         self.assertFalse(policy["formal_episode_dynamic_spawn_query_allowed"])
         self.assertTrue(policy["formal_episode_uses_frozen_anchor_only"])
+        self.assertTrue(policy["native_anchor_qualification_is_acceptance_authority"])
+        self.assertEqual(
+            policy["candidate_policy_version"], NATIVE_CANDIDATE_POLICY_VERSION
+        )
         self.assertIn(
             "phase5_r1_support_census_paired_causal_v4.json",
             policy["retained_failed_evidence"],
         )
+
+    def test_native_qualification_v4_freezes_full_batch_and_action_boundaries(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        protocol = json.loads(
+            (root / "configs" / "phase5_r1_native_qualification_v4.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(protocol["scene"], "FloorPlan301")
+        self.assertEqual(
+            protocol["candidate_policy_version"], NATIVE_CANDIDATE_POLICY_VERSION
+        )
+        self.assertEqual(protocol["maximum_native_candidate_trials"], 12)
+        self.assertTrue(protocol["candidate_order_frozen_before_native_outcomes"])
+        self.assertTrue(protocol["placement_trial_fresh_reset"])
+        self.assertTrue(protocol["fresh_reset_replay_required"])
+        self.assertFalse(protocol["force_action_allowed"])
+        self.assertFalse(protocol["book_rotation_action_allowed"])
+        self.assertFalse(protocol["memory_agents_allowed"])
+        self.assertFalse(protocol["later_scenes_allowed"])
+        self.assertIn("retain every failure", protocol["batch_rule"])
 
     def test_floorplan301_v3_launch_stop_is_pre_environment_and_private_safe(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -661,6 +688,67 @@ class Phase5AnchorTests(unittest.TestCase):
             },
         )
 
+    def test_native_first_plan_keeps_geometry_risks_for_native_qa(self) -> None:
+        target = _box(
+            "Book|1", x=0, y=1, z=0, sx=0.5, sy=0.06, sz=0.5,
+            object_type="Book",
+        )
+        support = _box(
+            "CounterTop|far", x=2, y=1, z=2, sx=2, sy=0.1, sz=2,
+            object_type="CounterTop",
+        )
+        pan = _box(
+            "Pan|1", x=2, y=1.1, z=2, sx=0.4, sy=0.2, sz=0.4,
+            object_type="Pan", parents=["CounterTop|far"],
+        )
+        args = {
+            "target": target,
+            "support_queries": [
+                {
+                    "support": support,
+                    "coordinates": [
+                        {"x": 1.05, "y": 1.05, "z": 2.0},
+                        {"x": 2.0, "y": 1.05, "z": 2.0},
+                        {"x": 2.65, "y": 1.05, "z": 2.65},
+                        {"x": 1.4, "y": 1.05, "z": 1.4},
+                    ],
+                }
+            ],
+            "all_objects": [target, support, pan],
+        }
+        first = build_native_first_candidate_plan(**args)
+        second = build_native_first_candidate_plan(**args)
+        self.assertEqual(first, second)
+        self.assertEqual(stable_digest(first), stable_digest(second))
+        self.assertEqual(
+            first["candidate_policy_version"], NATIVE_CANDIDATE_POLICY_VERSION
+        )
+        self.assertTrue(first["native_placement_is_acceptance_authority"])
+        self.assertFalse(first["boundary_prediction_is_hard_rejection"])
+        self.assertFalse(first["obstacle_prediction_is_hard_rejection"])
+        self.assertEqual(len(first["accepted_candidates"]), 4)
+        self.assertEqual(first["geometry_rejections"], [])
+        self.assertTrue(first["accepted_candidates"][0]["advisory_predicted_clear"])
+        self.assertTrue(
+            all(
+                row["native_trial_required_for_acceptance"]
+                for row in first["accepted_candidates"]
+            )
+        )
+        self.assertTrue(
+            any(
+                row["advisory_boundary_passed"] is False
+                for row in first["accepted_candidates"]
+            )
+        )
+        self.assertTrue(
+            any(
+                row["advisory_obstacle_overlap_count"] > 0
+                for row in first["accepted_candidates"]
+            )
+        )
+        self.assertNotIn("placement_success", str(first))
+
     def test_axis_aware_rectangular_footprint_fits_narrow_support(self) -> None:
         target = _box(
             "Book|narrow",
@@ -694,7 +782,7 @@ class Phase5AnchorTests(unittest.TestCase):
         )
         self.assertEqual(plan["geometry_version"], ANCHOR_GEOMETRY_VERSION)
         self.assertEqual(
-            plan["qualification_version"], "phase5-anchor-qualification-v3"
+            plan["qualification_version"], "phase5-anchor-qualification-v4"
         )
         self.assertEqual(
             plan["target_footprint_half_extents_meters"],

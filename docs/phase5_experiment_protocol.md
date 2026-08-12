@@ -1153,6 +1153,39 @@ new precommitted protocol decision. Coordinate-free evidence is
 `docs/evidence/phase5_floorplan301_support_policy_v3_geometry_stop.json`.
 Focused evidence tests passed 20/20 and complete regression passed 176/176.
 
+### Native-first anchor qualification v4 precommit
+
+Scheme B is selected. The semantic support set remains policy v3 and is not
+rerun through a spawn-query mutation census. Qualification v3 was still only a
+partial implementation of B because its AABB boundary prediction could veto a
+coordinate before the native simulator evaluated it. Qualification v4 removes
+that veto while retaining the diagnostic calculation.
+
+Each support query remains fresh-reset isolated and a final clean reset still
+precedes route and candidate planning. Candidate hard exclusions are limited to
+non-numeric coordinates, duplicates for the same support, and movement below
+0.5 m. The unchanged axis-aware footprint, 0.02 m margin, signed edge clearance,
+and predicted support-occupant overlaps become advisory pre-outcome ranking
+features only. They cannot establish success or failure.
+
+The complete order is frozen before native outcomes: predicted-clear first,
+then fewer predicted overlaps, descending signed edge clearance, support rank,
+and xyz. The normal qualifier runs the frozen first 12 candidates, retaining
+every failure, until the first fully qualified anchor or exhaustion. Each trial
+starts from reset/setup. Native placement without force, same-Book move,
+old-view invisibility, stability, actual support relation, post-placement
+overlap, common fallback pickup, fresh-reset replay, and reset restoration are
+the sole acceptance gates.
+
+Book rotation, margin changes, memory agents, images, later scenes, and dynamic
+queries during formal episodes remain prohibited. Qualification/registry
+advance to v4; the geometry diagnostic remains v2 and the new candidate policy
+is `phase5-native-first-advisory-ranking-v1`. The executable contract is
+`configs/phase5_r1_native_qualification_v4.json`. A clean pushed precommit is
+required before the one FloorPlan301 native batch.
+Focused native-first acceptance passed 22/22 and the complete offline regression
+passed 178/178. No v4 simulator outcome exists at this checkpoint.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

@@ -36,8 +36,9 @@ from embodied_memory_thor.phase5.anchors import (  # noqa: E402
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
     BOOK_SUPPORT_TYPES,
+    NATIVE_CANDIDATE_POLICY_VERSION,
     SUPPORT_POLICY_VERSION,
-    build_geometry_candidate_plan,
+    build_native_first_candidate_plan,
     build_target_independent_coverage_route,
     stable_digest,
 )
@@ -51,7 +52,7 @@ from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v10"
+SCRIPT_VERSION = "phase5-anchor-batch-v11"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -375,7 +376,7 @@ def _collect_precommitted_plan(
         )
     _write_json(output_dir / "coverage_route.json", coverage_route)
 
-    geometry = build_geometry_candidate_plan(
+    geometry = build_native_first_candidate_plan(
         target=book,
         support_queries=support_queries,
         all_objects=_objects(metadata),
@@ -385,6 +386,7 @@ def _collect_precommitted_plan(
     plan = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "candidate_policy_version": NATIVE_CANDIDATE_POLICY_VERSION,
         "support_policy_version": SUPPORT_POLICY_VERSION,
         "script_version": SCRIPT_VERSION,
         "created_at": _utc_now(),
@@ -971,6 +973,7 @@ def main(argv: list[str] | None = None) -> int:
         "registry_version": ANCHOR_REGISTRY_VERSION,
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "candidate_policy_version": NATIVE_CANDIDATE_POLICY_VERSION,
         "support_policy_version": SUPPORT_POLICY_VERSION,
         "created_at": _utc_now(),
         "boundary": BOUNDARY,
@@ -1012,6 +1015,7 @@ def main(argv: list[str] | None = None) -> int:
     summary = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "candidate_policy_version": NATIVE_CANDIDATE_POLICY_VERSION,
         "support_policy_version": SUPPORT_POLICY_VERSION,
         "claim": (
             "single-candidate target-lock diagnostic; not anchor qualification "

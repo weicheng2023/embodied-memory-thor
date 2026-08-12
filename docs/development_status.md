@@ -336,3 +336,13 @@ the support boundary, so candidate 1 did not exist. No native placement,
 fallback, replay, memory, image, anchor, full qualification, or later scene ran.
 FloorPlan301 remains blocked on a new precommitted geometry/protocol decision.
 Focused evidence tests pass 20/20 and complete regression passes 176/176.
+
+Scheme B now has a native-first qualification-v4 implementation pending offline
+acceptance. Semantic policy v3 remains fixed. Fresh-reset spawn queries only
+generate coordinates; AABB boundary/overlap calculations rank candidates but
+cannot reject them. Only invalid/duplicate/under-distance points are excluded.
+The first 12 candidates are frozen before outcomes and native physical QA,
+common fallback, fresh-reset replay, and restoration decide acceptance. No Book
+rotation, margin change, memory run, image, or later scene is authorized.
+Focused tests pass 22/22 and complete regression passes 178/178. The real v4
+batch has not started.

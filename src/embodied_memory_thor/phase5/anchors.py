@@ -10,9 +10,10 @@ from typing import Any, Mapping, Sequence
 
 
 SUPPORT_POLICY_VERSION = "phase5-r1-support-policy-v3"
-ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v3"
-ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v3"
+ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v4"
+ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v4"
 ANCHOR_GEOMETRY_VERSION = "phase5-axis-aware-rectangular-footprint-v2"
+NATIVE_CANDIDATE_POLICY_VERSION = "phase5-native-first-advisory-ranking-v1"
 BOOK_SUPPORT_TYPES = frozenset(
     {
         "Bed",
@@ -192,6 +193,162 @@ def build_geometry_candidate_plan(
         "target_footprint_half_extents_meters": footprint_half_extents,
         "accepted_candidates": accepted,
         "geometry_rejections": rejected,
+    }
+
+
+def build_native_first_candidate_plan(
+    *,
+    target: Mapping[str, Any],
+    support_queries: Sequence[Mapping[str, Any]],
+    all_objects: Sequence[Mapping[str, Any]],
+    minimum_move_meters: float = 0.5,
+    footprint_margin_meters: float = 0.02,
+) -> dict[str, Any]:
+    """Rank query coordinates for native QA without geometry vetoing a trial."""
+
+    if minimum_move_meters <= 0 or footprint_margin_meters < 0:
+        raise ValueError("invalid native-first candidate thresholds")
+    target_id = str(target.get("objectId", ""))
+    before = _position(target)
+    footprint_half_extents = _axis_aware_half_extents(target)
+    if not target_id or before is None or footprint_half_extents is None:
+        raise ValueError("target requires objectId, position, and AABB size")
+    padded_half_x = footprint_half_extents["x"] + footprint_margin_meters
+    padded_half_z = footprint_half_extents["z"] + footprint_margin_meters
+
+    candidates: list[dict[str, Any]] = []
+    hard_rejections: list[dict[str, Any]] = []
+    seen: set[tuple[str, float, float, float]] = set()
+    for support_rank, query in enumerate(support_queries, start=1):
+        support = query.get("support")
+        coordinates = query.get("coordinates")
+        if not isinstance(support, Mapping) or not isinstance(coordinates, Sequence):
+            raise ValueError("support query requires support and coordinates")
+        support_id = str(support.get("objectId", ""))
+        if not support_id or support.get("objectType") not in BOOK_SUPPORT_TYPES:
+            continue
+        support_rect = _xz_rect(support)
+        obstacles = [
+            obj
+            for obj in all_objects
+            if str(obj.get("objectId", "")) not in {target_id, support_id}
+            and support_id in {
+                str(value) for value in (obj.get("parentReceptacles") or [])
+            }
+            and _xz_rect(obj) is not None
+        ]
+        obstacle_rects = [
+            (str(obj.get("objectId", "")), _xz_rect(obj)) for obj in obstacles
+        ]
+        for raw_point in coordinates:
+            point = _xyz(raw_point) if isinstance(raw_point, Mapping) else None
+            if point is None:
+                hard_rejections.append(
+                    {
+                        "support_id": support_id,
+                        "point": deepcopy(raw_point),
+                        "reason": "non_numeric_xyz",
+                    }
+                )
+                continue
+            key = (
+                support_id,
+                round(point["x"], 6),
+                round(point["y"], 6),
+                round(point["z"], 6),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            movement = _xz_distance(before, point)
+            if movement < minimum_move_meters:
+                hard_rejections.append(
+                    {"support_id": support_id, "point": point, "reason": "move_too_small"}
+                )
+                continue
+            footprint = (
+                point["x"] - padded_half_x,
+                point["x"] + padded_half_x,
+                point["z"] - padded_half_z,
+                point["z"] + padded_half_z,
+            )
+            edge_clearance = (
+                _contained_clearance(footprint, support_rect)
+                if support_rect is not None
+                else None
+            )
+            collisions = sorted(
+                obstacle_id
+                for obstacle_id, rectangle in obstacle_rects
+                if rectangle is not None and _rectangles_overlap(footprint, rectangle)
+            )
+            boundary_passed = (
+                edge_clearance is not None and edge_clearance >= 0
+            )
+            predicted_clear = boundary_passed and not collisions
+            candidates.append(
+                {
+                    "support_rank": support_rank,
+                    "support_id": support_id,
+                    "support_type": str(support.get("objectType", "")),
+                    "point": point,
+                    "movement_xz_meters": movement,
+                    "advisory_edge_clearance_meters": edge_clearance,
+                    "advisory_boundary_passed": boundary_passed,
+                    "advisory_obstacle_overlap_ids": collisions,
+                    "advisory_obstacle_overlap_count": len(collisions),
+                    "advisory_predicted_clear": predicted_clear,
+                    "native_trial_required_for_acceptance": True,
+                }
+            )
+
+    candidates.sort(
+        key=lambda item: (
+            0 if item["advisory_predicted_clear"] else 1,
+            item["advisory_obstacle_overlap_count"],
+            -(
+                item["advisory_edge_clearance_meters"]
+                if item["advisory_edge_clearance_meters"] is not None
+                else -1e12
+            ),
+            item["support_rank"],
+            item["point"]["x"],
+            item["point"]["z"],
+            item["point"]["y"],
+        )
+    )
+    for index, item in enumerate(candidates, start=1):
+        item["candidate_order"] = index
+    return {
+        "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "candidate_policy_version": NATIVE_CANDIDATE_POLICY_VERSION,
+        "support_policy_version": SUPPORT_POLICY_VERSION,
+        "geometry_role": "advisory_pre_outcome_ranking_only",
+        "native_placement_is_acceptance_authority": True,
+        "boundary_prediction_is_hard_rejection": False,
+        "obstacle_prediction_is_hard_rejection": False,
+        "orientation_policy": "preserve_current_world_orientation_for_native_trial",
+        "selection_rule": (
+            "predicted_clear_then_overlap_count_then_descending_signed_edge_"
+            "clearance_then_support_rank_then_xyz;first_fully_qualified_anchor"
+        ),
+        "hard_rejection_rule": "non_numeric_duplicate_or_move_below_minimum_only",
+        "minimum_move_meters": minimum_move_meters,
+        "footprint_margin_meters": footprint_margin_meters,
+        "target_object_id": target_id,
+        "target_footprint_half_extents_meters": footprint_half_extents,
+        "accepted_candidates": candidates,
+        "geometry_rejections": hard_rejections,
+        "advisory_predicted_clear_count": sum(
+            item["advisory_predicted_clear"] is True for item in candidates
+        ),
+        "advisory_boundary_crossing_count": sum(
+            item["advisory_boundary_passed"] is False for item in candidates
+        ),
+        "advisory_obstacle_overlap_count": sum(
+            item["advisory_obstacle_overlap_count"] > 0 for item in candidates
+        ),
     }
 
 
