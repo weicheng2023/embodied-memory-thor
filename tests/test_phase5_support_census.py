@@ -231,6 +231,23 @@ class Phase5SupportCensusTests(unittest.TestCase):
             "phase5-axis-aware-rectangular-footprint-v2",
         )
 
+    def test_failed_real_census_evidence_is_private_free_and_blocks_policy(self) -> None:
+        evidence_path = (
+            ROOT / "docs" / "evidence" / "phase5_r1_support_census.json"
+        )
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+        self.module.audit_public_summary(evidence)
+        self.assertFalse(evidence["passed"])
+        self.assertFalse(evidence["census_complete"])
+        self.assertEqual(evidence["scene_count"], 1)
+        self.assertEqual(
+            evidence["fatal_error_category"], "unexpected_state_mutation"
+        )
+        self.assertFalse(evidence["support_policy_recommendation_available"])
+        self.assertFalse(evidence["floorplan301_restart_allowed"])
+        self.assertFalse(evidence["placement_actions_run"])
+        self.assertFalse(evidence["memory_agents_run"])
+
 
 if __name__ == "__main__":
     unittest.main()

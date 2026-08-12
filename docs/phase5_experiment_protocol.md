@@ -696,6 +696,22 @@ least one inspected scene. Placement outcomes are not inputs, and the candidate
 remains non-formal until the public census is reviewed. The 0.02 m margin and
 route-v4 remain unchanged. No FloorPlan301 qualification follows automatically.
 
+The single authorized real batch ran on clean revision `1db67c2` and stopped in
+FloorPlan202. CoffeeTable returned 143 spawn coordinates; Shelf and SideTable
+queries failed; the other declared types were absent in that scene. More
+importantly, the exact evaluator object-state digest differed before and after
+the spawn-query sequence. The batch therefore raised
+`unexpected_state_mutation` and did not reset or inspect FloorPlan301-305.
+
+These FloorPlan202-only counts are incomplete diagnostic evidence, not a valid
+support-policy recommendation. The automatically listed CoffeeTable candidate
+remains explicitly non-formal and must not be treated as an admitted v3 set.
+No new census run, FloorPlan301 qualification, or FloorPlan302 work is permitted
+without a revised, precommitted mutation-isolation protocol and new authority.
+The coordinate-free failure record is
+`docs/evidence/phase5_r1_support_census.json`; raw details remain ignored under
+`outputs/phase5_r1_support_census_v1_1db67c2/`.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
