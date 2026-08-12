@@ -712,6 +712,31 @@ The coordinate-free failure record is
 `docs/evidence/phase5_r1_support_census.json`; raw details remain ignored under
 `outputs/phase5_r1_support_census_v1_1db67c2/`.
 
+### FloorPlan202 mutation-isolation precommit
+
+The follow-up is restricted to FloorPlan202 and four reset-isolated trials.
+Every trial resets and executes five `Pass` actions before its first digest.
+The natural-settling control executes five more `Pass` actions before its second
+digest. The remaining trials query exactly one CoffeeTable, one Shelf, or one
+SideTable respectively, record state immediately, and reset before continuing.
+No other scene or receptacle type is allowed.
+
+Two state views are frozen before execution. The strict digest covers exact
+object identity, pose, parentage, `isMoving`, and logical flags. The logical
+digest excludes pose and `isMoving`. Anonymous comparison metrics report object
+counts, changed field categories, maximum position displacement, and maximum
+rotation-component change. Position changes above 0.001 m, rotation-component
+changes above 0.1 degrees, identity changes, parent changes, or logical flag
+changes are material. Metadata ordering and `lastAction` are absent from both
+digests.
+
+Case A requires a materially stable baseline and at least one query-specific
+material change. Case B covers natural settling or strict-only/sub-threshold
+change with no query-specific material mutation. A failed query is recorded but
+its immediate state effect remains measurable. Only `Pass` and
+`GetSpawnCoordinatesAboveReceptacle` are permitted; no placement, pickup,
+fallback, memory, image, force action, FloorPlan301, or later scene is allowed.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
