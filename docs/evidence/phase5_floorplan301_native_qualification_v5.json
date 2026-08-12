@@ -1,0 +1,71 @@
+{
+  "record_version": "phase5-floorplan301-native-qualification-v5-result-v1",
+  "code_revision": "d3e8ca14aa02671a70b5eec894bbffdc99437a6e",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan301",
+  "support_policy_version": "phase5-r1-support-policy-v3",
+  "qualification_version": "phase5-anchor-qualification-v5",
+  "private_registry_version": "phase5-private-anchor-registry-v5",
+  "candidate_policy_version": "phase5-native-first-type-balanced-ranking-v2",
+  "source_within_type_policy_version": "phase5-native-first-advisory-ranking-v1",
+  "geometry_diagnostic_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "passed": false,
+  "classification": "balanced_native_candidate_prefix_exhausted_without_anchor",
+  "independent_from_v4_cohort": true,
+  "v4_outcomes_used_to_select_candidates": false,
+  "support_query_count": 8,
+  "support_queries_fresh_reset_isolated": true,
+  "query_state_reused": false,
+  "total_candidate_count": 3969,
+  "hard_geometry_rejection_count": 0,
+  "advisory_predicted_clear_count": 0,
+  "advisory_boundary_crossing_count": 3969,
+  "advisory_obstacle_overlap_count": 1890,
+  "frozen_native_candidate_trial_limit": 12,
+  "candidate_trial_count": 12,
+  "candidate_support_type_summary": [
+    {
+      "support_type": "Desk",
+      "candidate_trial_count": 4
+    },
+    {
+      "support_type": "Dresser",
+      "candidate_trial_count": 4
+    },
+    {
+      "support_type": "Shelf",
+      "candidate_trial_count": 4
+    }
+  ],
+  "native_placement_attempt_count": 12,
+  "native_placement_success_count": 0,
+  "native_error_category_summary": [
+    {
+      "category": "spawn_area_blocked_by_scene_wall",
+      "count": 10
+    },
+    {
+      "category": "spawn_area_blocked_by_existing_object",
+      "count": 2
+    }
+  ],
+  "all_trials_fresh_reset": true,
+  "force_action_used": false,
+  "book_rotation_action_used": false,
+  "target_material_move_count": 0,
+  "fallback_route_run_count": 0,
+  "fresh_reset_replay_run_count": 0,
+  "reset_restoration_pass_count": 12,
+  "reset_restoration_failure_count": 0,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "anchor_frozen": false,
+  "full_floorplan301_qualification_passed": false,
+  "later_scenes_started": false,
+  "coordinates_exposed": false,
+  "candidate_plan_digest": "694fe0433bf3cdb1d3a952214ccbdfd64aefb1a66141f3ac247cd18adcacd156",
+  "coverage_route_digest": "09e3d64b7adb1afe2df76c573211a60caad4435ab4e1f84433d1d168191cd30b",
+  "private_registry_digest": "d87f8c8538e942a3975d7e54f9f9803c7c93667c5b8c4591cd4835b904e4ff16",
+  "interpretation": "balanced sampling removed the v4 Shelf-only coverage defect, but native placement failed across all three present support types",
+  "next_gate": "precommit a scene-level failure-and-skip rule before any FloorPlan302 work"
+}

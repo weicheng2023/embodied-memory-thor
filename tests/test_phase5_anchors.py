@@ -421,6 +421,72 @@ class Phase5AnchorTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan301_native_v5_result_is_balanced_and_private_safe(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan301_native_qualification_v5.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            evidence["code_revision"],
+            "d3e8ca14aa02671a70b5eec894bbffdc99437a6e",
+        )
+        self.assertFalse(evidence["passed"])
+        self.assertEqual(
+            evidence["classification"],
+            "balanced_native_candidate_prefix_exhausted_without_anchor",
+        )
+        self.assertTrue(evidence["independent_from_v4_cohort"])
+        self.assertFalse(evidence["v4_outcomes_used_to_select_candidates"])
+        self.assertEqual(evidence["candidate_trial_count"], 12)
+        self.assertEqual(evidence["frozen_native_candidate_trial_limit"], 12)
+        self.assertEqual(
+            evidence["candidate_support_type_summary"],
+            [
+                {"support_type": "Desk", "candidate_trial_count": 4},
+                {"support_type": "Dresser", "candidate_trial_count": 4},
+                {"support_type": "Shelf", "candidate_trial_count": 4},
+            ],
+        )
+        self.assertEqual(evidence["native_placement_attempt_count"], 12)
+        self.assertEqual(evidence["native_placement_success_count"], 0)
+        self.assertEqual(
+            sum(row["count"] for row in evidence["native_error_category_summary"]),
+            12,
+        )
+        self.assertEqual(evidence["fallback_route_run_count"], 0)
+        self.assertEqual(evidence["fresh_reset_replay_run_count"], 0)
+        self.assertEqual(evidence["reset_restoration_pass_count"], 12)
+        self.assertEqual(evidence["reset_restoration_failure_count"], 0)
+        for key in (
+            "query_state_reused",
+            "force_action_used",
+            "book_rotation_action_used",
+            "memory_agents_run",
+            "images_saved",
+            "anchor_frozen",
+            "full_floorplan301_qualification_passed",
+            "later_scenes_started",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+            '"private_registry":',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_candidate_queries_are_fresh_reset_isolated_before_clean_planning(self) -> None:
         module = self._qualifier_module()
         env = _FreshSupportQueryEnv()

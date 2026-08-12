@@ -365,3 +365,14 @@ margin, orientation, action boundaries, privacy, and stop-at-first-full-anchor
 remain unchanged. Offline acceptance is pending.
 Focused v5 acceptance now passes 25/25 and the complete offline regression
 passes 181/181. The real v5 batch has not started.
+
+The clean `d3e8ca1` v5 batch completed all 12 balanced trials: Desk 4,
+Dresser 4, Shelf 4. Native placement succeeded 0/12; ten spawn areas were
+blocked by scene wall geometry and two by an existing object. The Book never
+moved, fallback/replay correctly stayed at zero, and reset restoration passed
+12/12. No anchor, memory run, image, formal episode, or later scene exists.
+This removes the Shelf-only alternative explanation but does not make
+FloorPlan301 feasible. FloorPlan302 requires a separately precommitted
+scene-level failure-and-skip rule.
+Result-focused tests pass 26/26 and the complete offline regression passes
+182/182.

@@ -1239,6 +1239,31 @@ precommit is required before the one FloorPlan301 v5 batch.
 Focused v5 acceptance passed 25/25 and the complete offline regression passed
 181/181. No v5 simulator outcome exists at this checkpoint.
 
+### FloorPlan301 type-balanced qualification-v5 result
+
+The clean `d3e8ca1` run exhausted the independent v5 prefix exactly as
+precommitted. Candidate types followed Desk, Dresser, Shelf four times, so all
+three support types present in the candidate plan received equal coverage.
+Native placement passed 0/12: ten attempts were categorized as scene-wall
+spawn-area blocks and two as existing-object spawn-area blocks. The Book did
+not move materially in any trial.
+
+Because physical placement failed, common fallback and fresh-reset replay were
+correctly skipped for all candidates. Reset restoration passed 12/12. No
+forceAction, Book rotation, memory agent, image, anchor, formal episode, or
+later scene was used. This result removes the v4 Shelf-only coverage defect as
+an explanation: FloorPlan301 remained infeasible across Desk, Dresser, and
+Shelf under the frozen native API, orientation, and candidate rules.
+
+The v5 cohort is closed and must not be extended or pooled with v4. Moving to
+FloorPlan302 is not yet authorized because the current protocol serializes later
+scenes behind FloorPlan301. A new pre-outcome scene-level rule must state when a
+fully exhausted scene is recorded as failed and skipped in declared scene order.
+Public coordinate-free evidence is
+`docs/evidence/phase5_floorplan301_native_qualification_v5.json`.
+Result-focused tests passed 26/26 and the complete offline regression passed
+182/182.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
