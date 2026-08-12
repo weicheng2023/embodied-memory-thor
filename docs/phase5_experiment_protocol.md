@@ -789,6 +789,33 @@ shared state-audit module, v2 config, v2 script, public privacy audit, old-v1
 evidence compatibility, and all route-v4 tests passed. No simulator process was
 started for this checkpoint.
 
+### Support census v2 execution stop
+
+The clean-revision v2 batch started FloorPlan202, FloorPlan301, and
+FloorPlan302, then stopped before FloorPlan303-305. FloorPlan202 and
+FloorPlan301 had no material mutation under the frozen tolerant comparator.
+FloorPlan302 produced repeated 0.261-0.551 degree rotation-component changes,
+above the predeclared 0.1 degree threshold, while logical identity, object
+identity, and parentage remained unchanged and position changes stayed below
+0.000104 m. Because no FloorPlan302 Pass-only control was precommitted, this
+result cannot distinguish natural settling from query-specific mutation. The
+census is incomplete and no support-policy-v3 recommendation exists.
+
+Post-run review also found a protocol mismatch: census v2 called
+`GetSpawnCoordinatesAboveReceptacle` with `anywhere=false`, whereas the existing
+qualification path calls the same query with `anywhere=true`. This explains why
+partial query availability cannot be compared directly with qualification and
+prevents using the partial counts to revise the support set. It does not change
+or reinterpret the retained simulator result.
+
+No placement, pickup, fallback route, memory agent, or image ran. FloorPlan301
+qualification cannot restart. The next gate is a separately precommitted
+FloorPlan302 mutation-isolation probe, followed by a census revision whose query
+parameter is explicitly aligned with qualification. Thresholds must not be
+changed from this outcome alone. Public evidence is retained at
+`docs/evidence/phase5_r1_support_census_v2.json`. The post-run evidence test
+passed 6/6 and complete offline regression passed 134/134.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

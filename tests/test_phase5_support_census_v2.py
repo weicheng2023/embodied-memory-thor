@@ -13,6 +13,7 @@ from typing import Any, Mapping
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT / "scripts" / "census_phase5_r1_supports_v2.py"
 CONFIG_PATH = ROOT / "configs" / "phase5_r1_support_census_v2.json"
+EVIDENCE_PATH = ROOT / "docs" / "evidence" / "phase5_r1_support_census_v2.json"
 
 
 def _load_module() -> Any:
@@ -221,6 +222,47 @@ class Phase5SupportCensusV2Tests(unittest.TestCase):
         self.assertFalse(summary["placement_actions_run"])
         self.assertFalse(summary["memory_agents_run"])
         self.assertFalse(summary["images_saved"])
+
+    def test_real_census_stop_is_incomplete_private_and_non_selective(self) -> None:
+        evidence = json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
+        review = evidence["post_run_review"]
+
+        self.assertFalse(evidence["passed"])
+        self.assertFalse(evidence["census_complete"])
+        self.assertEqual(evidence["scene_count"], 3)
+        self.assertEqual(evidence["fatal_error_category"], "material_query_mutation")
+        self.assertIsNone(evidence["support_policy_candidate"])
+        self.assertFalse(evidence["support_policy_recommendation_available"])
+        self.assertEqual(
+            review["started_scenes"],
+            ["FloorPlan202", "FloorPlan301", "FloorPlan302"],
+        )
+        self.assertEqual(
+            review["not_started_scenes"],
+            ["FloorPlan303", "FloorPlan304", "FloorPlan305"],
+        )
+        self.assertFalse(review["floorplan301_restart_allowed"])
+        self.assertFalse(review["query_parameter_alignment_with_qualifier"])
+        self.assertFalse(review["census_query_anywhere"])
+        self.assertTrue(review["qualifier_query_anywhere"])
+        self.assertFalse(evidence["placement_actions_run"])
+        self.assertFalse(evidence["pickup_actions_run"])
+        self.assertFalse(evidence["fallback_route_run"])
+        self.assertFalse(evidence["memory_agents_run"])
+        self.assertFalse(evidence["images_saved"])
+
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            '"position"',
+            '"rotation"',
+            '"x"',
+            '"y"',
+            '"z"',
+            "target_point",
+            "private_registry",
+        ):
+            self.assertNotIn(forbidden, serialized)
 
 
 if __name__ == "__main__":
