@@ -122,6 +122,17 @@ an anchor: fresh-reset replay was intentionally excluded, and the eight
 previously never-visible candidates remain unresolved. No further THOR run was
 started.
 
+The next correction is precommitted before another placement outcome. Route v2
+used 22 scan waypoints and 88 horizontal rotations but zero camera-horizon
+actions. Route v3 adds one target-independent `LookDown` before the complete
+route and one `LookUp` after it, keeping every move, waypoint, and yaw scan
+unchanged. FloorPlan202 therefore changes from 225 to 227 actions, still below
+the frozen 240 limit. A one-scene public contract binds the v3 route digest,
+30-degree scan horizon, action count, and existing private-start digest without
+coordinates or object IDs. The first real gate must be the earliest previously
+never-visible candidate (candidate 1), not a hand-selected success. No v3 real
+outcome exists at this checkpoint.
+
 ## Implemented
 
 ### Phase 0

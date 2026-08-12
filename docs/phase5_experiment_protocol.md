@@ -545,6 +545,26 @@ priority, but real-THOR evidence for the loss-recovery branch is still absent.
 The coordinate-free record is
 `docs/evidence/phase5_floorplan202_candidate4_target_lock_diagnostic.json`.
 
+### Downward visual-coverage route v3 precommit
+
+The remaining FloorPlan202 blocker is visual discovery, not target interaction.
+The retained v2 route had 22 scan waypoints, 88 yaw rotations, and no look
+action. Adding a full second horizon at every waypoint would exceed the frozen
+240-action bound. V3 instead selects one uniform target-independent 30-degree
+downward scan layer: `LookDown` once before the unchanged route and `LookUp` once
+after it. It does not inspect target type, candidate order, support, placement
+outcome, anchor, or memory state.
+
+The public FloorPlan202-only v3 contract fixes 227 actions and digest
+`44aca36a89a7c8556a30a42a898d81105c7c47509059658e8952beabbe583a2a`.
+The original six-scene v2 contract remains untouched. `LookDown` and `LookUp`
+are added to the same strictly validated shared-route channel available to all
+future variants. Before any full requalification, the first real diagnostic is
+fixed as candidate 1, the earliest candidate that v2 never saw. Passing that
+diagnostic permits FloorPlan202 requalification from the frozen beginning;
+failure stops route-v3 work for analysis. This is a protocol decision, not a
+result.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

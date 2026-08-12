@@ -249,6 +249,8 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
         if not isinstance(action, Mapping) or set(action) != {"action"}:
             violations.append("shared_search_action_schema")
         elif action.get("action") not in {
+            "LookDown",
+            "LookUp",
             "MoveAhead",
             "RotateLeft",
             "RotateRight",

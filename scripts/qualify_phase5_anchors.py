@@ -49,7 +49,7 @@ from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v6"
+SCRIPT_VERSION = "phase5-anchor-batch-v7"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -197,7 +197,7 @@ def _setup_actions_for_candidate(
     *, scene: str, candidate_contract: Path | None,
     start_registries: Sequence[Path],
 ) -> tuple[
-    tuple[dict[str, Any], ...], str, str, str | None, int | None
+    tuple[dict[str, Any], ...], str, str, str | None, int | None, float
 ]:
     if candidate_contract is not None:
         if not start_registries:
@@ -218,6 +218,7 @@ def _setup_actions_for_candidate(
             str(contract["anchor_id"]),
             str(contract["coverage_route_digest"]),
             int(contract["coverage_route_action_count"]),
+            float(contract.get("coverage_scan_horizon_degrees", 0.0)),
         )
     if scene != "FloorPlan1":
         raise ValueError("non-FloorPlan1 qualification requires frozen candidate inputs")
@@ -227,6 +228,7 @@ def _setup_actions_for_candidate(
         "FloorPlan1_R1_stale_Book_anchor_001",
         None,
         None,
+        0.0,
     )
 
 
@@ -271,6 +273,7 @@ def _collect_precommitted_plan(
     setup_actions: Sequence[Mapping[str, Any]], configuration_id: str,
     expected_route_digest: str | None = None,
     expected_route_action_count: int | None = None,
+    coverage_scan_horizon_degrees: float = 0.0,
 ) -> tuple[dict[str, Any], dict[str, Any], Mapping[str, Any]]:
     metadata, setup = _reset_setup(env, scene, setup_actions)
     book = _visible_book(metadata)
@@ -311,6 +314,7 @@ def _collect_precommitted_plan(
         start_position=agent.get("position", {}),
         start_yaw=float(agent.get("rotation", {}).get("y", 0.0)),
         grid_size=float(CONTROLLER_SETTINGS["gridSize"]),
+        scan_horizon_degrees=coverage_scan_horizon_degrees,
     )
     if len(coverage_route["actions"]) > MAX_FALLBACK_ACTIONS:
         raise RuntimeError(
@@ -360,6 +364,7 @@ def _collect_precommitted_plan(
         "coverage_route_digest": route_digest,
         "coverage_route_action_count": len(coverage_route["actions"]),
         "max_fallback_actions": MAX_FALLBACK_ACTIONS,
+        "coverage_scan_horizon_degrees": coverage_scan_horizon_degrees,
         "max_candidate_trials": MAX_CANDIDATE_TRIALS,
         "stability_sample_count": STABILITY_SAMPLE_COUNT,
         "stability_tolerance_meters": STABILITY_TOLERANCE_METERS,
@@ -739,6 +744,15 @@ def main(argv: list[str] | None = None) -> int:
             "does not freeze an anchor or perform fresh-reset replay."
         ),
     )
+    parser.add_argument(
+        "--coverage-scan-horizon-degrees",
+        type=float,
+        choices=(0.0, 30.0),
+        help=(
+            "Target-independent coverage camera horizon. Candidate contracts "
+            "bind this value; omit the flag to use the contract."
+        ),
+    )
     args = parser.parse_args(argv)
     diagnostic_mode = args.diagnostic_candidate_order is not None
     output_dir = (
@@ -771,11 +785,21 @@ def main(argv: list[str] | None = None) -> int:
         anchor_id,
         expected_route_digest,
         expected_route_action_count,
+        contracted_scan_horizon_degrees,
     ) = _setup_actions_for_candidate(
         scene=args.scene,
         candidate_contract=args.candidate_contract,
         start_registries=args.start_registry,
     )
+    if (
+        args.coverage_scan_horizon_degrees is not None
+        and args.coverage_scan_horizon_degrees
+        != contracted_scan_horizon_degrees
+    ):
+        raise ValueError(
+            "coverage scan horizon does not match the candidate contract"
+        )
+    coverage_scan_horizon_degrees = contracted_scan_horizon_degrees
 
     env = ThorEnv(controller_kwargs=CONTROLLER_SETTINGS)
     trial_records: list[dict[str, Any]] = []
@@ -790,6 +814,7 @@ def main(argv: list[str] | None = None) -> int:
             setup_actions=setup_actions, configuration_id=configuration_id,
             expected_route_digest=expected_route_digest,
             expected_route_action_count=expected_route_action_count,
+            coverage_scan_horizon_degrees=coverage_scan_horizon_degrees,
         )
         target_id = str(plan["target"]["object_id"])
         before_position = dict(plan["target"]["before_position"])
@@ -903,6 +928,9 @@ def main(argv: list[str] | None = None) -> int:
         "images_saved": False,
         "candidate_plan_digest": plan.get("candidate_plan_digest") if plan else None,
         "coverage_route_digest": plan.get("coverage_route_digest") if plan else None,
+        "coverage_route_version": route.get("route_version") if route else None,
+        "coverage_route_action_count": len(route.get("actions", [])) if route else None,
+        "coverage_scan_horizon_degrees": coverage_scan_horizon_degrees,
         "candidate_trial_records": trial_records,
         "diagnostic_mode": diagnostic_mode,
         "diagnostic_candidate_order": args.diagnostic_candidate_order,
@@ -946,6 +974,9 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "candidate_plan_digest": plan.get("candidate_plan_digest") if plan else None,
         "coverage_route_digest": plan.get("coverage_route_digest") if plan else None,
+        "coverage_route_version": route.get("route_version") if route else None,
+        "coverage_route_action_count": len(route.get("actions", [])) if route else None,
+        "coverage_scan_horizon_degrees": coverage_scan_horizon_degrees,
         "private_registry_digest": registry_digest,
         "candidate_trial_count": len(trial_records),
         "fatal_error": fatal_error,

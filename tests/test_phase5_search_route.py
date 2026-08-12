@@ -19,6 +19,7 @@ from embodied_memory_thor.phase4.planners import (
 )
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
 from embodied_memory_thor.phase5.search import (
+    FrozenSearchRoute,
     FrozenSearchRouteState,
     SearchRouteError,
     load_frozen_search_route,
@@ -52,6 +53,33 @@ def _pose_observation(*, yaw: float, x: float = -1.0, z: float = 1.25) -> dict[s
 
 
 class Phase5SearchRouteTests(unittest.TestCase):
+    def test_downward_horizon_codes_are_coordinate_free_and_valid(self) -> None:
+        actions = [
+            {"action": "LookDown"},
+            {"action": "RotateRight"},
+            {"action": "LookUp"},
+        ]
+        import hashlib
+
+        digest = hashlib.sha256(
+            json.dumps(
+                actions,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            ).encode("utf-8")
+        ).hexdigest()
+        route = FrozenSearchRoute(
+            route_id="offline_downward_scan",
+            task="thor_book_reacquire_k2",
+            scene="OfflineFixture",
+            source_qualification_route_digest="a" * 64,
+            action_sequence_digest=digest,
+            action_codes="DRU",
+        )
+        route.validate()
+        self.assertEqual(route.actions, actions)
+
     def test_exact_qualified_action_sequence_is_coordinate_free(self) -> None:
         route = load_frozen_search_route(ROUTE_ID)
         self.assertEqual(route.action_count, 210)

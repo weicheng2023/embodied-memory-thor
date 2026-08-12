@@ -182,11 +182,14 @@ def build_target_independent_coverage_route(
     start_yaw: float,
     grid_size: float = 0.25,
     scan_spacing_steps: int = 3,
+    scan_horizon_degrees: float = 0.0,
 ) -> dict[str, Any]:
     """Build a deterministic spaced-waypoint route without target/anchor input."""
 
     if grid_size <= 0 or scan_spacing_steps <= 0 or not reachable_positions:
         raise ValueError("coverage route requires positions and positive grid_size")
+    if scan_horizon_degrees not in {0.0, 30.0}:
+        raise ValueError("coverage scan horizon must be 0 or 30 degrees")
     nodes: dict[tuple[int, int], dict[str, float]] = {}
     for raw in reachable_positions:
         point = _xyz(raw)
@@ -299,6 +302,13 @@ def build_target_independent_coverage_route(
             )
             yaw = (yaw + 90.0) % 360.0
 
+    if scan_horizon_degrees == 30.0:
+        actions.append(
+            {
+                "action": {"action": "LookDown"},
+                "phase": "coverage_horizon_setup",
+            }
+        )
     full_scan(start_key)
     current = start_key
     for waypoint_index, waypoint in enumerate(ordered_waypoints[1:], start=1):
@@ -326,8 +336,19 @@ def build_target_independent_coverage_route(
             route_nodes.add(destination)
         full_scan(waypoint)
         current = waypoint
-    return {
-        "route_version": "phase5-target-independent-spaced-waypoints-v2",
+    if scan_horizon_degrees == 30.0:
+        actions.append(
+            {
+                "action": {"action": "LookUp"},
+                "phase": "coverage_horizon_restore",
+            }
+        )
+    route = {
+        "route_version": (
+            "phase5-target-independent-downward-scan-v3"
+            if scan_horizon_degrees == 30.0
+            else "phase5-target-independent-spaced-waypoints-v2"
+        ),
         "target_or_anchor_input_used": False,
         "grid_size": grid_size,
         "scan_spacing_steps": scan_spacing_steps,
@@ -347,6 +368,10 @@ def build_target_independent_coverage_route(
         "complete_graph_coverage": True,
         "actions": actions,
     }
+    if scan_horizon_degrees == 30.0:
+        route["scan_horizon_degrees"] = 30.0
+        route["camera_horizon_restored_at_route_end"] = True
+    return route
 
 
 def public_anchor_reference(

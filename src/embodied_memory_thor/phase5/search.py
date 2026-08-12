@@ -17,9 +17,11 @@ DEFAULT_SEARCH_ROUTES_PATH = (
 )
 
 _CODE_TO_ACTION = {
+    "D": "LookDown",
     "F": "MoveAhead",
     "L": "RotateLeft",
     "R": "RotateRight",
+    "U": "LookUp",
 }
 
 

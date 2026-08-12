@@ -65,6 +65,21 @@ class Phase5AnchorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exactly one row"):
             module._load_candidate_contract(contract_path, "FloorPlan999")
 
+        downward_path = (
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_downward_v3_floorplan202.json"
+        )
+        downward = module._load_candidate_contract(
+            downward_path, "FloorPlan202"
+        )
+        self.assertEqual(downward["coverage_route_action_count"], 227)
+        self.assertEqual(downward["coverage_scan_horizon_degrees"], 30.0)
+        self.assertEqual(
+            downward["coverage_route_version"],
+            "phase5-target-independent-downward-scan-v3",
+        )
+
     def test_public_anchor_candidate_contract_has_no_exact_pose_or_object_id(self) -> None:
         root = Path(__file__).resolve().parents[1]
         raw = json.loads(
@@ -79,6 +94,18 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertNotIn("selected_pose", str(raw))
         self.assertNotIn("target_object_id", str(raw))
         self.assertNotIn("target_point", str(raw))
+        downward_text = (
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_downward_v3_floorplan202.json"
+        ).read_text(encoding="utf-8")
+        for forbidden in (
+            "selected_pose",
+            "target_object_id",
+            "target_point",
+            "reachable_positions",
+        ):
+            self.assertNotIn(forbidden, downward_text)
 
     def test_private_start_digest_mismatch_stops_before_environment_creation(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -230,6 +257,48 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertGreaterEqual(route["scan_waypoint_count"], 1)
         self.assertTrue(any(row["action"]["action"] == "MoveAhead" for row in route["actions"]))
         self.assertNotIn("Book", str(route))
+
+    def test_downward_scan_route_adds_one_bounded_horizon_layer(self) -> None:
+        reachable = [
+            {"x": 0.0, "y": 0.9, "z": 0.0},
+            {"x": 0.25, "y": 0.9, "z": 0.0},
+            {"x": 0.0, "y": 0.9, "z": 0.25},
+            {"x": 0.25, "y": 0.9, "z": 0.25},
+        ]
+        base = build_target_independent_coverage_route(
+            reachable_positions=reachable,
+            start_position=reachable[0],
+            start_yaw=90,
+            scan_spacing_steps=1,
+        )
+        route = build_target_independent_coverage_route(
+            reachable_positions=reachable,
+            start_position=reachable[0],
+            start_yaw=90,
+            scan_spacing_steps=1,
+            scan_horizon_degrees=30.0,
+        )
+        self.assertEqual(
+            route["route_version"],
+            "phase5-target-independent-downward-scan-v3",
+        )
+        self.assertEqual(route["scan_horizon_degrees"], 30.0)
+        self.assertTrue(route["camera_horizon_restored_at_route_end"])
+        self.assertEqual(route["actions"][0]["action"], {"action": "LookDown"})
+        self.assertEqual(route["actions"][-1]["action"], {"action": "LookUp"})
+        self.assertEqual(len(route["actions"]), len(base["actions"]) + 2)
+        self.assertEqual(
+            route["actions"][1:-1],
+            base["actions"],
+        )
+        self.assertFalse(route["target_or_anchor_input_used"])
+        with self.assertRaisesRegex(ValueError, "horizon"):
+            build_target_independent_coverage_route(
+                reachable_positions=reachable,
+                start_position=reachable[0],
+                start_yaw=90,
+                scan_horizon_degrees=15.0,
+            )
 
     def test_public_reference_contains_no_coordinates(self) -> None:
         reference = public_anchor_reference(
