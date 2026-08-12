@@ -126,6 +126,18 @@ class Phase5AnchorTests(unittest.TestCase):
             absolute["coverage_route_version"],
             "phase5-target-independent-absolute-horizon-v4",
         )
+        absolute_301 = module._load_candidate_contract(
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_absolute_v4_floorplan301.json",
+            "FloorPlan301",
+        )
+        self.assertEqual(absolute_301["coverage_route_action_count"], 108)
+        self.assertEqual(absolute_301["absolute_scan_horizon_degrees"], 0.0)
+        self.assertEqual(
+            absolute_301["coverage_route_version"],
+            "phase5-target-independent-absolute-horizon-v4",
+        )
 
     def test_public_anchor_candidate_contract_has_no_exact_pose_or_object_id(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -153,18 +165,19 @@ class Phase5AnchorTests(unittest.TestCase):
             "reachable_positions",
         ):
             self.assertNotIn(forbidden, downward_text)
-        absolute_text = (
-            root
-            / "configs"
-            / "phase5_r1_anchor_candidates_absolute_v4_floorplan202.json"
-        ).read_text(encoding="utf-8")
-        for forbidden in (
-            "selected_pose",
-            "target_object_id",
-            "target_point",
-            "reachable_positions",
+        for absolute_path in sorted(
+            (root / "configs").glob(
+                "phase5_r1_anchor_candidates_absolute_v4_floorplan*.json"
+            )
         ):
-            self.assertNotIn(forbidden, absolute_text)
+            absolute_text = absolute_path.read_text(encoding="utf-8")
+            for forbidden in (
+                "selected_pose",
+                "target_object_id",
+                "target_point",
+                "reachable_positions",
+            ):
+                self.assertNotIn(forbidden, absolute_text)
 
     def test_private_start_digest_mismatch_stops_before_environment_creation(self) -> None:
         root = Path(__file__).resolve().parents[1]

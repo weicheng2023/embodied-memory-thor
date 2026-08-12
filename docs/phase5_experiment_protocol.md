@@ -618,6 +618,13 @@ counts, the absolute horizon, and pass/fail state; the exact route remains in an
 ignored evaluator-only file. A coordinate-free contract derived from this run
 must be committed from a clean revision before the scene's candidate-1 probe.
 
+FloorPlan301 route-only QA passed on clean revision `2cbe010`: one alignment
+action and one inverse restoration action produced a 108/240-action v4 route
+with digest
+`09e3d64b7adb1afe2df76c573211a60caad4435ab4e1f84433d1d168191cd30b`.
+No placement, anchor selection, image, or memory agent ran. The coordinate-free
+contract is now frozen before its candidate-1 diagnostic.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
