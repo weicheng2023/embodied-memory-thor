@@ -32,6 +32,7 @@ from embodied_memory_thor.phase4.planners import (  # noqa: E402
 )
 from embodied_memory_thor.phase4.runner import THOR_BOOK_SETUP_ACTIONS  # noqa: E402
 from embodied_memory_thor.phase5.anchors import (  # noqa: E402
+    ANCHOR_GEOMETRY_VERSION,
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
     OPEN_SUPPORT_TYPES,
@@ -49,7 +50,7 @@ from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v8"
+SCRIPT_VERSION = "phase5-anchor-batch-v9"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -355,6 +356,7 @@ def _collect_precommitted_plan(
     )
     plan = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "geometry_version": ANCHOR_GEOMETRY_VERSION,
         "script_version": SCRIPT_VERSION,
         "created_at": _utc_now(),
         "created_before_native_placement_trials": True,
@@ -931,6 +933,7 @@ def main(argv: list[str] | None = None) -> int:
     registry = {
         "registry_version": ANCHOR_REGISTRY_VERSION,
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "geometry_version": ANCHOR_GEOMETRY_VERSION,
         "created_at": _utc_now(),
         "boundary": BOUNDARY,
         "planner_visible": False,
@@ -970,6 +973,7 @@ def main(argv: list[str] | None = None) -> int:
     target_lock_metrics = _aggregate_target_lock_metrics(trial_records)
     summary = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "geometry_version": ANCHOR_GEOMETRY_VERSION,
         "claim": (
             "single-candidate target-lock diagnostic; not anchor qualification "
             "or a memory comparison"

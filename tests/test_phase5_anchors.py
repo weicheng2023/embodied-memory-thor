@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 
 from embodied_memory_thor.phase5.anchors import (
+    ANCHOR_GEOMETRY_VERSION,
     build_absolute_horizon_alignment_actions,
     build_geometry_candidate_plan,
     build_target_independent_coverage_route,
@@ -280,6 +281,69 @@ class Phase5AnchorTests(unittest.TestCase):
                 "book_footprint_crosses_support_boundary",
                 "book_footprint_overlaps_obstacle",
             },
+        )
+
+    def test_axis_aware_rectangular_footprint_fits_narrow_support(self) -> None:
+        target = _box(
+            "Book|narrow",
+            x=0,
+            y=1,
+            z=0,
+            sx=0.52,
+            sy=0.06,
+            sz=0.16,
+            object_type="Book",
+        )
+        support = _box(
+            "Desk|narrow",
+            x=2,
+            y=1,
+            z=0,
+            sx=1.6,
+            sy=0.1,
+            sz=0.4,
+            object_type="Desk",
+        )
+        plan = build_geometry_candidate_plan(
+            target=target,
+            support_queries=[
+                {
+                    "support": support,
+                    "coordinates": [{"x": 2.0, "y": 1.1, "z": 0.0}],
+                }
+            ],
+            all_objects=[target, support],
+        )
+        self.assertEqual(plan["geometry_version"], ANCHOR_GEOMETRY_VERSION)
+        self.assertEqual(
+            plan["qualification_version"], "phase5-anchor-qualification-v2"
+        )
+        self.assertEqual(
+            plan["target_footprint_half_extents_meters"],
+            {"x": 0.26, "z": 0.08},
+        )
+        self.assertEqual(len(plan["accepted_candidates"]), 1)
+        self.assertEqual(plan["geometry_rejections"], [])
+
+        rotated = dict(target)
+        rotated["axisAlignedBoundingBox"] = {
+            "center": {"x": 0, "y": 1, "z": 0},
+            "size": {"x": 0.16, "y": 0.06, "z": 0.52},
+        }
+        rotated_plan = build_geometry_candidate_plan(
+            target=rotated,
+            support_queries=[
+                {
+                    "support": support,
+                    "coordinates": [{"x": 2.0, "y": 1.1, "z": 0.0}],
+                }
+            ],
+            all_objects=[rotated, support],
+        )
+        self.assertEqual(rotated_plan["accepted_candidates"], [])
+        self.assertEqual(
+            rotated_plan["geometry_rejections"][0]["reason"],
+            "book_footprint_crosses_support_boundary",
         )
 
     def test_geometry_plan_is_stable_and_outcome_independent(self) -> None:

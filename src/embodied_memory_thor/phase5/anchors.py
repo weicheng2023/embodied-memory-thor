@@ -9,8 +9,9 @@ from copy import deepcopy
 from typing import Any, Mapping, Sequence
 
 
-ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v1"
-ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v1"
+ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v2"
+ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v2"
+ANCHOR_GEOMETRY_VERSION = "phase5-axis-aware-rectangular-footprint-v2"
 OPEN_SUPPORT_TYPES = frozenset(
     {"CounterTop", "DiningTable", "CoffeeTable", "SideTable", "Desk"}
 )
@@ -41,10 +42,11 @@ def build_geometry_candidate_plan(
         raise ValueError("invalid anchor geometry thresholds")
     target_id = str(target.get("objectId", ""))
     before = _position(target)
-    footprint_half_extent = _conservative_half_extent(target)
-    if not target_id or before is None or footprint_half_extent is None:
+    footprint_half_extents = _axis_aware_half_extents(target)
+    if not target_id or before is None or footprint_half_extents is None:
         raise ValueError("target requires objectId, position, and AABB size")
-    padded_half_extent = footprint_half_extent + footprint_margin_meters
+    padded_half_x = footprint_half_extents["x"] + footprint_margin_meters
+    padded_half_z = footprint_half_extents["z"] + footprint_margin_meters
 
     accepted: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []
@@ -99,10 +101,10 @@ def build_geometry_candidate_plan(
                 )
                 continue
             footprint = (
-                point["x"] - padded_half_extent,
-                point["x"] + padded_half_extent,
-                point["z"] - padded_half_extent,
-                point["z"] + padded_half_extent,
+                point["x"] - padded_half_x,
+                point["x"] + padded_half_x,
+                point["z"] - padded_half_z,
+                point["z"] + padded_half_z,
             )
             edge_clearance = _contained_clearance(footprint, support_rect)
             if edge_clearance < 0:
@@ -162,6 +164,10 @@ def build_geometry_candidate_plan(
         item["candidate_order"] = index
     return {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
+        "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "orientation_policy": (
+            "preserve_current_world_orientation_and_validate_native_placement"
+        ),
         "selection_rule": (
             "support_rank_then_descending_geometry_clearance_then_xyz;"
             "first_fully_qualified_anchor"
@@ -169,7 +175,7 @@ def build_geometry_candidate_plan(
         "minimum_move_meters": minimum_move_meters,
         "footprint_margin_meters": footprint_margin_meters,
         "target_object_id": target_id,
-        "target_footprint_half_extent_meters": footprint_half_extent,
+        "target_footprint_half_extents_meters": footprint_half_extents,
         "accepted_candidates": accepted,
         "geometry_rejections": rejected,
     }
@@ -479,15 +485,23 @@ def _position(obj: Mapping[str, Any]) -> dict[str, float] | None:
     return _xyz(raw) if isinstance(raw, Mapping) else None
 
 
-def _conservative_half_extent(obj: Mapping[str, Any]) -> float | None:
+def _axis_aware_half_extents(obj: Mapping[str, Any]) -> dict[str, float] | None:
     bounds = obj.get("axisAlignedBoundingBox")
     size = bounds.get("size") if isinstance(bounds, Mapping) else None
     if not isinstance(size, Mapping):
         return None
     try:
-        return max(float(size["x"]), float(size["z"])) / 2.0
+        half_extents = {
+            "x": float(size["x"]) / 2.0,
+            "z": float(size["z"]) / 2.0,
+        }
     except (KeyError, TypeError, ValueError):
         return None
+    if not all(
+        math.isfinite(value) and value > 0 for value in half_extents.values()
+    ):
+        return None
+    return half_extents
 
 
 def _xz_rect(obj: Mapping[str, Any]) -> tuple[float, float, float, float] | None:

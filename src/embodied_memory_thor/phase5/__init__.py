@@ -1,6 +1,7 @@
 """Phase 5 comparison and qualification infrastructure."""
 
 from .anchors import (
+    ANCHOR_GEOMETRY_VERSION,
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
     build_geometry_candidate_plan,
@@ -32,6 +33,7 @@ from .target_lock import (
 )
 
 __all__ = [
+    "ANCHOR_GEOMETRY_VERSION",
     "ANCHOR_QUALIFICATION_VERSION",
     "ANCHOR_REGISTRY_VERSION",
     "EvaluatorIntervention",

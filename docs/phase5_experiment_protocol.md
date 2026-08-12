@@ -636,6 +636,29 @@ Book on this narrow support. Do not try another candidate or FloorPlan302 under
 the current version. The coordinate-free stop record is
 `docs/evidence/phase5_floorplan301_candidate1_geometry_stop.json`.
 
+### Axis-aware rectangular footprint v2 precommit
+
+The geometry successor is fixed as
+`phase5-axis-aware-rectangular-footprint-v2`. It reads the target Book's current
+world-axis AABB and preserves separate X and Z half-extents plus the unchanged
+0.02 m margin. It does not search rotations, inspect native placement outcomes,
+or choose an orientation that makes a candidate pass. `PlaceObjectAtPoint`
+retains the current object orientation; the existing native placement,
+collision, support-parent, stability, old-view hiddenness, fallback, replay, and
+reset-restoration gates remain authoritative after this geometric prefilter.
+
+Candidate ordering remains support rank, then geometry clearance, then XYZ, and
+is still hashed before the first placement action. The geometry plan is
+evaluator-only and never enters planner input or memory. Offline acceptance must
+cover both orientations of a rectangular Book on a narrow support, stable
+ordering, private-field exclusion, all prior route-v4 tests, and the complete
+repository regression. Because this prefilter changes the admitted set and can
+therefore change frozen candidate order, qualification and the private registry
+advance to v2. The common sequence must restart at FloorPlan202 under v2; its
+route-v4 contract is unchanged. Only after the new FloorPlan202 candidate-1
+diagnostic and full qualification pass may FloorPlan301 restart from candidate
+1. FloorPlan302 remains gated on the complete FloorPlan301 result.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
