@@ -531,6 +531,67 @@ class Phase5AnchorTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan302_native_v6_result_fully_qualifies_without_leakage(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan302_native_qualification_v6.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            evidence["code_revision"],
+            "90a1ec73a4c26691d62c6eb6bc00edd522e36bff",
+        )
+        self.assertTrue(evidence["passed"])
+        self.assertEqual(
+            evidence["classification"],
+            "first_balanced_native_candidate_fully_qualified",
+        )
+        self.assertEqual(evidence["candidate_trial_count"], 1)
+        self.assertEqual(evidence["selected_candidate_order"], 1)
+        self.assertEqual(evidence["selected_support_type"], "Bed")
+        self.assertEqual(evidence["native_placement_success_count"], 1)
+        self.assertGreaterEqual(evidence["target_move_distance_xz_meters"], 0.5)
+        for key in (
+            "old_view_invisible",
+            "three_sample_stability_passed",
+            "expected_support_relation_passed",
+            "common_fallback_passed",
+            "fresh_reset_replay_passed",
+            "reset_restoration_passed",
+            "anchor_frozen",
+        ):
+            self.assertTrue(evidence[key])
+        self.assertEqual(evidence["post_placement_non_support_overlap_count"], 0)
+        self.assertEqual(evidence["fallback_discovery_step"], 20)
+        self.assertEqual(evidence["fallback_pickup_step"], 21)
+        self.assertEqual(evidence["fallback_failed_action_count"], 0)
+        for key in (
+            "query_state_reused",
+            "force_action_used",
+            "book_rotation_action_used",
+            "memory_agents_run",
+            "images_saved",
+            "later_scenes_started",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+            '"private_registry":',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_candidate_queries_are_fresh_reset_isolated_before_clean_planning(self) -> None:
         module = self._qualifier_module()
         env = _FreshSupportQueryEnv()

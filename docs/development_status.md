@@ -397,3 +397,14 @@ or image capture. The coordinate-free scene contract is prepared; offline
 acceptance and a clean push remain required before placement.
 Route-contract tests pass 28/28 and the complete offline regression passes
 184/184.
+
+FloorPlan302 qualification v6 then fully passed on clean `90a1ec7` at the
+first balanced candidate (Bed). Native placement moved the Book 2.007788 m,
+made it invisible from the old view, stayed stable for three samples, preserved
+the expected support relation, and introduced no non-support overlap. The
+common fallback rediscovered at step 20 and picked up at step 21 with no failed
+action. Fresh-reset replay and reset restoration passed, so one opaque anchor
+was frozen. No memory agent, image, force action, Book rotation, formal episode,
+or later scene ran. This is anchor qualification evidence, not a memory result.
+Result-focused tests pass 29/29 and the complete offline regression passes
+185/185.

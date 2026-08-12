@@ -1307,6 +1307,24 @@ FloorPlan302 v6 qualification batch begin.
 Route-contract tests passed 28/28 and the complete offline regression passed
 184/184.
 
+### FloorPlan302 native qualification-v6 result
+
+The clean `90a1ec7` run rebuilt the exact 61-action route digest and then
+qualified its first balanced candidate, a Bed candidate. Native placement moved
+the same Book 2.007788 m, hid it from the old viewpoint, remained stable across
+three Pass samples, produced the expected support relation, and produced no
+non-support overlap. The shared target-independent fallback rediscovered the
+Book at action 20 and picked it up at action 21; all 21 actions succeeded.
+
+Fresh-reset placement replay and reset restoration both passed. The opaque
+FloorPlan302 anchor was therefore frozen in the evaluator-only registry. No
+memory agent, image, force action, Book rotation, formal episode, or later scene
+ran. This proves one real THOR relocation anchor and capable common fallback;
+it does not prove memory improvement. Public coordinate-free evidence is
+`docs/evidence/phase5_floorplan302_native_qualification_v6.json`.
+Result-focused tests passed 29/29 and the complete offline regression passed
+185/185.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
