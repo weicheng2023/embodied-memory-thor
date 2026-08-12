@@ -1108,6 +1108,25 @@ The frozen machine-readable policy is
 18/18 and the complete offline regression passed 174/174; no new simulator
 outcome exists at this checkpoint.
 
+### FloorPlan301 qualification-v3 launch-input stop
+
+The first attempt on clean `1b9b8d3` stopped during local input validation. The
+command supplied the earlier six-scene start-qualification registry, whose rows
+cover the first kitchen presence cohort and do not include FloorPlan301. The
+loader therefore found zero matching passing rows and raised before constructing
+`ThorEnv`.
+
+This is not a FloorPlan301 simulator or candidate result. No scene reset,
+support query, candidate plan, placement, pickup, fallback, replay, memory
+agent, image, or anchor occurred. Read-only inspection identified the already
+retained remaining-candidate prescreen registry as the source whose FloorPlan301
+start digest matches the public route contract. Per the stop-on-problem rule,
+the command was not retried. The next gate remains the same diagnostic geometry
+candidate 1 with the corrected retained input after explicit continuation.
+Coordinate-free evidence is
+`docs/evidence/phase5_floorplan301_support_policy_v3_launch_stop.json`. Focused
+evidence tests passed 19/19 and the complete offline regression passed 175/175.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

@@ -320,3 +320,11 @@ anchors and never query coordinates. Focused offline tests pass 18/18. No new
 AI2-THOR run exists yet; the complete offline regression passes 174/174.
 FloorPlan301 geometry candidate 1 is the next and only real gate after a clean
 pushed precommit.
+
+The first FloorPlan301 v3 launch on clean `1b9b8d3` stopped before environment
+creation because the command supplied a retained start registry that does not
+contain FloorPlan301. The correct already-retained prescreen source was located
+read-only, but the run was not retried under the stop-on-problem rule. This is
+not a candidate failure: resets, queries, planning, placement, fallback, replay,
+memory, and images all remained zero. Candidate 1 is still pending. Focused
+evidence tests pass 19/19 and complete regression passes 175/175.

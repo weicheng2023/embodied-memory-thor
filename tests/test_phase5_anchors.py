@@ -193,6 +193,53 @@ class Phase5AnchorTests(unittest.TestCase):
             policy["retained_failed_evidence"],
         )
 
+    def test_floorplan301_v3_launch_stop_is_pre_environment_and_private_safe(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan301_support_policy_v3_launch_stop.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            evidence["code_revision"],
+            "1b9b8d3840a4bd973b3ad7919321181caf398775",
+        )
+        self.assertFalse(evidence["passed"])
+        self.assertEqual(
+            evidence["classification"],
+            "input_validation_stop_before_environment_creation",
+        )
+        for key in (
+            "environment_created",
+            "scene_reset_run",
+            "placement_actions_run",
+            "pickup_actions_run",
+            "fallback_route_run",
+            "fresh_reset_replay_run",
+            "memory_agents_run",
+            "images_saved",
+            "candidate_plan_created",
+            "candidate_outcome_observed",
+            "anchor_frozen",
+            "floorplan301_scientific_result_available",
+            "rerun_performed",
+        ):
+            self.assertFalse(evidence[key])
+        self.assertEqual(evidence["support_query_count"], 0)
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "selected_pose",
+            "objectId",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_candidate_queries_are_fresh_reset_isolated_before_clean_planning(self) -> None:
         module = self._qualifier_module()
         env = _FreshSupportQueryEnv()
