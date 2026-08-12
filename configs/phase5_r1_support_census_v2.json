@@ -1,0 +1,51 @@
+{
+  "census_version": "phase5-r1-support-census-v2",
+  "inspected_scenes": [
+    "FloorPlan202",
+    "FloorPlan301",
+    "FloorPlan302",
+    "FloorPlan303",
+    "FloorPlan304",
+    "FloorPlan305"
+  ],
+  "candidate_receptacle_types": [
+    "Bed",
+    "CoffeeTable",
+    "CounterTop",
+    "Desk",
+    "DiningTable",
+    "Dresser",
+    "Shelf",
+    "SideTable"
+  ],
+  "settling_pass_count": 5,
+  "one_receptacle_query_per_reset": true,
+  "material_change_thresholds": {
+    "position_delta_meters": 0.001,
+    "rotation_component_delta_degrees": 0.1
+  },
+  "allowed_actions": [
+    "GetReachablePositions",
+    "GetSpawnCoordinatesAboveReceptacle",
+    "Pass"
+  ],
+  "support_policy_candidate_rule": {
+    "policy_version": "phase5-r1-support-policy-v3-candidate",
+    "minimum_receptacle_presence_scenes": 1,
+    "minimum_positive_spawn_scenes": 1,
+    "selection_rule": "predeclared semantic Book support type, present as a receptacle, with a positive reset-isolated read-only spawn query in at least one inspected scene",
+    "placement_outcomes_used": false,
+    "safety_margin_meters": 0.02,
+    "route_version": "phase5-target-independent-absolute-horizon-v4",
+    "formal_use_allowed": false
+  },
+  "constraints": {
+    "placement_allowed": false,
+    "pickup_allowed": false,
+    "fallback_allowed": false,
+    "memory_agents_allowed": false,
+    "images_allowed": false,
+    "force_action_allowed": false
+  },
+  "privacy": "public evidence contains scene/type counts, booleans, digests, categorized errors, and anonymous maximum deltas only; no objectId, coordinates, exact poses, target points, or registry content"
+}

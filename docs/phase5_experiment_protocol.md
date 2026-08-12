@@ -761,6 +761,34 @@ future census protocol should use logical digests plus circular, thresholded
 pose comparisons and retain query failure categories. No other scene was
 started in this probe.
 
+### Support census v2 precommit
+
+V2 retains the frozen FloorPlan202/301-305 scene order and the eight predeclared
+support types. It settles every reset with five `Pass` actions. Reachability is
+counted once per scene; every individual receptacle query then runs in its own
+fresh reset, followed by immediate tolerant state comparison and another reset.
+No query result can contaminate a later query.
+
+The shared evaluator-only state audit uses logical digests, circular angular
+distance, a 0.001 m position threshold, and a 0.1 degree rotation-component
+threshold. Strict digest changes and `isMoving` transitions remain diagnostic
+counts but do not fail the census. Identity, parentage, logical flags, or
+above-threshold pose changes are material and stop the batch. Failed queries are
+retained as error categories and simply cannot satisfy the positive-spawn gate.
+
+The v3 candidate rule remains pre-outcome: a declared semantic Book support is
+admitted only if it exists as a receptacle, has a positive reset-isolated spawn
+query in at least one frozen scene, and produces zero material query mutations.
+Placement outcomes, visibility, coordinates, and memory results are not policy
+inputs. Margin and route-v4 remain unchanged. The policy stays non-formal until
+the complete public census is recorded and separately frozen.
+
+Pre-run acceptance passed 18/18 focused census/isolation/compatibility tests and
+133/133 complete repository tests (executed in four result-safe batches). The
+shared state-audit module, v2 config, v2 script, public privacy audit, old-v1
+evidence compatibility, and all route-v4 tests passed. No simulator process was
+started for this checkpoint.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
