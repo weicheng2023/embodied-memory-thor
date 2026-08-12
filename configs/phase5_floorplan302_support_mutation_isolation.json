@@ -1,0 +1,48 @@
+{
+  "protocol_version": "phase5-floorplan302-support-mutation-isolation-v1",
+  "scene": "FloorPlan302",
+  "settling_pass_count": 5,
+  "control_replicate_count": 3,
+  "control_followup_pass_count": 1,
+  "isolated_query_support_types": [
+    "Bed",
+    "Desk",
+    "Shelf",
+    "SideTable"
+  ],
+  "expected_receptacle_counts": {
+    "Bed": 1,
+    "Desk": 1,
+    "Shelf": 5,
+    "SideTable": 2
+  },
+  "query_all_receptacles": true,
+  "spawn_query_anywhere": true,
+  "qualifier_query_anywhere": true,
+  "query_parameter_alignment_with_qualifier": true,
+  "material_change_thresholds": {
+    "position_delta_meters": 0.001,
+    "rotation_component_delta_degrees": 0.1
+  },
+  "allowed_actions": [
+    "GetSpawnCoordinatesAboveReceptacle",
+    "Pass"
+  ],
+  "constraints": {
+    "other_scenes_allowed": false,
+    "one_followup_action_per_reset": true,
+    "placement_allowed": false,
+    "pickup_allowed": false,
+    "fallback_allowed": false,
+    "memory_agents_allowed": false,
+    "images_allowed": false,
+    "force_action_allowed": false
+  },
+  "classification_rule": {
+    "case_a": "all matched Pass-only controls are materially stable and at least one isolated anywhere=true query produces a material change",
+    "case_b": "matched Pass-only controls show material natural variation and every query remains within the anonymous control envelope",
+    "mixed": "matched controls show material natural variation and at least one query exceeds the anonymous control envelope; causality remains unresolved",
+    "no_material_change": "neither matched controls nor isolated queries produce a material change"
+  },
+  "privacy": "public evidence contains types, ordinals, digests, counts, booleans, thresholds, aggregate deltas, and field categories only; no objectId, coordinates, exact poses, or spawn coordinates"
+}

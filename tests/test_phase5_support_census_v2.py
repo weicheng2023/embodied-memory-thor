@@ -13,6 +13,7 @@ from typing import Any, Mapping
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT / "scripts" / "census_phase5_r1_supports_v2.py"
 CONFIG_PATH = ROOT / "configs" / "phase5_r1_support_census_v2.json"
+CONFIG_V3_PATH = ROOT / "configs" / "phase5_r1_support_census_v3.json"
 EVIDENCE_PATH = ROOT / "docs" / "evidence" / "phase5_r1_support_census_v2.json"
 
 
@@ -42,6 +43,7 @@ class _ResetIsolatedEnv:
         self.material_type = material_type
         self.reset_scenes: list[str] = []
         self.actions_since_reset: list[str] = []
+        self.recorded_actions: list[dict[str, Any]] = []
         self.max_queries_between_resets = 0
         self._query_count = 0
         self._base_objects = [
@@ -94,6 +96,7 @@ class _ResetIsolatedEnv:
         return _Event({"objects": deepcopy(self._objects)})
 
     def step(self, action: Mapping[str, Any]) -> _Event:
+        self.recorded_actions.append(dict(action))
         action_name = str(action["action"])
         self.actions_since_reset.append(action_name)
         success = True
@@ -154,6 +157,30 @@ class Phase5SupportCensusV2Tests(unittest.TestCase):
             self.config["candidate_receptacle_types"],
             sorted(self.config["candidate_receptacle_types"]),
         )
+        self.assertFalse(self.config.get("spawn_query_anywhere", False))
+
+    def test_v3_config_aligns_query_parameter_with_qualification(self) -> None:
+        config = self.module.load_config(CONFIG_V3_PATH)
+        self.assertEqual(config["census_version"], "phase5-r1-support-census-v3")
+        self.assertTrue(config["spawn_query_anywhere"])
+        self.assertTrue(config["qualifier_query_anywhere"])
+        self.assertTrue(config["query_parameter_alignment_with_qualifier"])
+        self.assertIn("do not run", config["execution_gate"])
+        fixture = self._run_scene(_ResetIsolatedEnv())
+        summary = self.module.build_public_summary(
+            config=config,
+            raw_scene_rows=[
+                {**deepcopy(fixture), "scene": scene}
+                for scene in config["inspected_scenes"]
+            ],
+            git_state={"code_revision": "a" * 40, "working_tree_dirty": False},
+            raw_digest="b" * 64,
+        )
+        self.assertEqual(
+            summary["script_version"], "phase5-r1-support-census-script-v3"
+        )
+        self.assertTrue(summary["spawn_query_anywhere"])
+        self.assertTrue(summary["query_parameter_alignment_with_qualifier"])
 
     def test_every_receptacle_query_is_reset_isolated(self) -> None:
         env = _ResetIsolatedEnv(failed_types={"Shelf", "SideTable"})
@@ -176,6 +203,27 @@ class Phase5SupportCensusV2Tests(unittest.TestCase):
         )
         self.assertEqual(desk["material_mutation_query_count"], 1)
         self.assertGreater(desk["max_position_delta_meters"], 0.001)
+
+    def test_v3_queries_use_anywhere_true(self) -> None:
+        config = self.module.load_config(CONFIG_V3_PATH)
+        env = _ResetIsolatedEnv()
+        thresholds = config["material_change_thresholds"]
+        self.module.census_scene(
+            env,
+            scene="FloorPlanFixture",
+            support_types=config["candidate_receptacle_types"],
+            settling_pass_count=config["settling_pass_count"],
+            position_threshold=thresholds["position_delta_meters"],
+            rotation_threshold=thresholds["rotation_component_delta_degrees"],
+            spawn_query_anywhere=config["spawn_query_anywhere"],
+        )
+        query_actions = [
+            action
+            for action in env.recorded_actions
+            if action["action"] == "GetSpawnCoordinatesAboveReceptacle"
+        ]
+        self.assertEqual(len(query_actions), 8)
+        self.assertTrue(all(action["anywhere"] is True for action in query_actions))
 
     def test_policy_uses_census_not_placement_outcomes(self) -> None:
         row = self._run_scene(

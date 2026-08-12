@@ -816,6 +816,40 @@ changed from this outcome alone. Public evidence is retained at
 `docs/evidence/phase5_r1_support_census_v2.json`. The post-run evidence test
 passed 6/6 and complete offline regression passed 134/134.
 
+### FloorPlan302 matched-action mutation-isolation precommit
+
+The successor isolation protocol is restricted to FloorPlan302. It first
+verifies the previously observed receptacle census: one Bed, one Desk, five
+Shelves, and two SideTables. It then runs three independently reset natural
+controls and nine independently reset query trials. Every trial receives five
+settling `Pass` actions followed by exactly one measured action: a sixth `Pass`
+for a control or one `GetSpawnCoordinatesAboveReceptacle` call for a query.
+Thus the pre/post comparison spans one simulator action in both groups.
+
+Each of the nine receptacles is queried once in deterministic type/object order,
+with a fresh reset before and after. Queries explicitly use `anywhere=true`,
+matching `qualify_phase5_anchors.py`. The original 0.001 m and 0.1 degree
+thresholds are unchanged. No coordinate enters public evidence.
+
+Case A requires every natural control to remain materially stable and at least
+one query to produce material change. Case B requires material natural-control
+variation and every query to stay inside the anonymous maximum position,
+rotation, logical, and identity envelope observed in the controls. A query that
+exceeds a material control envelope yields a mixed/inconclusive result, not
+query causality. If neither group changes materially, the result is no material
+change. Ordinary failed queries remain measured trials.
+
+The aligned census successor is frozen separately as
+`phase5-r1-support-census-v3`: it preserves all six scenes, all eight support
+types, five settling actions, one query per reset, comparator thresholds,
+selection rule, 0.02 m margin, and route-v4. Its only behavioral protocol change
+from v2 is explicit `anywhere=true`, aligned with qualification. Census v3 must
+not run before the committed FloorPlan302 isolation result is reviewed.
+
+This precommit authorizes no other scene, placement, pickup, fallback, memory
+agent, image, or census run. Focused compile/tests passed 15/15 before complete
+regression; complete offline regression then passed 143/143.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

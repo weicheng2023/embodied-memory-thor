@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the reset-isolated, tolerant Phase 5 R1 support census v2."""
+"""Run a reset-isolated, tolerant Phase 5 R1 support census."""
 
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
 SCRIPT_VERSION = "phase5-r1-support-census-script-v2"
+SCRIPT_VERSION_V3 = "phase5-r1-support-census-script-v3"
 CONTROLLER_SETTINGS = {
     "width": 300,
     "height": 300,
@@ -105,7 +106,11 @@ def load_config(path: Path) -> dict[str, Any]:
         "Shelf",
         "SideTable",
     ]
-    if raw.get("census_version") != "phase5-r1-support-census-v2":
+    census_version = raw.get("census_version")
+    if census_version not in {
+        "phase5-r1-support-census-v2",
+        "phase5-r1-support-census-v3",
+    }:
         raise ValueError("unexpected census version")
     if raw.get("inspected_scenes") != expected_scenes:
         raise ValueError("census v2 scene order is not frozen")
@@ -113,6 +118,18 @@ def load_config(path: Path) -> dict[str, Any]:
         raise ValueError("census v2 support type order is not frozen")
     if raw.get("one_receptacle_query_per_reset") is not True:
         raise ValueError("every receptacle query must be reset-isolated")
+    query_anywhere = raw.get("spawn_query_anywhere", False)
+    if not isinstance(query_anywhere, bool):
+        raise ValueError("spawn_query_anywhere must be boolean")
+    if census_version == "phase5-r1-support-census-v2" and query_anywhere:
+        raise ValueError("historical census v2 used anywhere=false")
+    if census_version == "phase5-r1-support-census-v3":
+        if query_anywhere is not True:
+            raise ValueError("census v3 must use anywhere=true")
+        if raw.get("qualifier_query_anywhere") is not True:
+            raise ValueError("qualification query contract must be explicit")
+        if raw.get("query_parameter_alignment_with_qualifier") is not True:
+            raise ValueError("census v3 must align with qualification")
     if not isinstance(raw.get("settling_pass_count"), int) or raw["settling_pass_count"] <= 0:
         raise ValueError("settling pass count must be positive")
     if raw.get("allowed_actions") != [
@@ -183,6 +200,7 @@ def census_scene(
     settling_pass_count: int,
     position_threshold: float,
     rotation_threshold: float,
+    spawn_query_anywhere: bool = False,
 ) -> dict[str, Any]:
     _reset_and_settle(env, scene=scene, pass_count=settling_pass_count)
     initial_metadata = env.get_evaluator_state()
@@ -230,7 +248,10 @@ def census_scene(
                 raise RuntimeError("receptacle count changed across deterministic reset")
             before = build_object_snapshot(metadata)
             event = env.step(
-                spawn_coordinate_query(str(receptacles[ordinal].get("objectId", "")))
+                spawn_coordinate_query(
+                    str(receptacles[ordinal].get("objectId", "")),
+                    anywhere=spawn_query_anywhere,
+                )
             )
             success, coordinate_count, error_category = _query_result(event)
             after = build_object_snapshot(env.get_evaluator_state())
@@ -409,13 +430,21 @@ def build_public_summary(
     )
     summary = {
         "census_version": config["census_version"],
-        "script_version": SCRIPT_VERSION,
+        "script_version": (
+            SCRIPT_VERSION_V3
+            if config["census_version"] == "phase5-r1-support-census-v3"
+            else SCRIPT_VERSION
+        ),
         "claim": "reset-isolated tolerant support census; not placement, qualification, or memory comparison",
         "config_digest": stable_digest(config),
         "raw_digest": raw_digest,
         "inspected_scenes": list(config["inspected_scenes"]),
         "candidate_receptacle_types": list(config["candidate_receptacle_types"]),
         "material_change_thresholds": deepcopy(config["material_change_thresholds"]),
+        "spawn_query_anywhere": bool(config.get("spawn_query_anywhere", False)),
+        "query_parameter_alignment_with_qualifier": bool(
+            config.get("query_parameter_alignment_with_qualifier", False)
+        ),
         "scene_count": len(scenes),
         "census_complete": complete,
         "scenes": scenes,
@@ -441,7 +470,7 @@ def audit_public_summary(summary: Mapping[str, Any]) -> None:
         if isinstance(value, Mapping):
             forbidden = PUBLIC_FORBIDDEN_KEYS.intersection(str(key) for key in value)
             if forbidden:
-                raise ValueError(f"public census v2 has forbidden keys: {sorted(forbidden)}")
+                raise ValueError(f"public census has forbidden keys: {sorted(forbidden)}")
             for child in value.values():
                 visit(child)
         elif isinstance(value, list):
@@ -452,15 +481,21 @@ def audit_public_summary(summary: Mapping[str, Any]) -> None:
     serialized = json.dumps(to_jsonable(summary), sort_keys=True)
     for forbidden in PUBLIC_FORBIDDEN_TEXT:
         if forbidden in serialized:
-            raise ValueError(f"public census v2 contains forbidden text: {forbidden}")
+            raise ValueError(f"public census contains forbidden text: {forbidden}")
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None, *, default_config: Path | None = None
+) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
         type=Path,
-        default=PROJECT_ROOT / "configs" / "phase5_r1_support_census_v2.json",
+        default=(
+            default_config
+            if default_config is not None
+            else PROJECT_ROOT / "configs" / "phase5_r1_support_census_v2.json"
+        ),
     )
     parser.add_argument("--private-output", type=Path, required=True)
     parser.add_argument("--public-output", type=Path, required=True)
@@ -483,6 +518,9 @@ def main(argv: list[str] | None = None) -> int:
                     settling_pass_count=int(config["settling_pass_count"]),
                     position_threshold=float(thresholds["position_delta_meters"]),
                     rotation_threshold=float(thresholds["rotation_component_delta_degrees"]),
+                    spawn_query_anywhere=bool(
+                        config.get("spawn_query_anywhere", False)
+                    ),
                 )
                 raw_scene_rows.append(row)
                 if row["material_mutation_detected"]:
@@ -495,8 +533,15 @@ def main(argv: list[str] | None = None) -> int:
         env.close()
     raw = {
         "census_version": config["census_version"],
-        "script_version": SCRIPT_VERSION,
-        "boundary": "EVALUATOR-ONLY CENSUS V2 - NEVER PLANNER INPUT",
+        "script_version": (
+            SCRIPT_VERSION_V3
+            if config["census_version"] == "phase5-r1-support-census-v3"
+            else SCRIPT_VERSION
+        ),
+        "boundary": (
+            f"EVALUATOR-ONLY CENSUS {config['census_version'].rsplit('-', 1)[-1].upper()}"
+            " - NEVER PLANNER INPUT"
+        ),
         "config_digest": stable_digest(config),
         "scenes": raw_scene_rows,
         "fatal_error_category": fatal_error_category,
