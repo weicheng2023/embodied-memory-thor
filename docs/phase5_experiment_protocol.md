@@ -874,6 +874,41 @@ it is a new gate, not an automatic rerun. Public evidence is
 `docs/evidence/phase5_floorplan302_support_mutation_isolation.json`. Post-run
 evidence tests passed 8/8 and complete offline regression passed 144/144.
 
+### FloorPlan302 Shelf-4 paired attribution precommit
+
+The stronger control is a bounded post-hoc diagnostic of the only v1 envelope
+exceedance, Shelf ordinal 4 in FloorPlan302. It cannot retroactively turn that
+selected case into confirmatory task evidence. The design freezes 12 independent
+pairs (24 total fresh-reset trials). Each trial has five settling `Pass` actions
+and exactly one measured action. Within each pair there is one `anywhere=true`
+Shelf-4 query and one `Pass` control; the order alternates query/pass and
+pass/query, producing six pairs of each order. Every trial resets immediately.
+
+The two continuous endpoints are the anonymous maximum rotation-component and
+position deltas already used by the tolerant audit. Practical-effect margins
+remain 0.1 degrees and 0.001 m. For each endpoint, analysis uses the 12 paired
+query-minus-control differences and a one-sided 97.5% Student-t bound
+(`df=11`, `t=2.200985`). This is Bonferroni-corrected across two endpoints for a
+familywise alpha of 0.05. Median, minimum, maximum, and positive-difference
+counts are reported as non-decision sensitivity diagnostics so a mean driven by
+one extreme pair remains visible.
+
+A query-specific material effect is supported only if query-only logical or
+identity change occurs, or a corrected lower paired bound exceeds a frozen
+practical margin. No material query effect is supported only if both corrected
+upper bounds remain below their margins and there is no logical/identity
+change. All other complete results remain inconclusive. Failed queries are
+incomplete; control logical/identity changes block causal attribution.
+
+The probe preserves the same scene, exact selected support ordinal,
+`anywhere=true` qualification alignment, and action boundary. It authorizes no
+census v3, other scene, placement, pickup, fallback, memory agent, image, or
+coordinate exposure. Only after offline compile, statistical/order/privacy
+tests, complete regression, and a clean pushed commit may the single real probe
+run. Census v3 remains blocked regardless until the paired result is separately
+reviewed. Pre-run focused acceptance passed 9/9 and complete offline regression
+passed 153/153.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

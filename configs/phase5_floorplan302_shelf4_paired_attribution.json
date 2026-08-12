@@ -1,0 +1,64 @@
+{
+  "protocol_version": "phase5-floorplan302-shelf4-paired-attribution-v1",
+  "claim_scope": "post-hoc diagnostic attribution for the only v1 control-envelope exceedance; not formal task selection evidence",
+  "scene": "FloorPlan302",
+  "target_support_type": "Shelf",
+  "target_support_ordinal": 4,
+  "expected_target_support_count": 5,
+  "settling_pass_count": 5,
+  "pair_count": 12,
+  "pair_orders": [
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query",
+    "query_then_pass",
+    "pass_then_query"
+  ],
+  "spawn_query_anywhere": true,
+  "qualifier_query_anywhere": true,
+  "query_parameter_alignment_with_qualifier": true,
+  "continuous_endpoints": {
+    "max_rotation_component_delta_degrees": {
+      "practical_margin": 0.1
+    },
+    "max_position_delta_meters": {
+      "practical_margin": 0.001
+    }
+  },
+  "statistics": {
+    "familywise_alpha": 0.05,
+    "continuous_endpoint_count": 2,
+    "per_endpoint_one_sided_alpha": 0.025,
+    "confidence_level": 0.975,
+    "degrees_of_freedom": 11,
+    "t_critical": 2.200985160082949
+  },
+  "allowed_actions": [
+    "GetSpawnCoordinatesAboveReceptacle",
+    "Pass"
+  ],
+  "constraints": {
+    "other_scenes_allowed": false,
+    "one_followup_action_per_reset": true,
+    "placement_allowed": false,
+    "pickup_allowed": false,
+    "fallback_allowed": false,
+    "memory_agents_allowed": false,
+    "images_allowed": false,
+    "force_action_allowed": false,
+    "census_v3_allowed": false
+  },
+  "decision_rule": {
+    "query_effect": "support query effect only if a query-only logical/identity change occurs or a Bonferroni-corrected lower paired bound exceeds the frozen practical margin for at least one continuous endpoint",
+    "no_material_query_effect": "supported only if corrected upper paired bounds are below both frozen practical margins and no logical/identity change occurs",
+    "inconclusive": "all other complete outcomes remain inconclusive; failed queries or control logical/identity changes have explicit non-causal classifications"
+  },
+  "privacy": "public evidence contains pair/order labels, types, ordinals, counts, digests, anonymous deltas, intervals, and booleans only; no objectId, coordinates, exact poses, target points, or registry content"
+}
