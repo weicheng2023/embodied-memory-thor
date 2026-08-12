@@ -430,6 +430,50 @@ class Phase5AnchorTests(unittest.TestCase):
                 candidates, diagnostic_candidate_order=13
             )
 
+    def test_absolute_route_precommit_summary_is_coordinate_free(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        path = root / "scripts" / "precommit_phase5_absolute_route.py"
+        spec = importlib.util.spec_from_file_location(
+            "precommit_phase5_absolute_route", path
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        route = {
+            "route_version": "phase5-target-independent-absolute-horizon-v4",
+            "absolute_scan_horizon_degrees": 0.0,
+            "horizon_alignment_action_count": 1,
+            "horizon_restoration_action_count": 1,
+            "target_or_anchor_input_used": False,
+            "start_node": [99, 88],
+            "actions": [
+                {"action": {"action": "LookDown"}},
+                {"action": {"action": "RotateRight"}},
+                {"action": {"action": "LookUp"}},
+            ],
+        }
+        summary = module._coordinate_free_summary(
+            scene="FloorPlanFixture",
+            configuration_id="fixture_config",
+            start_pose_digest="a" * 64,
+            route=route,
+            git_state={"code_revision": "b" * 40, "working_tree_dirty": False},
+            output_dir=Path("ignored-output"),
+        )
+        self.assertTrue(summary["passed"])
+        self.assertFalse(summary["placement_actions_run"])
+        self.assertFalse(summary["memory_agents_run"])
+        text = json.dumps(summary)
+        for forbidden in (
+            "start_node",
+            "target_point",
+            "anchor_id",
+            "candidate_order",
+            "objectId",
+            "reachable_positions",
+        ):
+            self.assertNotIn(forbidden, text)
+
 
 if __name__ == "__main__":
     unittest.main()

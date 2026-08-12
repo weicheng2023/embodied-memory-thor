@@ -603,6 +603,21 @@ Real order is fixed: candidate-1 diagnostic, full FloorPlan202 requalification,
 then and only then FloorPlan301. No v4 real result exists at this checkpoint.
 V4 offline acceptance is 30/30 focused and 113/113 complete.
 
+The mandatory FloorPlan202 v4 replay has now passed on clean revision
+`68c58b6`. Candidate 1 was discovered at action 26 and picked at action 27 with
+zero failed ordinary actions. Full qualification then selected the same first
+candidate after physical placement QA, shared fallback pickup, fresh-reset
+replay, and reset restoration all passed. The coordinate-free record is
+`docs/evidence/phase5_floorplan202_absolute_route_v4_anchor_qualification.json`.
+
+Before a later scene performs any placement, its v4 action sequence must be
+precommitted by a route-only QA run. That run may use evaluator-only frozen start
+and reachable positions to construct the target-independent route, but it runs
+no placement and no memory agent. Its public summary exposes only digests,
+counts, the absolute horizon, and pass/fail state; the exact route remains in an
+ignored evaluator-only file. A coordinate-free contract derived from this run
+must be committed from a clean revision before the scene's candidate-1 probe.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
