@@ -6,16 +6,130 @@ import unittest
 import json
 import importlib.util
 import tempfile
+from copy import deepcopy
 from pathlib import Path
+from typing import Any, Mapping
+from unittest.mock import Mock, patch
 
 from embodied_memory_thor.phase5.anchors import (
     ANCHOR_GEOMETRY_VERSION,
+    ANCHOR_QUALIFICATION_VERSION,
+    ANCHOR_REGISTRY_VERSION,
+    BOOK_SUPPORT_TYPES,
+    SUPPORT_POLICY_VERSION,
     build_absolute_horizon_alignment_actions,
     build_geometry_candidate_plan,
     build_target_independent_coverage_route,
     public_anchor_reference,
     stable_digest,
 )
+
+
+class _Event:
+    def __init__(self, metadata: Mapping[str, Any]) -> None:
+        self.metadata = dict(metadata)
+
+
+class _FreshSupportQueryEnv:
+    def __init__(self) -> None:
+        self._base_objects = [
+            {
+                **_box(
+                    "Book|private",
+                    x=0.0,
+                    y=1.0,
+                    z=0.0,
+                    sx=0.4,
+                    sy=0.08,
+                    sz=0.2,
+                    object_type="Book",
+                ),
+                "pickupable": True,
+                "visible": True,
+                "isMoving": False,
+            },
+            {
+                **_box(
+                    "Bed|private",
+                    x=2.0,
+                    y=1.0,
+                    z=0.0,
+                    sx=2.0,
+                    sy=0.2,
+                    sz=2.0,
+                    object_type="Bed",
+                ),
+                "receptacle": True,
+                "visible": False,
+            },
+            {
+                **_box(
+                    "Shelf|private",
+                    x=4.0,
+                    y=1.0,
+                    z=0.0,
+                    sx=2.0,
+                    sy=0.2,
+                    sz=2.0,
+                    object_type="Shelf",
+                ),
+                "receptacle": True,
+                "visible": False,
+            },
+        ]
+        self._objects = deepcopy(self._base_objects)
+        self.reset_scenes: list[str] = []
+        self.queries_per_reset: list[int] = []
+        self._query_count = 0
+        self.query_actions: list[dict[str, Any]] = []
+
+    def reset(self, scene: str) -> _Event:
+        if self.reset_scenes:
+            self.queries_per_reset.append(self._query_count)
+        self._query_count = 0
+        self.reset_scenes.append(scene)
+        self._objects = deepcopy(self._base_objects)
+        return _Event(self.get_evaluator_state())
+
+    def step(self, action: Mapping[str, Any]) -> _Event:
+        action_name = str(action["action"])
+        returned: Any = None
+        if action_name == "GetSpawnCoordinatesAboveReceptacle":
+            self._query_count += 1
+            self.query_actions.append(dict(action))
+            support = next(
+                obj
+                for obj in self._objects
+                if obj["objectId"] == action["objectId"]
+            )
+            point = deepcopy(support["position"])
+            point["y"] = 1.2
+            returned = [point]
+            # Deliberately contaminate this query state. Correct isolation must
+            # remove it before the next query and before geometry planning.
+            self._objects[0]["position"]["x"] = 99.0
+        elif action_name == "GetReachablePositions":
+            returned = [
+                {"x": 0.0, "y": 0.9, "z": 0.0},
+                {"x": 0.25, "y": 0.9, "z": 0.0},
+            ]
+        else:
+            raise AssertionError(f"unexpected fake action: {action_name}")
+        metadata = self.get_evaluator_state()
+        metadata.update(
+            {"lastActionSuccess": True, "actionReturn": returned, "errorMessage": ""}
+        )
+        return _Event(metadata)
+
+    def get_evaluator_state(self) -> dict[str, Any]:
+        return {
+            "objects": deepcopy(self._objects),
+            "agent": {
+                "position": {"x": 0.0, "y": 0.9, "z": 0.0},
+                "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+                "cameraHorizon": 0.0,
+            },
+        }
 
 
 def _box(
@@ -43,6 +157,162 @@ def _box(
 
 
 class Phase5AnchorTests(unittest.TestCase):
+    def test_support_policy_v3_is_predeclared_semantic_and_not_census_selected(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        policy = json.loads(
+            (root / "configs" / "phase5_r1_support_policy_v3.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        expected = [
+            "Bed",
+            "CoffeeTable",
+            "CounterTop",
+            "Desk",
+            "DiningTable",
+            "Dresser",
+            "Shelf",
+            "SideTable",
+        ]
+        self.assertEqual(policy["policy_version"], SUPPORT_POLICY_VERSION)
+        self.assertEqual(policy["admitted_support_types"], expected)
+        self.assertEqual(BOOK_SUPPORT_TYPES, frozenset(expected))
+        self.assertEqual(
+            ANCHOR_QUALIFICATION_VERSION, "phase5-anchor-qualification-v3"
+        )
+        self.assertEqual(
+            ANCHOR_REGISTRY_VERSION, "phase5-private-anchor-registry-v3"
+        )
+        self.assertTrue(policy["one_support_query_per_fresh_reset"])
+        self.assertFalse(policy["query_state_reused_by_later_query_or_trial"])
+        self.assertFalse(policy["placement_outcomes_used_for_support_type_admission"])
+        self.assertFalse(policy["formal_episode_dynamic_spawn_query_allowed"])
+        self.assertTrue(policy["formal_episode_uses_frozen_anchor_only"])
+        self.assertIn(
+            "phase5_r1_support_census_paired_causal_v4.json",
+            policy["retained_failed_evidence"],
+        )
+
+    def test_candidate_queries_are_fresh_reset_isolated_before_clean_planning(self) -> None:
+        module = self._qualifier_module()
+        env = _FreshSupportQueryEnv()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            plan, route, book = module._collect_precommitted_plan(
+                env,
+                scene="FloorPlanFixture",
+                output_dir=Path(temp_dir),
+                git_state={
+                    "code_revision": "a" * 40,
+                    "working_tree_dirty": False,
+                },
+                setup_actions=[],
+                configuration_id="fixture",
+                absolute_scan_horizon_degrees=0.0,
+            )
+        env.reset("FloorPlanFixture")
+        self.assertEqual(len(env.query_actions), 2)
+        self.assertTrue(all(action["anywhere"] is True for action in env.query_actions))
+        self.assertTrue(all(count <= 1 for count in env.queries_per_reset))
+        self.assertGreaterEqual(len(env.reset_scenes), 4)
+        self.assertEqual(book["position"]["x"], 0.0)
+        self.assertEqual(plan["target"]["before_position"]["x"], 0.0)
+        self.assertEqual(plan["support_policy_version"], SUPPORT_POLICY_VERSION)
+        protocol = plan["support_query_protocol"]
+        self.assertTrue(protocol["one_support_query_per_fresh_reset"])
+        self.assertFalse(protocol["query_state_reused_by_later_query_or_trial"])
+        self.assertTrue(protocol["post_query_clean_reset_before_route_and_geometry"])
+        self.assertFalse(protocol["support_policy_admission_uses_query_outcome"])
+        self.assertEqual(protocol["support_query_count"], 2)
+        self.assertTrue(
+            all(row["fresh_reset_before_query"] for row in plan["support_query_audit"])
+        )
+        self.assertTrue(
+            all(not row["query_state_reused"] for row in plan["support_query_audit"])
+        )
+        self.assertEqual(
+            {row["support_type"] for row in plan["geometry"]["accepted_candidates"]},
+            {"Bed", "Shelf"},
+        )
+        self.assertFalse(route["target_or_anchor_input_used"])
+
+    def test_native_placement_and_replay_each_start_from_reset_setup(self) -> None:
+        module = self._qualifier_module()
+        initial_target = {
+            **_box(
+                "Book|private",
+                x=0.0,
+                y=1.0,
+                z=0.0,
+                sx=0.4,
+                sy=0.08,
+                sz=0.2,
+                object_type="Book",
+            ),
+            "visible": True,
+            "isMoving": False,
+        }
+        placed_target = {
+            **_box(
+                "Book|private",
+                x=2.0,
+                y=1.2,
+                z=0.0,
+                sx=0.4,
+                sy=0.08,
+                sz=0.2,
+                object_type="Book",
+                parents=["Desk|private"],
+            ),
+            "visible": False,
+            "isMoving": False,
+        }
+        support = {
+            **_box(
+                "Desk|private",
+                x=2.0,
+                y=1.0,
+                z=0.0,
+                sx=2.0,
+                sy=0.2,
+                sz=1.0,
+                object_type="Desk",
+            ),
+            "receptacle": True,
+        }
+        event = _Event(
+            {
+                "objects": [placed_target, support],
+                "lastActionSuccess": True,
+                "errorMessage": "",
+            }
+        )
+        env = Mock()
+        env.step.return_value = event
+        reset_setup = Mock(
+            return_value=({"objects": [initial_target, support]}, [])
+        )
+        kwargs = {
+            "scene": "FloorPlanFixture",
+            "target_id": "Book|private",
+            "before_position": {"x": 0.0, "y": 1.0, "z": 0.0},
+            "support_id": "Desk|private",
+            "point": {"x": 2.0, "y": 1.2, "z": 0.0},
+            "setup_actions": [],
+        }
+        with patch.object(module, "_reset_setup", reset_setup):
+            first = module._physical_placement_trial(env, **kwargs)
+            replay = module._physical_placement_trial(env, **kwargs)
+        self.assertTrue(first["passed"])
+        self.assertTrue(replay["passed"])
+        self.assertEqual(reset_setup.call_count, 2)
+        self.assertEqual(
+            sum(
+                call.args[0]["action"] == "PlaceObjectAtPoint"
+                for call in env.step.call_args_list
+            ),
+            2,
+        )
+
     def test_absolute_horizon_alignment_reaches_zero_and_restores(self) -> None:
         expected = {
             -30.0: (["LookDown"], ["LookUp"]),
@@ -316,7 +586,7 @@ class Phase5AnchorTests(unittest.TestCase):
         )
         self.assertEqual(plan["geometry_version"], ANCHOR_GEOMETRY_VERSION)
         self.assertEqual(
-            plan["qualification_version"], "phase5-anchor-qualification-v2"
+            plan["qualification_version"], "phase5-anchor-qualification-v3"
         )
         self.assertEqual(
             plan["target_footprint_half_extents_meters"],

@@ -35,7 +35,8 @@ from embodied_memory_thor.phase5.anchors import (  # noqa: E402
     ANCHOR_GEOMETRY_VERSION,
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
-    OPEN_SUPPORT_TYPES,
+    BOOK_SUPPORT_TYPES,
+    SUPPORT_POLICY_VERSION,
     build_geometry_candidate_plan,
     build_target_independent_coverage_route,
     stable_digest,
@@ -50,7 +51,7 @@ from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v9"
+SCRIPT_VERSION = "phase5-anchor-batch-v10"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -261,7 +262,7 @@ def _rank_supports(
     excluded = set(excluded_ids)
     supports = [
         obj for obj in _objects(metadata)
-        if obj.get("objectType") in OPEN_SUPPORT_TYPES
+        if obj.get("objectType") in BOOK_SUPPORT_TYPES
         and obj.get("receptacle") is True
         and obj.get("objectId")
         and obj.get("objectId") not in excluded
@@ -284,18 +285,35 @@ def _collect_precommitted_plan(
     coverage_scan_horizon_degrees: float = 0.0,
     absolute_scan_horizon_degrees: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], Mapping[str, Any]]:
-    metadata, setup = _reset_setup(env, scene, setup_actions)
-    book = _visible_book(metadata)
-    before_position = _position(book)
+    reference_metadata, _ = _reset_setup(env, scene, setup_actions)
+    reference_book = _visible_book(reference_metadata)
+    before_position = _position(reference_book)
     if before_position is None:
         raise RuntimeError("Book position unavailable")
-    parent_ids = [str(value) for value in book.get("parentReceptacles") or []]
-    supports = _rank_supports(
-        metadata, before_position=before_position, excluded_ids=parent_ids
+    target_id = str(reference_book["objectId"])
+    parent_ids = [
+        str(value) for value in reference_book.get("parentReceptacles") or []
+    ]
+    reference_supports = _rank_supports(
+        reference_metadata,
+        before_position=before_position,
+        excluded_ids=parent_ids,
     )
     support_queries: list[dict[str, Any]] = []
     query_audit: list[dict[str, Any]] = []
-    for rank, support in enumerate(supports, start=1):
+    for rank, reference_support in enumerate(reference_supports, start=1):
+        metadata, query_setup = _reset_setup(env, scene, setup_actions)
+        reset_book = _visible_book(metadata)
+        if str(reset_book.get("objectId", "")) != target_id:
+            raise RuntimeError("target identity changed across support-query reset")
+        support_id = str(reference_support["objectId"])
+        support = _target(metadata, support_id)
+        if (
+            support is None
+            or support.get("objectType") not in BOOK_SUPPORT_TYPES
+            or support.get("receptacle") is not True
+        ):
+            raise RuntimeError("support identity changed across support-query reset")
         action = spawn_coordinate_query(str(support["objectId"]), anywhere=True)
         event = env.step(action)
         raw = event.metadata.get("actionReturn")
@@ -307,11 +325,21 @@ def _collect_precommitted_plan(
                 "success": bool(event.metadata.get("lastActionSuccess", False)),
                 "error": str(event.metadata.get("errorMessage", "")),
                 "coordinate_count": len(coordinates),
+                "fresh_reset_before_query": True,
+                "setup_action_count": len(query_setup),
+                "measured_action_count": 1,
+                "query_state_reused": False,
             }
         )
         if event.metadata.get("lastActionSuccess") is True and coordinates:
             support_queries.append({"support": deepcopy(dict(support)), "coordinates": coordinates})
 
+    # No query-mutated state is used for route construction, geometry metadata,
+    # placement, or a later support query.
+    metadata, setup = _reset_setup(env, scene, setup_actions)
+    book = _visible_book(metadata)
+    if str(book.get("objectId", "")) != target_id:
+        raise RuntimeError("target identity changed before clean planning reset")
     reachable_event = env.step({"action": "GetReachablePositions"})
     reachable_raw = reachable_event.metadata.get("actionReturn")
     reachable = [dict(item) for item in reachable_raw if isinstance(item, Mapping)] if isinstance(reachable_raw, list) else []
@@ -357,6 +385,7 @@ def _collect_precommitted_plan(
     plan = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "support_policy_version": SUPPORT_POLICY_VERSION,
         "script_version": SCRIPT_VERSION,
         "created_at": _utc_now(),
         "created_before_native_placement_trials": True,
@@ -373,6 +402,14 @@ def _collect_precommitted_plan(
             "original_parent_ids": parent_ids,
         },
         "support_query_audit": query_audit,
+        "support_query_protocol": {
+            "spawn_query_anywhere": True,
+            "one_support_query_per_fresh_reset": True,
+            "support_query_count": len(query_audit),
+            "query_state_reused_by_later_query_or_trial": False,
+            "post_query_clean_reset_before_route_and_geometry": True,
+            "support_policy_admission_uses_query_outcome": False,
+        },
         "coverage_route_digest": route_digest,
         "coverage_route_action_count": len(coverage_route["actions"]),
         "max_fallback_actions": MAX_FALLBACK_ACTIONS,
@@ -934,6 +971,7 @@ def main(argv: list[str] | None = None) -> int:
         "registry_version": ANCHOR_REGISTRY_VERSION,
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "support_policy_version": SUPPORT_POLICY_VERSION,
         "created_at": _utc_now(),
         "boundary": BOUNDARY,
         "planner_visible": False,
@@ -974,6 +1012,7 @@ def main(argv: list[str] | None = None) -> int:
     summary = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "support_policy_version": SUPPORT_POLICY_VERSION,
         "claim": (
             "single-candidate target-lock diagnostic; not anchor qualification "
             "or a memory comparison"

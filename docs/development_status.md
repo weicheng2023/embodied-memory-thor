@@ -308,3 +308,15 @@ unchanged. The census is incomplete, policy v3 is not recommended, and
 FloorPlan301 candidate 1 remains blocked. No placement, pickup, fallback,
 memory, image, or later-scene run occurred. Post-run focused evidence tests
 pass 9/9 and the complete offline regression passes 171/171.
+
+Support policy v3 now replaces spawn-query census outcomes with a pre-outcome
+semantic eligibility rule over the same eight previously declared types. No
+type is excluded because of the Shelf stop. Qualification v3 isolates every
+support query behind its own reset/setup, discards query-mutated state, and
+performs a final clean reset before unchanged geometry-v2 and route-v4 planning.
+Native placement, physical QA, common fallback, fresh-reset replay, and reset
+restoration remain the anchor gates. Formal episodes still use frozen opaque
+anchors and never query coordinates. Focused offline tests pass 18/18. No new
+AI2-THOR run exists yet; the complete offline regression passes 174/174.
+FloorPlan301 geometry candidate 1 is the next and only real gate after a clean
+pushed precommit.

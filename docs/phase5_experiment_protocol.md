@@ -1067,6 +1067,47 @@ allowed. Public evidence is
 `docs/evidence/phase5_r1_support_census_paired_causal_v4.json`. Post-run focused
 evidence tests passed 9/9 and the complete offline regression passed 171/171.
 
+### Formal support policy v3 and qualification v3 precommit
+
+The failed causal census is retained but is no longer the decision basis for
+semantic support admission. Its valid conclusion is narrower: spawn-coordinate
+queries cannot be treated as reliably read-only under the one-pair mutation
+gate. It does not show that Shelf, or any other queried type, cannot physically
+support a Book. Excluding Shelf after observing its stop would be post-outcome
+selection, so no type is added or removed based on census v4.
+
+Support policy v3 freezes the same eight types declared before that outcome:
+Bed, CoffeeTable, CounterTop, Desk, DiningTable, Dresser, Shelf, and SideTable.
+An instance is eligible for candidate generation only when fresh-reset metadata
+marks it `receptacle=true`. This is semantic eligibility, not anchor acceptance.
+Spawn-query success, mutation, coordinate count, and native placement outcomes
+do not decide type admission.
+
+Qualification v3 assigns spawn queries one evaluator-only role: generate
+candidate coordinates before native QA. Every exact support query starts from
+its own reset and frozen setup, uses `anywhere=true`, and executes exactly one
+query. Its post-query state is never passed to another query, route planning,
+geometry planning, or placement. After the final query, another clean reset and
+setup provide the metadata used for route and geometry planning.
+
+The unchanged axis-aware geometry v2 filter then freezes candidate order before
+native outcomes. Each selected candidate must still pass native placement
+without force, same-target/material-move, old-view invisibility, support,
+overlap, three-sample stability, common target-independent fallback pickup,
+fresh-reset placement replay, and reset restoration. The route remains
+absolute-horizon v4 and the 0.02 m margin remains unchanged.
+
+Formal stale episodes may use only a frozen opaque anchor; they never execute a
+spawn query or receive support IDs, coordinates, candidate order, or query
+results. Policy v3 is formal only for evaluator-side anchor qualification and
+does not itself qualify any scene. Qualification and private registry versions
+advance to v3; geometry stays v2. FloorPlan301 must restart at geometry
+candidate 1 and stop on any failure before full qualification or later scenes.
+The frozen machine-readable policy is
+`configs/phase5_r1_support_policy_v3.json`. Focused offline acceptance passed
+18/18 and the complete offline regression passed 174/174; no new simulator
+outcome exists at this checkpoint.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

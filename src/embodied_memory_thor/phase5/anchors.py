@@ -9,12 +9,25 @@ from copy import deepcopy
 from typing import Any, Mapping, Sequence
 
 
-ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v2"
-ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v2"
+SUPPORT_POLICY_VERSION = "phase5-r1-support-policy-v3"
+ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v3"
+ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v3"
 ANCHOR_GEOMETRY_VERSION = "phase5-axis-aware-rectangular-footprint-v2"
-OPEN_SUPPORT_TYPES = frozenset(
-    {"CounterTop", "DiningTable", "CoffeeTable", "SideTable", "Desk"}
+BOOK_SUPPORT_TYPES = frozenset(
+    {
+        "Bed",
+        "CoffeeTable",
+        "CounterTop",
+        "Desk",
+        "DiningTable",
+        "Dresser",
+        "Shelf",
+        "SideTable",
+    }
 )
+# Compatibility name for older imports. Policy v3 is semantic support
+# eligibility, not a claim that every receptacle is geometrically open.
+OPEN_SUPPORT_TYPES = BOOK_SUPPORT_TYPES
 
 
 def stable_digest(value: Any) -> str:
@@ -57,7 +70,7 @@ def build_geometry_candidate_plan(
         if not isinstance(support, Mapping) or not isinstance(coordinates, Sequence):
             raise ValueError("support query requires support and coordinates")
         support_id = str(support.get("objectId", ""))
-        if not support_id or support.get("objectType") not in OPEN_SUPPORT_TYPES:
+        if not support_id or support.get("objectType") not in BOOK_SUPPORT_TYPES:
             continue
         support_rect = _xz_rect(support)
         if support_rect is None:
@@ -165,6 +178,7 @@ def build_geometry_candidate_plan(
     return {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "geometry_version": ANCHOR_GEOMETRY_VERSION,
+        "support_policy_version": SUPPORT_POLICY_VERSION,
         "orientation_policy": (
             "preserve_current_world_orientation_and_validate_native_placement"
         ),
