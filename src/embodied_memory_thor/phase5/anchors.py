@@ -10,8 +10,8 @@ from typing import Any, Mapping, Sequence
 
 
 SUPPORT_POLICY_VERSION = "phase5-r1-support-policy-v3"
-ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v6"
-ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v6"
+ANCHOR_QUALIFICATION_VERSION = "phase5-anchor-qualification-v7"
+ANCHOR_REGISTRY_VERSION = "phase5-private-anchor-registry-v7"
 ANCHOR_GEOMETRY_VERSION = "phase5-axis-aware-rectangular-footprint-v2"
 NATIVE_FIRST_CANDIDATE_POLICY_VERSION = "phase5-native-first-advisory-ranking-v1"
 NATIVE_CANDIDATE_POLICY_VERSION = (

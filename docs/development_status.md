@@ -408,3 +408,15 @@ was frozen. No memory agent, image, force action, Book rotation, formal episode,
 or later scene ran. This is anchor qualification evidence, not a memory result.
 Result-focused tests pass 29/29 and the complete offline regression passes
 185/185.
+
+Qualification v7 fixes FloorPlan303 as the next declared scene after the
+audited FloorPlan302 pass. The running state is two qualified scenes
+(FloorPlan202, FloorPlan302) and one cleanly exhausted failure (FloorPlan301).
+The sequence advances exactly one route-eligible scene after an audited pass or
+clean exhaustion and never uses prior placement outcomes to rank the next
+scene's coordinates. Candidate/gate behavior remains unchanged. A clean
+coordinate-free FloorPlan303 route-v4 contract is required before any support
+query or placement. No memory, image, force, rotation, or FloorPlan304+ work is
+authorized. Offline acceptance is pending.
+Focused transition tests pass 30/30 and the complete offline regression passes
+186/186. FloorPlan303 route-only construction has not started.

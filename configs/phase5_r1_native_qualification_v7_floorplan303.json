@@ -1,0 +1,40 @@
+{
+  "protocol_version": "phase5-r1-native-qualification-v7-floorplan303-v1",
+  "scene": "FloorPlan303",
+  "declared_scene_predecessor": "FloorPlan302",
+  "predecessor_public_evidence": "docs/evidence/phase5_floorplan302_native_qualification_v6.json",
+  "predecessor_required_passed": true,
+  "predecessor_required_anchor_frozen": true,
+  "predecessor_required_reset_restoration_passed": true,
+  "sequence_rule": "after an audited terminal pass or clean exhausted failure, advance exactly one route-eligible scene in declared order until six distinct anchors pass",
+  "qualified_scene_count_before_run": 2,
+  "qualified_scenes_before_run": [
+    "FloorPlan202",
+    "FloorPlan302"
+  ],
+  "failed_scenes_before_run": [
+    "FloorPlan301"
+  ],
+  "support_policy_version": "phase5-r1-support-policy-v3",
+  "qualification_version": "phase5-anchor-qualification-v7",
+  "private_registry_version": "phase5-private-anchor-registry-v7",
+  "candidate_policy_version": "phase5-native-first-type-balanced-ranking-v2",
+  "source_within_type_policy_version": "phase5-native-first-advisory-ranking-v1",
+  "geometry_diagnostic_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "route_only_precommit_required_before_placement": true,
+  "candidate_order_rule": "round-robin over present support types in the predeclared semantic order; within each type preserve native-first advisory ranking v1",
+  "candidate_order_frozen_before_native_outcomes": true,
+  "prior_scene_outcomes_used_to_select_candidates": false,
+  "maximum_native_candidate_trials": 12,
+  "batch_rule": "run the frozen balanced prefix until the first fully qualified anchor or all 12 candidates fail; retain every failure",
+  "placement_trial_fresh_reset": true,
+  "fresh_reset_replay_required": true,
+  "force_action_allowed": false,
+  "book_rotation_action_allowed": false,
+  "memory_agents_allowed": false,
+  "images_allowed": false,
+  "later_scenes_allowed_by_this_contract": false,
+  "formal_episode_dynamic_spawn_query_allowed": false,
+  "execution_gate": "derive, test, commit, and push a clean coordinate-free FloorPlan303 route-v4 contract before any placement; then run FloorPlan303 only"
+}

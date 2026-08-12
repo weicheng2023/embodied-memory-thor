@@ -1325,6 +1325,25 @@ it does not prove memory improvement. Public coordinate-free evidence is
 Result-focused tests passed 29/29 and the complete offline regression passed
 185/185.
 
+### FloorPlan303 qualification-v7 precommit
+
+The audited sequence state is now two passing anchors, FloorPlan202 and
+FloorPlan302, plus the cleanly exhausted FloorPlan301 failure. After either an
+audited terminal pass or an integrity-clean exhausted failure, the protocol
+advances exactly one route-eligible scene in declared order until six distinct
+anchors qualify. Thus FloorPlan303 is the only next scene; the FloorPlan302
+success does not select or rank its candidates.
+
+Qualification/registry v7 bind the transition. All type-balanced candidate,
+native placement, physical QA, common fallback, replay, restoration, privacy,
+and action-boundary rules are unchanged. Before any support query or placement,
+FloorPlan303 requires a clean coordinate-free absolute-horizon route-v4 result,
+tested and pushed. This contract authorizes neither FloorPlan304 nor a memory
+agent. Its executable definition is
+`configs/phase5_r1_native_qualification_v7_floorplan303.json`.
+Focused transition tests passed 30/30 and the complete offline regression
+passed 186/186. No FloorPlan303 route, query, or placement has run yet.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

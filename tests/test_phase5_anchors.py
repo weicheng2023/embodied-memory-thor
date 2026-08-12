@@ -183,10 +183,10 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertEqual(policy["admitted_support_types"], expected)
         self.assertEqual(BOOK_SUPPORT_TYPES, frozenset(expected))
         self.assertEqual(
-            ANCHOR_QUALIFICATION_VERSION, "phase5-anchor-qualification-v6"
+            ANCHOR_QUALIFICATION_VERSION, "phase5-anchor-qualification-v7"
         )
         self.assertEqual(
-            ANCHOR_REGISTRY_VERSION, "phase5-private-anchor-registry-v6"
+            ANCHOR_REGISTRY_VERSION, "phase5-private-anchor-registry-v7"
         )
         self.assertTrue(policy["one_support_query_per_fresh_reset"])
         self.assertFalse(policy["query_state_reused_by_later_query_or_trial"])
@@ -278,8 +278,13 @@ class Phase5AnchorTests(unittest.TestCase):
         )
         self.assertEqual(protocol["scene"], "FloorPlan302")
         self.assertEqual(protocol["declared_scene_predecessor"], "FloorPlan301")
-        self.assertEqual(protocol["qualification_version"], ANCHOR_QUALIFICATION_VERSION)
-        self.assertEqual(protocol["private_registry_version"], ANCHOR_REGISTRY_VERSION)
+        self.assertEqual(
+            protocol["qualification_version"], "phase5-anchor-qualification-v6"
+        )
+        self.assertEqual(
+            protocol["private_registry_version"],
+            "phase5-private-anchor-registry-v6",
+        )
         self.assertEqual(
             predecessor["classification"],
             protocol["predecessor_required_classification"],
@@ -294,6 +299,49 @@ class Phase5AnchorTests(unittest.TestCase):
         )
         self.assertTrue(protocol["route_only_precommit_required_before_placement"])
         self.assertFalse(protocol["runtime_or_integrity_failure_allows_scene_skip"])
+        self.assertFalse(protocol["prior_scene_outcomes_used_to_select_candidates"])
+        self.assertEqual(protocol["maximum_native_candidate_trials"], 12)
+        self.assertFalse(protocol["force_action_allowed"])
+        self.assertFalse(protocol["book_rotation_action_allowed"])
+        self.assertFalse(protocol["memory_agents_allowed"])
+        self.assertFalse(protocol["later_scenes_allowed_by_this_contract"])
+
+    def test_floorplan303_v7_follows_audited_pass_in_declared_order(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        protocol = json.loads(
+            (
+                root
+                / "configs"
+                / "phase5_r1_native_qualification_v7_floorplan303.json"
+            ).read_text(encoding="utf-8")
+        )
+        predecessor = json.loads(
+            (root / protocol["predecessor_public_evidence"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(protocol["scene"], "FloorPlan303")
+        self.assertEqual(protocol["declared_scene_predecessor"], "FloorPlan302")
+        self.assertEqual(protocol["qualification_version"], ANCHOR_QUALIFICATION_VERSION)
+        self.assertEqual(protocol["private_registry_version"], ANCHOR_REGISTRY_VERSION)
+        self.assertEqual(protocol["qualified_scene_count_before_run"], 2)
+        self.assertEqual(
+            protocol["qualified_scenes_before_run"],
+            ["FloorPlan202", "FloorPlan302"],
+        )
+        self.assertEqual(protocol["failed_scenes_before_run"], ["FloorPlan301"])
+        self.assertEqual(
+            predecessor["passed"], protocol["predecessor_required_passed"]
+        )
+        self.assertEqual(
+            predecessor["anchor_frozen"],
+            protocol["predecessor_required_anchor_frozen"],
+        )
+        self.assertEqual(
+            predecessor["reset_restoration_passed"],
+            protocol["predecessor_required_reset_restoration_passed"],
+        )
+        self.assertTrue(protocol["route_only_precommit_required_before_placement"])
         self.assertFalse(protocol["prior_scene_outcomes_used_to_select_candidates"])
         self.assertEqual(protocol["maximum_native_candidate_trials"], 12)
         self.assertFalse(protocol["force_action_allowed"])
