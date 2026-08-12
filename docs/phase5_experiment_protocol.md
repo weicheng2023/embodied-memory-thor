@@ -909,6 +909,37 @@ run. Census v3 remains blocked regardless until the paired result is separately
 reviewed. Pre-run focused acceptance passed 9/9 and complete offline regression
 passed 153/153.
 
+### FloorPlan302 Shelf-4 paired attribution result
+
+The only authorized paired probe ran on clean revision `1e7f05b`. All 12
+`anywhere=true` queries succeeded; 12 matched `Pass` controls also completed.
+All 24 trials used fresh resets, one measured followup action, and the frozen
+balanced six/six order. No identity or logical-state change occurred.
+
+For maximum position delta, the paired query-minus-control mean was
+0.00000433 m and the corrected one-sided upper bound was 0.00002130 m, well
+below the frozen 0.001 m margin. Thus no material query effect is supported for
+position. For rotation, the paired mean was 0.02636 degrees, median was exactly
+0, and 5/12 differences were positive. Its corrected interval was
+[-0.05334, 0.10606] degrees. The lower bound does not support a positive
+material effect, but the upper bound exceeds the frozen 0.1 degree margin by
+0.00606 degrees, so a below-margin conclusion is also not supported.
+
+The frozen overall classification is therefore
+`paired_attribution_inconclusive`. Post-hoc order diagnostics show mean rotation
+differences of 0.00910 degrees for query/pass and 0.04362 degrees for pass/query;
+these are non-decision diagnostics and do not change classification. The result
+is consistent with noisy natural settling but does not prove that explanation.
+
+Census v3 did not run and remains blocked. No other scene, placement, pickup,
+fallback, memory agent, image, or coordinate exposure occurred. Do not append
+samples to this observed fixed-N analysis. If further attribution is worth the
+compute, the next gate must precommit an independent no-peeking replication
+cohort and its combination/decision rule before execution. Public evidence is
+`docs/evidence/phase5_floorplan302_shelf4_paired_attribution.json`. Post-run
+focused evidence tests passed 10/10 and complete offline regression passed
+154/154.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

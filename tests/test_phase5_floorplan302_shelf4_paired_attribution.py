@@ -27,6 +27,12 @@ SCRIPT_PATH = (
 PROTOCOL_PATH = (
     ROOT / "configs" / "phase5_floorplan302_shelf4_paired_attribution.json"
 )
+EVIDENCE_PATH = (
+    ROOT
+    / "docs"
+    / "evidence"
+    / "phase5_floorplan302_shelf4_paired_attribution.json"
+)
 
 
 def _load_module() -> Any:
@@ -303,6 +309,40 @@ class Phase5FloorPlan302Shelf4PairedAttributionTests(unittest.TestCase):
         self.assertFalse(summary["placement_actions_run"])
         self.assertFalse(summary["memory_agents_run"])
         self.assertFalse(summary["census_v3_run"])
+
+    def test_real_paired_result_stays_inconclusive_and_blocks_census(self) -> None:
+        evidence = json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
+        self.module.audit_public_summary(evidence)
+        review = evidence["post_run_review"]
+        rotation = evidence["endpoint_intervals"][
+            "max_rotation_component_delta_degrees"
+        ]
+        position = evidence["endpoint_intervals"]["max_position_delta_meters"]
+
+        self.assertEqual(evidence["classification"], "paired_attribution_inconclusive")
+        self.assertEqual(evidence["pair_count"], 12)
+        self.assertEqual(len(evidence["trials"]), 24)
+        self.assertEqual(evidence["failed_query_count"], 0)
+        self.assertEqual(evidence["effect_endpoints"], [])
+        self.assertEqual(
+            evidence["below_margin_endpoints"], ["max_position_delta_meters"]
+        )
+        self.assertAlmostEqual(rotation["median_paired_difference"], 0.0)
+        self.assertEqual(rotation["positive_difference_count"], 5)
+        self.assertGreater(rotation["upper_bound"], 0.1)
+        self.assertLess(position["upper_bound"], 0.001)
+        self.assertFalse(review["query_specific_material_effect_supported"])
+        self.assertFalse(review["no_material_query_effect_fully_supported"])
+        self.assertTrue(review["no_material_position_effect_supported"])
+        self.assertFalse(review["census_v3_run_allowed"])
+        self.assertTrue(review["stop_required"])
+        self.assertFalse(evidence["census_v3_run"])
+        self.assertFalse(evidence["other_scenes_started"])
+        self.assertFalse(evidence["placement_actions_run"])
+        self.assertFalse(evidence["pickup_actions_run"])
+        self.assertFalse(evidence["fallback_route_run"])
+        self.assertFalse(evidence["memory_agents_run"])
+        self.assertFalse(evidence["images_saved"])
 
 
 if __name__ == "__main__":
