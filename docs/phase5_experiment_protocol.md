@@ -975,6 +975,39 @@ sample-size recomputation, AB/BA balance, target/action scope, privacy, and a
 failure-path assertion proving that an incomplete cohort writes no output.
 Complete offline regression passed 161/161.
 
+### Shelf-4 independent replication result and census-v3 review
+
+The fixed-N independent cohort ran on clean revision `7736996`. All 24 pairs
+(48 fresh-reset trials) completed before output; all 24 `anywhere=true` queries
+succeeded. Order was balanced, each trial had one measured action, no interim
+analysis/output occurred, and the prior 12 pairs were not pooled or used for
+classification. No logical or identity change occurred.
+
+Replication-only rotation means were 0.23785 degrees for query and 0.24466
+degrees for control. The paired query-minus-control mean was -0.00681 degrees,
+median 0, and only 1/24 differences was positive. Its corrected upper bound was
+0.00232 degrees, below the 0.1-degree practical margin. Position's paired mean
+was effectively zero and corrected upper bound was 0.00000000772 m, below the
+0.001 m margin. The frozen classification is therefore
+`no_material_query_effect_supported` for the independent diagnostic. This does
+not remove the post-hoc Shelf-4 selection caveat or turn it into task evidence.
+
+The result makes a census successor eligible for design review, but the current
+census v3 cannot run. Its code still flags a query whenever one immediate pose
+delta exceeds the absolute threshold, without a matched Pass adjustment. The
+replication's control mean rotation delta alone was 0.24466 degrees, so v3 would
+still confuse known natural settling with causal query mutation and likely
+reproduce a false stop.
+
+Census v3 was not run. No other scene, placement, pickup, fallback, memory
+agent, image, force action, or coordinate exposure occurred. The next gate is a
+precommitted census successor that compares query effects against matched
+natural controls (or an equivalently justified causal separation) before any
+multi-scene census. Public evidence is
+`docs/evidence/phase5_floorplan302_shelf4_independent_replication.json`.
+Post-run evidence tests passed 8/8 and complete offline regression passed
+162/162.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

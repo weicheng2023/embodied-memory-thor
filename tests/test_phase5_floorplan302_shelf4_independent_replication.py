@@ -32,6 +32,12 @@ PROTOCOL_PATH = (
     / "configs"
     / "phase5_floorplan302_shelf4_independent_replication.json"
 )
+EVIDENCE_PATH = (
+    ROOT
+    / "docs"
+    / "evidence"
+    / "phase5_floorplan302_shelf4_independent_replication.json"
+)
 
 
 def _load_module():
@@ -211,6 +217,49 @@ class Phase5FloorPlan302Shelf4IndependentReplicationTests(unittest.TestCase):
         self.assertFalse(summary["placement_actions_run"])
         self.assertFalse(summary["memory_agents_run"])
         self.assertFalse(summary["census_v3_run"])
+
+    def test_real_replication_supports_no_effect_but_blocks_current_v3(self) -> None:
+        evidence = json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
+        self.module.paired.audit_public_summary(evidence)
+        review = evidence["post_run_review"]
+        rotation = evidence["endpoint_intervals"][
+            "max_rotation_component_delta_degrees"
+        ]
+        position = evidence["endpoint_intervals"]["max_position_delta_meters"]
+
+        self.assertEqual(
+            evidence["classification"], "no_material_query_effect_supported"
+        )
+        self.assertEqual(evidence["pair_count"], 24)
+        self.assertEqual(len(evidence["trials"]), 48)
+        self.assertEqual(evidence["failed_query_count"], 0)
+        self.assertEqual(evidence["effect_endpoints"], [])
+        self.assertEqual(
+            evidence["below_margin_endpoints"],
+            [
+                "max_position_delta_meters",
+                "max_rotation_component_delta_degrees",
+            ],
+        )
+        self.assertLess(rotation["upper_bound"], 0.1)
+        self.assertLess(position["upper_bound"], 0.001)
+        self.assertEqual(rotation["positive_difference_count"], 1)
+        self.assertFalse(evidence["prior_cohort_used_for_decision"])
+        self.assertFalse(evidence["prior_cohort_pooled_with_replication"])
+        self.assertFalse(evidence["interim_analysis_run"])
+        self.assertFalse(evidence["interim_output_written"])
+        self.assertTrue(evidence["census_v3_review_eligible"])
+        self.assertFalse(review["census_v3_run_allowed"])
+        self.assertTrue(review["independent_no_material_query_effect_supported"])
+        self.assertFalse(review["query_specific_material_effect_supported"])
+        self.assertTrue(review["stop_required"])
+        self.assertFalse(evidence["census_v3_run"])
+        self.assertFalse(evidence["other_scenes_started"])
+        self.assertFalse(evidence["placement_actions_run"])
+        self.assertFalse(evidence["pickup_actions_run"])
+        self.assertFalse(evidence["fallback_route_run"])
+        self.assertFalse(evidence["memory_agents_run"])
+        self.assertFalse(evidence["images_saved"])
 
 
 if __name__ == "__main__":
