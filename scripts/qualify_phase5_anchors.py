@@ -43,10 +43,13 @@ from embodied_memory_thor.phase5.qualification import (  # noqa: E402
     place_object_at_point_action,
     spawn_coordinate_query,
 )
+from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
+    SharedTargetLockPolicy,
+)
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v4"
+SCRIPT_VERSION = "phase5-anchor-batch-v5"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -65,7 +68,7 @@ STABILITY_SAMPLE_COUNT = 3
 STABILITY_TOLERANCE_METERS = 0.02
 MAX_CANDIDATE_TRIALS = 12
 MAX_FALLBACK_ACTIONS = 240
-MAX_VISIBLE_INTERACTION_ACTIONS = 20
+MAX_TARGET_LOCK_ACTIONS = 32
 
 
 def _utc_now() -> str:
@@ -504,15 +507,114 @@ def _fallback_rediscovery_audit(
     env: ThorEnv, *, target_id: str, coverage_route: Mapping[str, Any]
 ) -> dict[str, Any]:
     action_log: list[dict[str, Any]] = []
-    discovery_step: int | None = None
     route_actions = coverage_route.get("actions", [])
-    for index, row in enumerate(route_actions[:MAX_FALLBACK_ACTIONS], start=1):
+    route_cursor = 0
+    target_lock_action_count = 0
+    planner = ThorBookReacquirePlanner()
+    target_lock = SharedTargetLockPolicy(target_type="Book")
+    recent: list[dict[str, Any]] = []
+    discovery_step: int | None = None
+    while route_cursor < min(len(route_actions), MAX_FALLBACK_ACTIONS):
+        observation = build_planner_observation(env.get_observation())
+        directive = target_lock.next_directive(
+            observation,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        if directive is not None:
+            target_lock_action_count += 1
+            if target_lock_action_count > MAX_TARGET_LOCK_ACTIONS:
+                return {
+                    "passed": False,
+                    "reason": "target_lock_total_action_limit_exceeded",
+                    "discovery_step": discovery_step,
+                    "action_log": action_log,
+                    **target_lock.snapshot(),
+                }
+            if discovery_step is None:
+                discovery_step = route_cursor
+            request = PlannerRequest(
+                task_name="thor_book_reacquire_k2",
+                instruction="Reacquire and pick up the Book.",
+                task_stage=(
+                    "pickup_book"
+                    if any(
+                        isinstance(obj, Mapping)
+                        and obj.get("objectType") == "Book"
+                        and obj.get("visible") is True
+                        for obj in observation.get("objects", [])
+                    )
+                    else "reacquire_book"
+                ),
+                step=len(action_log) + 1,
+                max_steps=MAX_FALLBACK_ACTIONS + MAX_TARGET_LOCK_ACTIONS,
+                observation=observation,
+                allowed_actions=THOR_BOOK_ACTIONS,
+                retrieved_memory=(),
+                recent_action_results=tuple(recent[-5:]),
+                target_lock=directive,
+            )
+            decision = planner.plan(request)
+            valid, errors = validate_planner_decision(decision, request)
+            if not valid:
+                return {
+                    "passed": False,
+                    "reason": "target_lock_decision_invalid:" + ";".join(errors),
+                    "discovery_step": discovery_step,
+                    "action_log": action_log,
+                    **target_lock.snapshot(),
+                }
+            event = env.step(decision.action)
+            success = bool(event.metadata.get("lastActionSuccess", False))
+            post_observation = build_planner_observation(env.get_observation())
+            target_lock.record_result(
+                directive,
+                success=success,
+                error_message=str(event.metadata.get("errorMessage", "")),
+                observation_after=post_observation,
+                allowed_actions=THOR_BOOK_ACTIONS,
+            )
+            record = {
+                "step": len(action_log) + 1,
+                "action": dict(decision.action),
+                "reason_code": decision.reason_code,
+                "success": success,
+                "error": str(event.metadata.get("errorMessage", "")),
+            }
+            action_log.append(record)
+            recent.append(record)
+            if _picked_up(event.metadata, target_id):
+                return {
+                    "passed": True,
+                    "reason": "",
+                    "discovery_step": discovery_step,
+                    "pickup_step": len(action_log),
+                    "action_log": action_log,
+                    **target_lock.snapshot(),
+                }
+            if (
+                target_lock.metrics.target_lock_failed_reason
+                and not target_lock.active
+            ):
+                return {
+                    "passed": False,
+                    "reason": (
+                        "target_lock_failed:"
+                        + target_lock.metrics.target_lock_failed_reason
+                    ),
+                    "discovery_step": discovery_step,
+                    "action_log": action_log,
+                    **target_lock.snapshot(),
+                }
+            continue
+
+        row = route_actions[route_cursor]
+        route_cursor += 1
         action = dict(row["action"])
         event = env.step(action)
         success = bool(event.metadata.get("lastActionSuccess", False))
         action_log.append(
             {
-                "step": index,
+                "step": len(action_log) + 1,
                 "action": action,
                 "route_phase": row.get("phase"),
                 "success": success,
@@ -525,72 +627,14 @@ def _fallback_rediscovery_audit(
                 "reason": "coverage_route_action_failed",
                 "discovery_step": None,
                 "action_log": action_log,
-            }
-        visible = _target(event.metadata, target_id)
-        if visible is not None and visible.get("visible") is True:
-            discovery_step = index
-            break
-    if discovery_step is None:
-        return {
-            "passed": False,
-            "reason": "target_not_rediscovered_within_fallback_limit",
-            "discovery_step": None,
-            "action_log": action_log,
-        }
-
-    planner = ThorBookReacquirePlanner()
-    recent: list[dict[str, Any]] = []
-    for interaction_index in range(1, MAX_VISIBLE_INTERACTION_ACTIONS + 1):
-        observation = build_planner_observation(env.get_observation())
-        target_visible = any(
-            isinstance(obj, Mapping)
-            and obj.get("objectId") == target_id
-            and obj.get("visible") is True
-            for obj in observation.get("objects", [])
-        )
-        request = PlannerRequest(
-            task_name="thor_book_reacquire_k2",
-            instruction="Reacquire and pick up the Book.",
-            task_stage="pickup_book" if target_visible else "reacquire_book",
-            step=discovery_step + interaction_index,
-            max_steps=MAX_FALLBACK_ACTIONS + MAX_VISIBLE_INTERACTION_ACTIONS,
-            observation=observation,
-            allowed_actions=THOR_BOOK_ACTIONS,
-            retrieved_memory=(),
-            recent_action_results=tuple(recent[-5:]),
-        )
-        decision = planner.plan(request)
-        valid, errors = validate_planner_decision(decision, request)
-        if not valid:
-            return {
-                "passed": False,
-                "reason": "visible_interaction_decision_invalid:" + ";".join(errors),
-                "discovery_step": discovery_step,
-                "action_log": action_log,
-            }
-        event = env.step(decision.action)
-        record = {
-            "step": discovery_step + interaction_index,
-            "action": dict(decision.action),
-            "reason_code": decision.reason_code,
-            "success": bool(event.metadata.get("lastActionSuccess", False)),
-            "error": str(event.metadata.get("errorMessage", "")),
-        }
-        action_log.append(record)
-        recent.append(record)
-        if _picked_up(event.metadata, target_id):
-            return {
-                "passed": True,
-                "reason": "",
-                "discovery_step": discovery_step,
-                "pickup_step": discovery_step + interaction_index,
-                "action_log": action_log,
+                **target_lock.snapshot(),
             }
     return {
         "passed": False,
-        "reason": "visible_target_not_picked_within_interaction_limit",
+        "reason": "target_not_rediscovered_within_fallback_limit",
         "discovery_step": discovery_step,
         "action_log": action_log,
+        **target_lock.snapshot(),
     }
 
 
@@ -614,6 +658,45 @@ def _reset_restoration_check(
         "same_target_exists": target is not None,
         "target_visible": target.get("visible") if target else None,
         "position_delta_xz_meters": delta,
+    }
+
+
+def _aggregate_target_lock_metrics(
+    trial_records: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    audits = [
+        row.get("common_fallback_audit", {})
+        for row in trial_records
+        if isinstance(row, Mapping)
+        and isinstance(row.get("common_fallback_audit", {}), Mapping)
+    ]
+    numeric_fields = (
+        "target_visible_event_count",
+        "target_lock_entered_count",
+        "target_lock_pickup_attempt_count",
+        "transient_visibility_loss_count",
+        "local_recovery_action_count",
+        "target_reacquired_after_loss_count",
+    )
+    reasons = sorted(
+        {
+            str(audit.get("target_lock_failed_reason", ""))
+            for audit in audits
+            if str(audit.get("target_lock_failed_reason", ""))
+        }
+    )
+    return {
+        field: sum(
+            int(audit.get(field, 0))
+            for audit in audits
+            if isinstance(audit.get(field, 0), (int, bool))
+        )
+        for field in numeric_fields
+    } | {
+        "picked_after_target_lock": any(
+            audit.get("picked_after_target_lock") is True for audit in audits
+        ),
+        "target_lock_failed_reason": ";".join(reasons),
     }
 
 
@@ -772,6 +855,7 @@ def main(argv: list[str] | None = None) -> int:
     registry_path = output_dir / "evaluator_only_anchor_registry.json"
     _write_json(registry_path, registry)
     passed = primary_anchor is not None and not fatal_error
+    target_lock_metrics = _aggregate_target_lock_metrics(trial_records)
     summary = {
         "qualification_version": ANCHOR_QUALIFICATION_VERSION,
         "claim": "pre-qualified relocation anchor QA; not a memory comparison",
@@ -785,6 +869,7 @@ def main(argv: list[str] | None = None) -> int:
         "fatal_error": fatal_error,
         "images_saved": False,
         "coordinates_exposed_in_summary": False,
+        **target_lock_metrics,
         "private_registry": str(registry_path),
         "output_dir": str(output_dir),
         "finished_at": _utc_now(),

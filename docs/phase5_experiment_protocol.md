@@ -14,7 +14,9 @@ candidate `thor_book_reacquire_k2` now uses the frozen shared sequence
 observation-0 K=2 eviction, and common no/short fallback. Real scene qualification
 must still verify these properties before a three-variant dry run.
 
-Phase 5A4 offline checkpoint: metric schema `phase5-metrics-v1` is now enforced
+Phase 5A4 offline checkpoint originally froze metric schema
+`phase5-metrics-v1`; the shared target-lock checkpoint extends it as
+`phase5-metrics-v2` and is now enforced
 against runner summaries. Qualification records retain both passes and rejected
 candidates in unique ascending order, and code selects exactly the first six
 distinct passes. The manifest builder expands these into the matched 54-cell
@@ -138,7 +140,7 @@ one deterministic reset is not independent evidence.
 
 ## Metrics
 
-Machine-readable schema: `phase5-metrics-v1`. The formal manifest lists every
+Machine-readable schema: `phase5-metrics-v2`. The formal manifest lists every
 required summary key and validation fails if its matrix or output policy changes.
 
 Primary outcomes:
@@ -153,6 +155,9 @@ Integrity and memory outcomes:
 - information-boundary, memory-provenance, ordered-subgoal, and intervention audits;
 - shared-route alignment/coverage actions, entry mismatch, exhaustion, and
   frozen-action failure;
+- target-visible events, target-lock entries/pickup attempts, transient losses,
+  bounded local-recovery actions, reacquisitions, post-lock pickup, and the
+  terminal target-lock failure reason;
 - retrieval/useful-retrieval and memory-guided action counts;
 - K=2 eviction, stale use, old-viewpoint miss, fallback, rediscovery, and correction.
 
@@ -486,6 +491,47 @@ anchors or scenes without correcting this common baseline would waste compute
 and risk selection bias. Any correction must be target-independent at route
 construction time, shared by all memory variants, versioned, tested offline, and
 requalified from the first declared scene.
+
+### Shared target-lock/local-recovery offline checkpoint
+
+`phase5-shared-target-lock-v1` fixes only the second FloorPlan202 failure class:
+a target that was visible during common fallback, followed by a local approach
+that lost visibility. The original target-independent route remains unchanged.
+When a pickupable Book or Cup appears in the current planner-safe observation,
+the route pauses and the helper first issues `PickupObject` using only that
+observation's visible object ID. A distance/angle-related failure permits at most
+six bounded approach actions. If an ordinary action loses the visible target,
+the helper attempts at most 12 ordinary local-recovery actions; a successful
+`MoveAhead` is reversed with `MoveBack` first, followed by a bounded symmetric
+look/rotation scan. Every recovery action is followed by a new safe observation,
+and visible reacquisition returns immediately to pickup/approach.
+
+The policy never consumes the anchor point, relocation destination, private
+registry, complete metadata, or evaluator action. Its planner directive is
+strictly whitelisted and cannot coexist with a `shared_search` directive. The
+same helper, budgets, and ordinary action space apply to `no_memory`,
+`short_memory_k2`, and `object_memory`; it is not a memory treatment. The
+qualification script is versioned `phase5-anchor-batch-v5`, and coordinate-free
+target-lock fields are aggregated into the `phase5-metrics-v2` summary:
+`target_visible_event_count`, `target_lock_entered_count`,
+`target_lock_pickup_attempt_count`, `transient_visibility_loss_count`,
+`local_recovery_action_count`, `target_reacquired_after_loss_count`,
+`picked_after_target_lock`, and `target_lock_failed_reason`.
+
+Offline acceptance covers immediate pickup, distance-failure approach, loss and
+`MoveBack` reacquisition, exhausted recovery, non-recoverable failure cooldown,
+never-visible route parity, all-three-variant runner parity, ordinary-trace
+leakage, coordinate-free aggregation, and preservation of the old FloorPlan202
+evidence. Ten focused tests and all 106 repository tests pass, together with a
+compile check. These fixtures are capability/parity evidence only.
+
+No AI2-THOR process, memory comparison, new scene, anchor batch, or image was
+started for this checkpoint. The optional FloorPlan202 candidate-4 diagnostic
+was deliberately skipped because the batch qualifier cannot safely address only
+candidate 4 without a broader selector change. The old 0/12 FloorPlan202 result
+remains authoritative real evidence. A future bounded real diagnostic may test
+whether transient recovery is repaired, but even success would not by itself
+qualify an anchor or unlock the stale panel.
 
 ## Gate before formal comparisons
 

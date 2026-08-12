@@ -56,6 +56,12 @@ from embodied_memory_thor.phase5.search import (
     SearchRouteError,
     load_frozen_search_route,
 )
+from embodied_memory_thor.phase5.target_lock import (
+    TARGET_LOCK_APPROACH_ACTION_BUDGET,
+    TARGET_LOCK_POLICY_VERSION,
+    TARGET_LOCK_RECOVERY_ACTION_BUDGET,
+    SharedTargetLockPolicy,
+)
 from embodied_memory_thor.utils.serialization import to_jsonable
 
 
@@ -325,6 +331,18 @@ class ThorEpisodeRunner:
                 "route_coordinates_in_planner_input": False,
                 "route_action_failure_policy": "invalidate_episode",
             }
+        if config.task in {
+            "thor_book_reacquire_k2",
+            "thor_cup_after_coffee_subgoal",
+        }:
+            manifest["target_lock_policy"] = {
+                "policy": TARGET_LOCK_POLICY_VERSION,
+                "same_policy_for_all_memory_variants": True,
+                "planner_safe_observation_only": True,
+                "recovery_action_budget": TARGET_LOCK_RECOVERY_ACTION_BUDGET,
+                "approach_action_budget": TARGET_LOCK_APPROACH_ACTION_BUDGET,
+                "evaluator_coordinates_consumed": False,
+            }
         if self.intervention is not None:
             manifest["intervention"] = {
                 "intervention_id": self.intervention.intervention_id,
@@ -387,6 +405,14 @@ class ThorEpisodeRunner:
         shared_search_route_exhausted_count = 0
         shared_search_action_failure_count = 0
         search_route_state: FrozenSearchRouteState | None = None
+        target_lock_policy = (
+            SharedTargetLockPolicy(target_type=runtime_spec.retrieval_target_type)
+            if config.task in {
+                "thor_book_reacquire_k2",
+                "thor_cup_after_coffee_subgoal",
+            }
+            else None
+        )
         setup_action_count = 0
         setup_action_latencies: list[float] = []
         setup_completed = False
@@ -495,8 +521,19 @@ class ThorEpisodeRunner:
                 ):
                     short_memory_evicted_before_reacquisition = True
                 shared_search = None
+                target_lock = None
                 if (
-                    search_route_state is not None
+                    target_lock_policy is not None
+                    and progress.stage
+                    in {"reacquire_book", "pickup_book", "reacquire_cup", "pickup_cup"}
+                ):
+                    target_lock = target_lock_policy.next_directive(
+                        current_observation,
+                        allowed_actions=runtime_spec.allowed_actions,
+                    )
+                if (
+                    target_lock is None
+                    and search_route_state is not None
                     and progress.stage == "reacquire_book"
                     and not retrieved
                 ):
@@ -522,6 +559,7 @@ class ThorEpisodeRunner:
                     retrieved_memory=retrieved,
                     recent_action_results=tuple(deepcopy(action_history[-5:])),
                     shared_search=deepcopy(shared_search),
+                    target_lock=deepcopy(target_lock),
                 )
                 audit = self._audit_with_provenance(
                     audit_planner_request(request), request, visible_history
@@ -632,6 +670,14 @@ class ThorEpisodeRunner:
                         )
                 else:
                     current_observation = pre_intervention_observation
+                if target_lock is not None and target_lock_policy is not None:
+                    target_lock_policy.record_result(
+                        target_lock,
+                        success=execution.success,
+                        error_message=execution.error_message,
+                        observation_after=current_observation,
+                        allowed_actions=runtime_spec.allowed_actions,
+                    )
                 if execution.success and action_name in {
                     "MoveAhead",
                     "MoveBack",
@@ -725,6 +771,7 @@ class ThorEpisodeRunner:
                         "action": deepcopy(execution.action),
                         "success": execution.success,
                         "error_message": execution.error_message,
+                        "reason_code": decision.reason_code,
                     }
                 )
                 external_call = getattr(self.planner, "last_call", None)
@@ -920,6 +967,20 @@ class ThorEpisodeRunner:
             ),
             "shared_search_action_failure_count": (
                 shared_search_action_failure_count
+            ),
+            **(
+                target_lock_policy.snapshot()
+                if target_lock_policy is not None
+                else {
+                    "target_visible_event_count": 0,
+                    "target_lock_entered_count": 0,
+                    "target_lock_pickup_attempt_count": 0,
+                    "transient_visibility_loss_count": 0,
+                    "local_recovery_action_count": 0,
+                    "target_reacquired_after_loss_count": 0,
+                    "picked_after_target_lock": False,
+                    "target_lock_failed_reason": "",
+                }
             ),
             "setup_completed": setup_completed,
             "setup_failure_reason": setup_failure_reason,

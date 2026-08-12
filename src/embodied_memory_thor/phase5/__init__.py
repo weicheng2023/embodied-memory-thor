@@ -24,6 +24,12 @@ from .search import (
     SearchRouteError,
     load_frozen_search_route,
 )
+from .target_lock import (
+    TARGET_LOCK_APPROACH_ACTION_BUDGET,
+    TARGET_LOCK_POLICY_VERSION,
+    TARGET_LOCK_RECOVERY_ACTION_BUDGET,
+    SharedTargetLockPolicy,
+)
 
 __all__ = [
     "ANCHOR_QUALIFICATION_VERSION",
@@ -37,6 +43,10 @@ __all__ = [
     "FrozenSearchRoute",
     "FrozenSearchRouteState",
     "SearchRouteError",
+    "SharedTargetLockPolicy",
+    "TARGET_LOCK_APPROACH_ACTION_BUDGET",
+    "TARGET_LOCK_POLICY_VERSION",
+    "TARGET_LOCK_RECOVERY_ACTION_BUDGET",
     "build_geometry_candidate_plan",
     "build_target_independent_coverage_route",
     "build_formal_manifest",

@@ -16,6 +16,7 @@ THOR_BOOK_ACTIONS = (
     "LookDown",
     "LookUp",
     "MoveAhead",
+    "MoveBack",
     "Pass",
     "PickupObject",
     "RotateLeft",
@@ -119,6 +120,9 @@ class ThorBookReacquirePlanner:
             ),
             None,
         )
+
+        if request.target_lock is not None:
+            return self._target_lock_decision(request)
 
         if stage == "controlled_distraction":
             return self._decision(
@@ -261,6 +265,21 @@ class ThorBookReacquirePlanner:
             target_object_type=target_type,
             reason_code=reason_code,
             rationale=rationale,
+        )
+
+    def _target_lock_decision(self, request: PlannerRequest) -> PlannerDecision:
+        directive = request.target_lock or {}
+        raw_action = directive.get("action", {})
+        action = dict(raw_action) if isinstance(raw_action, Mapping) else {}
+        phase = str(directive.get("phase", ""))
+        return self._decision(
+            action,
+            target_object_type=str(directive.get("target_object_type", "")) or None,
+            reason_code=f"target_lock_{phase}",
+            rationale=(
+                "Execute the next action from the shared planner-safe target-lock "
+                "and bounded local-recovery policy."
+            ),
         )
 
     def _approach_visible_book(
@@ -490,6 +509,14 @@ def validate_planner_decision(
             errors.append("shared_search_decision_cannot_be_memory_guided")
         if not decision.reason_code.startswith("shared_search_"):
             errors.append("shared_search_reason_code_missing")
+    if request.target_lock is not None:
+        expected = request.target_lock.get("action")
+        if decision.action != expected:
+            errors.append("decision_diverges_from_target_lock_directive")
+        if decision.memory_guided:
+            errors.append("target_lock_decision_cannot_be_memory_guided")
+        if not decision.reason_code.startswith("target_lock_"):
+            errors.append("target_lock_reason_code_missing")
     return not errors, tuple(errors)
 
 

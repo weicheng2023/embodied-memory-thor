@@ -87,6 +87,25 @@ were seen at route step 197 then lost after one approach action and not picked.
 No anchor was frozen; FloorPlan301-FloorPlan305 did not run. The active blocker
 is shared visual fallback capability, not relocation physics or scene supply.
 
+The shared fallback now has an offline-tested target-lock/local-recovery
+micro-policy. A currently visible pickupable target pauses coverage and is tried
+immediately; recoverable distance/angle failures receive bounded approach, and a
+target lost after approach receives at most 12 planner-safe local recovery
+actions, beginning with `MoveBack` after a successful `MoveAhead`. The same
+helper and action space are used by no memory, exact K=2, and object memory.
+Ten focused tests and the complete 106-test offline regression pass, including a
+runner fixture in which every variant follows `PickupObject -> MoveAhead ->
+MoveBack -> PickupObject` and passes the information-boundary audit. Metric
+schema `phase5-metrics-v2` adds target-lock and transient-loss fields.
+
+This checkpoint is not a memory comparison and is not real-simulator recovery
+evidence. AI2-THOR was not started, no image was saved, and the retained
+FloorPlan202 failure record was not replaced. The optional candidate-4-only
+probe was skipped because the current batch qualifier cannot safely select just
+that candidate without widening this change. FloorPlan202 requalification and
+the anchor/stale-panel gate remain blocked on one bounded real diagnostic or an
+explicitly scoped single-candidate runner.
+
 ## Implemented
 
 ### Phase 0

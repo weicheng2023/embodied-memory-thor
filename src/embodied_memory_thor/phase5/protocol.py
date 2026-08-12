@@ -10,7 +10,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 
 PHASE5_PROTOCOL_VERSION = "phase5-v1"
-PHASE5_METRIC_SCHEMA_VERSION = "phase5-metrics-v1"
+PHASE5_METRIC_SCHEMA_VERSION = "phase5-metrics-v2"
 PHASE5_MANIFEST_SCHEMA_VERSION = "phase5-manifest-v1"
 PHASE5_VARIANTS = ("no_memory", "short_memory_k2", "object_memory")
 PHASE5_PANELS = ("r1_stable", "r2_stable", "r1_stale")
@@ -36,6 +36,14 @@ PHASE5_REQUIRED_METRICS = (
     "shared_search_route_entry_mismatch_count",
     "shared_search_route_exhausted_count",
     "shared_search_action_failure_count",
+    "target_visible_event_count",
+    "target_lock_entered_count",
+    "target_lock_pickup_attempt_count",
+    "transient_visibility_loss_count",
+    "local_recovery_action_count",
+    "target_reacquired_after_loss_count",
+    "picked_after_target_lock",
+    "target_lock_failed_reason",
     "short_memory_evicted_before_reacquisition",
     "stale_memory_use_count",
     "old_viewpoint_miss_count",

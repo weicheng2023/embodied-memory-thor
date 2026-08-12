@@ -116,6 +116,7 @@ class PlannerRequest:
     retrieved_memory: tuple[dict[str, Any], ...] = ()
     recent_action_results: tuple[dict[str, Any], ...] = ()
     shared_search: dict[str, Any] | None = None
+    target_lock: dict[str, Any] | None = None
     schema_version: str = TRACE_SCHEMA_VERSION
     rgb_consumed_by_planner: bool = False
 
@@ -253,6 +254,64 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             "RotateRight",
         }:
             violations.append("shared_search_action_not_navigation_only")
+
+    if request.shared_search is not None and request.target_lock is not None:
+        violations.append("shared_search_and_target_lock_both_active")
+
+    if request.target_lock is not None:
+        directive = request.target_lock
+        allowed_lock_keys = {
+            "action",
+            "phase",
+            "policy",
+            "recovery_action_index",
+            "recovery_budget",
+            "target_object_type",
+        }
+        unknown_keys = sorted(set(map(str, directive)) - allowed_lock_keys)
+        if unknown_keys:
+            violations.extend(
+                f"target_lock_unknown_key:{key}" for key in unknown_keys
+            )
+        if directive.get("policy") != "phase5-shared-target-lock-v1":
+            violations.append("target_lock_policy")
+        if directive.get("phase") not in {
+            "pickup_attempt",
+            "bounded_approach",
+            "local_recovery",
+        }:
+            violations.append("target_lock_phase")
+        if directive.get("target_object_type") not in {"Book", "Cup"}:
+            violations.append("target_lock_target_type")
+        budget = directive.get("recovery_budget")
+        if not isinstance(budget, int) or budget < 1 or budget > 32:
+            violations.append("target_lock_recovery_budget")
+        recovery_index = directive.get("recovery_action_index")
+        if recovery_index is not None and (
+            not isinstance(recovery_index, int) or recovery_index < 0
+        ):
+            violations.append("target_lock_recovery_action_index")
+        action = directive.get("action")
+        if not isinstance(action, Mapping):
+            violations.append("target_lock_action_schema")
+        else:
+            action_name = action.get("action")
+            if action_name == "PickupObject":
+                if set(action) != {"action", "objectId"}:
+                    violations.append("target_lock_pickup_schema")
+                elif str(action.get("objectId", "")) not in set(
+                    visible_object_ids(request.observation)
+                ):
+                    violations.append("target_lock_object_not_currently_visible")
+            elif set(action) != {"action"} or action_name not in {
+                "MoveAhead",
+                "MoveBack",
+                "RotateLeft",
+                "RotateRight",
+                "LookUp",
+                "LookDown",
+            }:
+                violations.append("target_lock_navigation_action_schema")
 
     return PlannerInputAudit(
         passed=not violations,
