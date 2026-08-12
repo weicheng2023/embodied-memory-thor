@@ -49,7 +49,7 @@ from embodied_memory_thor.phase5.target_lock import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-SCRIPT_VERSION = "phase5-anchor-batch-v7"
+SCRIPT_VERSION = "phase5-anchor-batch-v8"
 BOUNDARY = "EVALUATOR-ONLY HIDDEN STATE - NEVER PLANNER INPUT"
 CONTROLLER_SETTINGS = {
     "width": 300,
@@ -197,7 +197,8 @@ def _setup_actions_for_candidate(
     *, scene: str, candidate_contract: Path | None,
     start_registries: Sequence[Path],
 ) -> tuple[
-    tuple[dict[str, Any], ...], str, str, str | None, int | None, float
+    tuple[dict[str, Any], ...], str, str, str | None, int | None, float,
+    float | None,
 ]:
     if candidate_contract is not None:
         if not start_registries:
@@ -219,6 +220,11 @@ def _setup_actions_for_candidate(
             str(contract["coverage_route_digest"]),
             int(contract["coverage_route_action_count"]),
             float(contract.get("coverage_scan_horizon_degrees", 0.0)),
+            (
+                float(contract["absolute_scan_horizon_degrees"])
+                if contract.get("absolute_scan_horizon_degrees") is not None
+                else None
+            ),
         )
     if scene != "FloorPlan1":
         raise ValueError("non-FloorPlan1 qualification requires frozen candidate inputs")
@@ -229,6 +235,7 @@ def _setup_actions_for_candidate(
         None,
         None,
         0.0,
+        None,
     )
 
 
@@ -274,6 +281,7 @@ def _collect_precommitted_plan(
     expected_route_digest: str | None = None,
     expected_route_action_count: int | None = None,
     coverage_scan_horizon_degrees: float = 0.0,
+    absolute_scan_horizon_degrees: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], Mapping[str, Any]]:
     metadata, setup = _reset_setup(env, scene, setup_actions)
     book = _visible_book(metadata)
@@ -315,6 +323,8 @@ def _collect_precommitted_plan(
         start_yaw=float(agent.get("rotation", {}).get("y", 0.0)),
         grid_size=float(CONTROLLER_SETTINGS["gridSize"]),
         scan_horizon_degrees=coverage_scan_horizon_degrees,
+        start_camera_horizon_degrees=float(agent.get("cameraHorizon", 0.0)),
+        absolute_scan_horizon_degrees=absolute_scan_horizon_degrees,
     )
     if len(coverage_route["actions"]) > MAX_FALLBACK_ACTIONS:
         raise RuntimeError(
@@ -365,6 +375,7 @@ def _collect_precommitted_plan(
         "coverage_route_action_count": len(coverage_route["actions"]),
         "max_fallback_actions": MAX_FALLBACK_ACTIONS,
         "coverage_scan_horizon_degrees": coverage_scan_horizon_degrees,
+        "absolute_scan_horizon_degrees": absolute_scan_horizon_degrees,
         "max_candidate_trials": MAX_CANDIDATE_TRIALS,
         "stability_sample_count": STABILITY_SAMPLE_COUNT,
         "stability_tolerance_meters": STABILITY_TOLERANCE_METERS,
@@ -786,6 +797,7 @@ def main(argv: list[str] | None = None) -> int:
         expected_route_digest,
         expected_route_action_count,
         contracted_scan_horizon_degrees,
+        contracted_absolute_scan_horizon_degrees,
     ) = _setup_actions_for_candidate(
         scene=args.scene,
         candidate_contract=args.candidate_contract,
@@ -800,6 +812,7 @@ def main(argv: list[str] | None = None) -> int:
             "coverage scan horizon does not match the candidate contract"
         )
     coverage_scan_horizon_degrees = contracted_scan_horizon_degrees
+    absolute_scan_horizon_degrees = contracted_absolute_scan_horizon_degrees
 
     env = ThorEnv(controller_kwargs=CONTROLLER_SETTINGS)
     trial_records: list[dict[str, Any]] = []
@@ -815,6 +828,7 @@ def main(argv: list[str] | None = None) -> int:
             expected_route_digest=expected_route_digest,
             expected_route_action_count=expected_route_action_count,
             coverage_scan_horizon_degrees=coverage_scan_horizon_degrees,
+            absolute_scan_horizon_degrees=absolute_scan_horizon_degrees,
         )
         target_id = str(plan["target"]["object_id"])
         before_position = dict(plan["target"]["before_position"])
@@ -931,6 +945,7 @@ def main(argv: list[str] | None = None) -> int:
         "coverage_route_version": route.get("route_version") if route else None,
         "coverage_route_action_count": len(route.get("actions", [])) if route else None,
         "coverage_scan_horizon_degrees": coverage_scan_horizon_degrees,
+        "absolute_scan_horizon_degrees": absolute_scan_horizon_degrees,
         "candidate_trial_records": trial_records,
         "diagnostic_mode": diagnostic_mode,
         "diagnostic_candidate_order": args.diagnostic_candidate_order,
@@ -977,6 +992,7 @@ def main(argv: list[str] | None = None) -> int:
         "coverage_route_version": route.get("route_version") if route else None,
         "coverage_route_action_count": len(route.get("actions", [])) if route else None,
         "coverage_scan_horizon_degrees": coverage_scan_horizon_degrees,
+        "absolute_scan_horizon_degrees": absolute_scan_horizon_degrees,
         "private_registry_digest": registry_digest,
         "candidate_trial_count": len(trial_records),
         "fatal_error": fatal_error,

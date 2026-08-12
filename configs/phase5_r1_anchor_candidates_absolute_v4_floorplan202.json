@@ -1,0 +1,22 @@
+{
+  "contract_version": "phase5-r1-anchor-candidates-absolute-v4-floorplan202-v1",
+  "selection_rule": "restart common absolute-horizon qualification from the first declared route-eligible scene before FloorPlan301",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "route_action_limit": 240,
+  "absolute_scan_horizon_degrees": 0.0,
+  "candidates": [
+    {
+      "candidate_order": 1,
+      "scene": "FloorPlan202",
+      "configuration_id": "FloorPlan202_R1_fixed_start_001",
+      "anchor_id": "FloorPlan202_R1_stale_Book_anchor_001",
+      "start_pose_digest": "ad6f9e9552cded910a35e6ae3c9963200a85665535a274cf90cb36e1fda10b3d",
+      "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+      "coverage_scan_horizon_degrees": 0.0,
+      "absolute_scan_horizon_degrees": 0.0,
+      "coverage_route_digest": "cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae",
+      "coverage_route_action_count": 227
+    }
+  ],
+  "privacy": "only pose and route digests are public; exact poses, object IDs, reachable positions, target locations, and anchor coordinates remain evaluator-only"
+}

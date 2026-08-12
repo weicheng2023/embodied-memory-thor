@@ -183,6 +183,8 @@ def build_target_independent_coverage_route(
     grid_size: float = 0.25,
     scan_spacing_steps: int = 3,
     scan_horizon_degrees: float = 0.0,
+    start_camera_horizon_degrees: float | None = None,
+    absolute_scan_horizon_degrees: float | None = None,
 ) -> dict[str, Any]:
     """Build a deterministic spaced-waypoint route without target/anchor input."""
 
@@ -190,6 +192,17 @@ def build_target_independent_coverage_route(
         raise ValueError("coverage route requires positions and positive grid_size")
     if scan_horizon_degrees not in {0.0, 30.0}:
         raise ValueError("coverage scan horizon must be 0 or 30 degrees")
+    if absolute_scan_horizon_degrees is not None and scan_horizon_degrees != 0.0:
+        raise ValueError("absolute and relative horizon policies are mutually exclusive")
+    horizon_setup: list[str] = []
+    horizon_restore: list[str] = []
+    if absolute_scan_horizon_degrees is not None:
+        if start_camera_horizon_degrees is None:
+            raise ValueError("absolute horizon policy requires the initial horizon")
+        horizon_setup, horizon_restore = build_absolute_horizon_alignment_actions(
+            start_horizon_degrees=start_camera_horizon_degrees,
+            scan_horizon_degrees=absolute_scan_horizon_degrees,
+        )
     nodes: dict[tuple[int, int], dict[str, float]] = {}
     for raw in reachable_positions:
         point = _xyz(raw)
@@ -302,7 +315,15 @@ def build_target_independent_coverage_route(
             )
             yaw = (yaw + 90.0) % 360.0
 
-    if scan_horizon_degrees == 30.0:
+    if absolute_scan_horizon_degrees is not None:
+        actions.extend(
+            {
+                "action": {"action": action_name},
+                "phase": "coverage_absolute_horizon_alignment",
+            }
+            for action_name in horizon_setup
+        )
+    elif scan_horizon_degrees == 30.0:
         actions.append(
             {
                 "action": {"action": "LookDown"},
@@ -336,7 +357,15 @@ def build_target_independent_coverage_route(
             route_nodes.add(destination)
         full_scan(waypoint)
         current = waypoint
-    if scan_horizon_degrees == 30.0:
+    if absolute_scan_horizon_degrees is not None:
+        actions.extend(
+            {
+                "action": {"action": action_name},
+                "phase": "coverage_initial_horizon_restore",
+            }
+            for action_name in horizon_restore
+        )
+    elif scan_horizon_degrees == 30.0:
         actions.append(
             {
                 "action": {"action": "LookUp"},
@@ -345,7 +374,9 @@ def build_target_independent_coverage_route(
         )
     route = {
         "route_version": (
-            "phase5-target-independent-downward-scan-v3"
+            "phase5-target-independent-absolute-horizon-v4"
+            if absolute_scan_horizon_degrees is not None
+            else "phase5-target-independent-downward-scan-v3"
             if scan_horizon_degrees == 30.0
             else "phase5-target-independent-spaced-waypoints-v2"
         ),
@@ -368,10 +399,52 @@ def build_target_independent_coverage_route(
         "complete_graph_coverage": True,
         "actions": actions,
     }
-    if scan_horizon_degrees == 30.0:
+    if absolute_scan_horizon_degrees is not None:
+        route["initial_camera_horizon_degrees"] = float(
+            start_camera_horizon_degrees
+        )
+        route["absolute_scan_horizon_degrees"] = float(
+            absolute_scan_horizon_degrees
+        )
+        route["horizon_alignment_action_count"] = len(horizon_setup)
+        route["horizon_restoration_action_count"] = len(horizon_restore)
+        route["camera_horizon_restored_at_route_end"] = True
+    elif scan_horizon_degrees == 30.0:
         route["scan_horizon_degrees"] = 30.0
         route["camera_horizon_restored_at_route_end"] = True
     return route
+
+
+def build_absolute_horizon_alignment_actions(
+    *,
+    start_horizon_degrees: float,
+    scan_horizon_degrees: float = 0.0,
+    step_degrees: float = 30.0,
+) -> tuple[list[str], list[str]]:
+    """Return bounded ordinary actions to reach and restore one absolute horizon."""
+
+    values = (start_horizon_degrees, scan_horizon_degrees, step_degrees)
+    if not all(math.isfinite(float(value)) for value in values):
+        raise ValueError("camera horizons must be finite")
+    if step_degrees <= 0:
+        raise ValueError("camera horizon step must be positive")
+    if start_horizon_degrees < -30.0 or start_horizon_degrees > 60.0:
+        raise ValueError("initial camera horizon is outside the supported range")
+    if scan_horizon_degrees < -30.0 or scan_horizon_degrees > 60.0:
+        raise ValueError("absolute scan horizon is outside the supported range")
+    raw_steps = (scan_horizon_degrees - start_horizon_degrees) / step_degrees
+    rounded_steps = round(raw_steps)
+    if not math.isclose(raw_steps, rounded_steps, abs_tol=1e-9):
+        raise ValueError("camera horizon difference must match the action step")
+    if abs(rounded_steps) > 3:
+        raise ValueError("camera horizon alignment exceeds the bounded action count")
+    if rounded_steps > 0:
+        setup = ["LookDown"] * rounded_steps
+    else:
+        setup = ["LookUp"] * abs(rounded_steps)
+    inverse = {"LookDown": "LookUp", "LookUp": "LookDown"}
+    restore = [inverse[action] for action in reversed(setup)]
+    return setup, restore
 
 
 def public_anchor_reference(

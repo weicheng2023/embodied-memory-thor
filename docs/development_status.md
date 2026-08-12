@@ -150,6 +150,23 @@ scenes. The next protocol must use planner-safe initial horizon to align every
 configuration to one declared absolute scan horizon and restore it afterward;
 then it must requalify from FloorPlan202 if a common first-six policy is required.
 
+Route v4 is now implemented offline with an absolute `0`-degree scan-horizon
+contract. It reads only the planner-safe initial `cameraHorizon`, emits a bounded
+ordinary `LookUp`/`LookDown` alignment prefix, runs the unchanged target-
+independent waypoint/yaw route, and appends the exact inverse actions to restore
+the initial horizon on route exhaustion. Starts at -30, 0, 30, and 60 degrees
+require 1, 0, 1, and 2 alignment actions respectively. Including restoration,
+the worst overhead is four actions; a 225-action base remains 229/240.
+
+Offline acceptance explicitly feeds the same v4 action-only directives to no
+memory, exact K=2, and object memory and rejects target/anchor/candidate/private-
+registry fields in planner input. A FloorPlan202-only public contract binds the
+absolute horizon, existing start digest, 227 actions, and v4 digest before any
+real outcome. The next real gate remains candidate 1, followed by full
+FloorPlan202 requalification; FloorPlan301 is prohibited until both pass.
+The v4-focused suite passes 30/30 and the complete offline regression passes
+113/113; compile and planner-input audits also pass.
+
 ## Implemented
 
 ### Phase 0

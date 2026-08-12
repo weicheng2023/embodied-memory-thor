@@ -582,6 +582,27 @@ target/anchor input, restore the initial horizon on route exhaustion, and pass
 the same action-only parity/leakage contract. If one route policy is required
 across the first six, qualification restarts from FloorPlan202 under that version.
 
+### Absolute-horizon route v4 precommit
+
+V4 declares one absolute scan horizon of `0` degrees. The route builder consumes
+only the initial planner-safe `cameraHorizon`; it never receives a target,
+candidate, support, anchor, placement outcome, or memory record. It converts the
+initial horizon to ordinary 30-degree look actions, then restores it with the
+exact inverse sequence after route exhaustion. Frozen starts at -30, 0, 30, and
+60 degrees align with 1, 0, 1, and 2 actions. The maximum setup-plus-restoration
+overhead is four, so even a 225-action base remains 229 under the unchanged 240
+limit.
+
+All memory variants use the same v4 route object and action-only shared-search
+channel within a matched configuration. Offline tests audit action equality and
+verify that planner requests contain no target point, anchor ID, candidate order,
+private registry, or relocation destination. The FloorPlan202 v4 contract is
+fixed at 227 actions with digest
+`cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae`.
+Real order is fixed: candidate-1 diagnostic, full FloorPlan202 requalification,
+then and only then FloorPlan301. No v4 real result exists at this checkpoint.
+V4 offline acceptance is 30/30 focused and 113/113 complete.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

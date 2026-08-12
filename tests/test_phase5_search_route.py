@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 import unittest
@@ -35,13 +36,19 @@ ROUTE_DIGEST = "00f638bd2ae07bac41ad176fcd221ad94f0e2241440946ce34a0f894a4a51ba8
 SOURCE_DIGEST = "5e3c77a3bf865c8c5015a4283eb3475061aa98660d4ba1d5f4dcb6c040c32576"
 
 
-def _pose_observation(*, yaw: float, x: float = -1.0, z: float = 1.25) -> dict[str, Any]:
+def _pose_observation(
+    *,
+    yaw: float,
+    x: float = -1.0,
+    z: float = 1.25,
+    horizon: float = 0.0,
+) -> dict[str, Any]:
     return {
         "scene_name": "FloorPlan1",
         "agent": {
             "position": {"x": x, "y": 0.9, "z": z},
             "rotation": {"x": 0.0, "y": yaw, "z": 0.0},
-            "cameraHorizon": 0.0,
+            "cameraHorizon": horizon,
             "isStanding": True,
         },
         "objects": [],
@@ -59,8 +66,6 @@ class Phase5SearchRouteTests(unittest.TestCase):
             {"action": "RotateRight"},
             {"action": "LookUp"},
         ]
-        import hashlib
-
         digest = hashlib.sha256(
             json.dumps(
                 actions,
@@ -79,6 +84,73 @@ class Phase5SearchRouteTests(unittest.TestCase):
         )
         route.validate()
         self.assertEqual(route.actions, actions)
+
+    def test_absolute_horizon_route_is_shared_by_all_variants_without_private_input(self) -> None:
+        actions = [
+            {"action": "LookDown"},
+            {"action": "RotateRight"},
+            {"action": "LookUp"},
+        ]
+        digest = hashlib.sha256(
+            json.dumps(
+                actions,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            ).encode("utf-8")
+        ).hexdigest()
+        route = FrozenSearchRoute(
+            route_id="offline_absolute_horizon_v4",
+            task="thor_book_reacquire_k2",
+            scene="OfflineFixture",
+            source_qualification_route_digest="b" * 64,
+            action_sequence_digest=digest,
+            action_codes="DRU",
+        )
+        sequences: dict[str, list[dict[str, Any]]] = {}
+        for variant in ("no_memory", "short_memory_k2", "object_memory"):
+            observation = _pose_observation(yaw=90.0, horizon=-30.0)
+            state = FrozenSearchRouteState(
+                route,
+                initial_observation=observation,
+            )
+            sequence = []
+            for index, expected in enumerate(actions):
+                directive = state.next_directive(observation)
+                request = PlannerRequest(
+                    task_name="thor_book_reacquire_k2",
+                    instruction="Reacquire and pick up the Book.",
+                    task_stage="reacquire_book",
+                    step=index + 4,
+                    max_steps=20,
+                    observation=observation,
+                    allowed_actions=THOR_BOOK_ACTIONS,
+                    retrieved_memory=(),
+                    shared_search=directive,
+                )
+                audit = audit_planner_request(request)
+                self.assertTrue(audit.passed, (variant, audit.violations))
+                decision = ThorBookReacquirePlanner().plan(request)
+                self.assertEqual(decision.action, expected)
+                self.assertTrue(validate_planner_decision(decision, request)[0])
+                state.record_result(
+                    directive,
+                    action=decision.action,
+                    success=True,
+                )
+                sequence.append(decision.action)
+                ordinary = json.dumps(request.snapshot(include_digest=False))
+                for forbidden in (
+                    "target_point",
+                    "anchor_id",
+                    "candidate_order",
+                    "private_registry",
+                    "relocation_destination",
+                ):
+                    self.assertNotIn(forbidden, ordinary)
+            sequences[variant] = sequence
+        self.assertEqual(sequences["no_memory"], sequences["short_memory_k2"])
+        self.assertEqual(sequences["no_memory"], sequences["object_memory"])
 
     def test_exact_qualified_action_sequence_is_coordinate_free(self) -> None:
         route = load_frozen_search_route(ROUTE_ID)

@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 
 from embodied_memory_thor.phase5.anchors import (
+    build_absolute_horizon_alignment_actions,
     build_geometry_candidate_plan,
     build_target_independent_coverage_route,
     public_anchor_reference,
@@ -41,6 +42,38 @@ def _box(
 
 
 class Phase5AnchorTests(unittest.TestCase):
+    def test_absolute_horizon_alignment_reaches_zero_and_restores(self) -> None:
+        expected = {
+            -30.0: (["LookDown"], ["LookUp"]),
+            0.0: ([], []),
+            30.0: (["LookUp"], ["LookDown"]),
+            60.0: (["LookUp", "LookUp"], ["LookDown", "LookDown"]),
+        }
+        deltas = {"LookDown": 30.0, "LookUp": -30.0}
+        for start, actions in expected.items():
+            with self.subTest(start=start):
+                setup, restore = build_absolute_horizon_alignment_actions(
+                    start_horizon_degrees=start,
+                    scan_horizon_degrees=0.0,
+                )
+                self.assertEqual((setup, restore), actions)
+                aligned = start + sum(deltas[action] for action in setup)
+                self.assertEqual(aligned, 0.0)
+                restored = aligned + sum(deltas[action] for action in restore)
+                self.assertEqual(restored, start)
+
+    def test_absolute_horizon_alignment_rejects_unbounded_or_off_grid_input(self) -> None:
+        with self.assertRaisesRegex(ValueError, "action step"):
+            build_absolute_horizon_alignment_actions(
+                start_horizon_degrees=15.0,
+                scan_horizon_degrees=0.0,
+            )
+        with self.assertRaisesRegex(ValueError, "supported range"):
+            build_absolute_horizon_alignment_actions(
+                start_horizon_degrees=90.0,
+                scan_horizon_degrees=0.0,
+            )
+
     @staticmethod
     def _qualifier_module():
         root = Path(__file__).resolve().parents[1]
@@ -79,6 +112,20 @@ class Phase5AnchorTests(unittest.TestCase):
             downward["coverage_route_version"],
             "phase5-target-independent-downward-scan-v3",
         )
+        absolute_path = (
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_absolute_v4_floorplan202.json"
+        )
+        absolute = module._load_candidate_contract(
+            absolute_path, "FloorPlan202"
+        )
+        self.assertEqual(absolute["coverage_route_action_count"], 227)
+        self.assertEqual(absolute["absolute_scan_horizon_degrees"], 0.0)
+        self.assertEqual(
+            absolute["coverage_route_version"],
+            "phase5-target-independent-absolute-horizon-v4",
+        )
 
     def test_public_anchor_candidate_contract_has_no_exact_pose_or_object_id(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -106,6 +153,18 @@ class Phase5AnchorTests(unittest.TestCase):
             "reachable_positions",
         ):
             self.assertNotIn(forbidden, downward_text)
+        absolute_text = (
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_absolute_v4_floorplan202.json"
+        ).read_text(encoding="utf-8")
+        for forbidden in (
+            "selected_pose",
+            "target_object_id",
+            "target_point",
+            "reachable_positions",
+        ):
+            self.assertNotIn(forbidden, absolute_text)
 
     def test_private_start_digest_mismatch_stops_before_environment_creation(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -299,6 +358,42 @@ class Phase5AnchorTests(unittest.TestCase):
                 start_yaw=90,
                 scan_horizon_degrees=15.0,
             )
+
+    def test_absolute_horizon_routes_share_zero_scan_view_with_bounded_overhead(self) -> None:
+        reachable = [
+            {"x": 0.0, "y": 0.9, "z": 0.0},
+            {"x": 0.25, "y": 0.9, "z": 0.0},
+            {"x": 0.0, "y": 0.9, "z": 0.25},
+            {"x": 0.25, "y": 0.9, "z": 0.25},
+        ]
+        base = build_target_independent_coverage_route(
+            reachable_positions=reachable,
+            start_position=reachable[0],
+            start_yaw=90,
+            scan_spacing_steps=1,
+        )
+        expected_overhead = {-30.0: 2, 0.0: 0, 30.0: 2, 60.0: 4}
+        for start, overhead in expected_overhead.items():
+            with self.subTest(start=start):
+                route = build_target_independent_coverage_route(
+                    reachable_positions=reachable,
+                    start_position=reachable[0],
+                    start_yaw=90,
+                    scan_spacing_steps=1,
+                    start_camera_horizon_degrees=start,
+                    absolute_scan_horizon_degrees=0.0,
+                )
+                self.assertEqual(
+                    route["route_version"],
+                    "phase5-target-independent-absolute-horizon-v4",
+                )
+                self.assertEqual(route["absolute_scan_horizon_degrees"], 0.0)
+                self.assertEqual(route["horizon_alignment_action_count"], overhead // 2)
+                self.assertEqual(route["horizon_restoration_action_count"], overhead // 2)
+                self.assertEqual(len(route["actions"]), len(base["actions"]) + overhead)
+                self.assertLessEqual(225 + overhead, 240)
+                self.assertTrue(route["camera_horizon_restored_at_route_end"])
+                self.assertFalse(route["target_or_anchor_input_used"])
 
     def test_public_reference_contains_no_coordinates(self) -> None:
         reference = public_anchor_reference(
