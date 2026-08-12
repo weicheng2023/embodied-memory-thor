@@ -346,3 +346,11 @@ common fallback, fresh-reset replay, and restoration decide acceptance. No Book
 rotation, margin change, memory run, image, or later scene is authorized.
 Focused tests pass 22/22 and complete regression passes 178/178. The real v4
 batch has not started.
+
+The clean `548c7ce` native-first v4 batch exhausted 12/12 frozen candidates.
+All were Shelf; every native placement failed because the scene wall blocked
+the spawn area. The Book never moved, fallback/replay did not run, restoration
+passed 12/12, and no anchor was frozen. The fixed prefix therefore lacked
+support-type coverage. A continuation requires a separately precommitted
+balanced sampler; candidate 13 cannot be appended. Result-focused tests pass
+23/23 and the complete offline regression passes 179/179.

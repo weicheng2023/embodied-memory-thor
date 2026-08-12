@@ -1186,6 +1186,30 @@ required before the one FloorPlan301 native batch.
 Focused native-first acceptance passed 22/22 and the complete offline regression
 passed 178/178. No v4 simulator outcome exists at this checkpoint.
 
+### FloorPlan301 native-first qualification-v4 result
+
+The clean `548c7ce` batch completed its frozen 12-candidate prefix. All 3,969
+numeric, materially moved coordinates remained native-eligible; advisory
+diagnostics predicted zero clear points, 3,969 boundary crossings, and 1,890
+support-occupant overlaps. The frozen order's first 12 all came from Shelf.
+
+All 12 native `PlaceObjectAtPoint` calls ran from fresh reset/setup without
+force or Book rotation. All failed with the same categorized simulator error:
+the spawn area was blocked by a scene wall. The Book did not move, so physical
+QA failed and fallback/replay were correctly skipped. Reset restoration passed
+12/12. No anchor was frozen.
+
+This exhausts v4 exactly as declared and cannot be extended with candidate 13.
+It confirms that native outcome, not AABB prediction, is the acceptance
+authority. It also exposes a coverage defect in the pre-outcome prefix: all 12
+trials used Shelf, leaving Desk and Dresser untested. Any continuation must
+precommit support-type-balanced sampling; it cannot hand-pick a favorable point
+or reinterpret this failed cohort. No memory, image, later scene, or formal
+episode ran. Public evidence is
+`docs/evidence/phase5_floorplan301_native_qualification_v4.json`.
+Result-focused tests passed 23/23 and the complete offline regression passed
+179/179.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
