@@ -550,8 +550,8 @@ The coordinate-free record is
 The remaining FloorPlan202 blocker is visual discovery, not target interaction.
 The retained v2 route had 22 scan waypoints, 88 yaw rotations, and no look
 action. Adding a full second horizon at every waypoint would exceed the frozen
-240-action bound. V3 instead selects one uniform target-independent 30-degree
-downward scan layer: `LookDown` once before the unchanged route and `LookUp` once
+240-action bound. V3 instead selects one target-independent relative 30-degree
+downward adjustment: `LookDown` once before the unchanged route and `LookUp` once
 after it. It does not inspect target type, candidate order, support, placement
 outcome, anchor, or memory state.
 
@@ -564,6 +564,23 @@ fixed as candidate 1, the earliest candidate that v2 never saw. Passing that
 diagnostic permits FloorPlan202 requalification from the frozen beginning;
 failure stops route-v3 work for analysis. This is a protocol decision, not a
 result.
+
+The candidate-1 diagnostic passed on clean `6a83736`: discovery at action 26,
+pickup at 27, and zero failed actions. The ensuing full FloorPlan202 run selected
+candidate 1 after physical QA, fallback pickup, fresh-reset replay, and reset
+restoration all passed. The public coordinate-free result is
+`docs/evidence/phase5_floorplan202_downward_route_v3_anchor_qualification.json`.
+No memory agent or image was used.
+
+Do not propagate v3 to FloorPlan301-305. Its single `LookDown` is a relative
+camera action; frozen starts use different initial horizons. Thus identical v3
+codes would not create an identical absolute scan layer across configurations
+and may fail at a camera limit. This cross-scene protocol issue was found before
+any later placement trial. A successor must compute a bounded alignment from the
+planner-safe initial `cameraHorizon` to one predeclared absolute horizon, use no
+target/anchor input, restore the initial horizon on route exhaustion, and pass
+the same action-only parity/leakage contract. If one route policy is required
+across the first six, qualification restarts from FloorPlan202 under that version.
 
 ## Gate before formal comparisons
 

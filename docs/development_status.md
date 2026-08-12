@@ -124,14 +124,31 @@ started.
 
 The next correction is precommitted before another placement outcome. Route v2
 used 22 scan waypoints and 88 horizontal rotations but zero camera-horizon
-actions. Route v3 adds one target-independent `LookDown` before the complete
-route and one `LookUp` after it, keeping every move, waypoint, and yaw scan
-unchanged. FloorPlan202 therefore changes from 225 to 227 actions, still below
+actions. Route v3 adds one target-independent relative `LookDown` before the
+complete route and one `LookUp` after it, keeping every move, waypoint, and yaw
+scan unchanged. FloorPlan202 therefore changes from 225 to 227 actions, still below
 the frozen 240 limit. A one-scene public contract binds the v3 route digest,
-30-degree scan horizon, action count, and existing private-start digest without
+30-degree relative scan adjustment, action count, and existing private-start digest without
 coordinates or object IDs. The first real gate must be the earliest previously
 never-visible candidate (candidate 1), not a hand-selected success. No v3 real
 outcome exists at this checkpoint.
+
+Candidate 1 then passed the single real gate on clean revision `6a83736`: the
+v3 route exposed Book after action 26 and target lock picked it at action 27,
+with no failed action or image. Full FloorPlan202 qualification was therefore
+run from the frozen beginning. Candidate 1 again passed physical placement,
+common fallback pickup, fresh-reset placement replay, and reset restoration;
+`FloorPlan202_R1_stale_Book_anchor_001` is frozen in the ignored private
+registry. No memory variant ran.
+
+Qualification stopped before FloorPlan301 because v3's `LookDown` is a relative
+30-degree action, not an absolute camera-horizon setting. The six frozen starts
+have different initial horizons, so applying the same relative action would not
+produce a common scan view and could reach a camera limit. FloorPlan202 evidence
+remains valid for its scene-bound v3 contract, but v3 cannot be copied to later
+scenes. The next protocol must use planner-safe initial horizon to align every
+configuration to one declared absolute scan horizon and restore it afterward;
+then it must requalify from FloorPlan202 if a common first-six policy is required.
 
 ## Implemented
 
