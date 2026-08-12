@@ -80,6 +80,13 @@ pool gate is cleared; relocation-anchor qualification is still pending for all
 six, and no memory comparison has run. The complete offline regression remains
 93/93 after the batch-tool addition.
 
+The multi-scene anchor qualifier then passed 8/8 focused and 96/96 complete
+offline tests. Its first real run on FloorPlan202 stopped the batch: 12/12
+candidate placements passed physical QA, but 8 were never rediscovered and 4
+were seen at route step 197 then lost after one approach action and not picked.
+No anchor was frozen; FloorPlan301-FloorPlan305 did not run. The active blocker
+is shared visual fallback capability, not relocation physics or scene supply.
+
 ## Implemented
 
 ### Phase 0

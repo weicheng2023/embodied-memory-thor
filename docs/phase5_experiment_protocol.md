@@ -462,6 +462,31 @@ configurations. The remaining-batch route rejections are FloorPlan229 (302),
 FloorPlan309 (388), FloorPlan311 (311), FloorPlan323 (281), and FloorPlan325
 (307); the earlier five route rejections also remain retained.
 
+### FloorPlan202 anchor qualification exposes a fallback-capability blocker
+
+Anchor qualifier v4 binds each scene to its private start pose via a public pose
+digest, regenerates the target-independent route, and refuses to place Book if
+the route digest or action count differs from the prescreen contract. The public
+candidate contract contains no exact pose, object ID, support, or destination.
+The generalized implementation passed 8/8 focused tests and 96/96 full offline
+tests before the real trial.
+
+The first frozen scene, FloorPlan202, then failed all first 12 anchor candidates
+on clean revision `36720ae`. This was not a placement failure: all 12 passed
+native placement, meaningful movement, old-view hiddenness, stability, support/
+overlap checks, and reset restoration. Eight were never visually rediscovered
+by the complete 225-action route. Four became visible at route action 197, but
+one successful approach step lost visibility; the shared policy then performed
+19 in-place rotations and never picked Book. No environment action failed.
+
+Qualification stopped before FloorPlan301 and before any memory episode. The
+result shows that target-independent geometric coverage and a 240-action bound
+are insufficient qualification for a capable visual fallback. Trying later
+anchors or scenes without correcting this common baseline would waste compute
+and risk selection bias. Any correction must be target-independent at route
+construction time, shared by all memory variants, versioned, tested offline, and
+requalified from the first declared scene.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
