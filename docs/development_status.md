@@ -665,3 +665,24 @@ same 26 coverage actions, corrects at step 30, and picks up at step 31. Public
 coordinate-free evidence is
 `docs/evidence/phase5_r1_production_integration_probe_v2.json`. R2 six-scene
 qualification remains the next hard gate.
+
+R2 qualification is now pre-registered as a dual-route real-scene gate. A
+goal-qualified CoffeeMachine route is honestly labeled
+`task_subgoal_navigation` with `qualification_goal_input_used=true`; its
+runtime/planner representation is still action-only and coordinate-free. Cup
+fallback remains a genuinely target-independent coverage route. The production
+runner requires both routes together, completes the subgoal route before
+interaction, invalidates route mismatch/failure or a missing CoffeeMachine at
+the frozen endpoint, and records separate route metrics. The offline fixture
+shows all three variants share subgoal actions while only persistent object
+memory can avoid fallback after the ordered subgoal.
+
+The new evaluator-only qualifier freezes at most 12 FloorPlan1 Cup/start and
+CoffeeMachine/destination pose pairs before outcomes, then requires native
+route execution, K=2 eviction, successful toggle, capable target-independent
+fallback pickup, full fresh-reset replay, and reset restoration. It runs no
+memory agent and emits a coordinate-free public summary plus private retained
+diagnostics. Focused contract/route tests pass 23/23 and the complete offline
+regression passes 220/220. The first real FloorPlan1
+qualification remains blocked until this precommit is committed and pushed;
+FloorPlan2 and later scenes are not authorized by this gate.

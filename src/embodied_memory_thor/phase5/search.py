@@ -1,4 +1,4 @@
-"""Frozen target-independent search routes for matched Phase 5 variants."""
+"""Frozen action-only routes for matched Phase 5 variants."""
 
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ from typing import Any, Mapping
 
 
 SEARCH_ROUTE_SCHEMA_VERSION = "phase5-search-route-v1"
+TARGET_INDEPENDENT_FALLBACK_ROLE = "target_independent_fallback"
+TASK_SUBGOAL_NAVIGATION_ROLE = "task_subgoal_navigation"
 DEFAULT_SEARCH_ROUTES_PATH = (
     Path(__file__).resolve().parents[3] / "configs" / "phase5_search_routes.json"
 )
@@ -64,7 +66,7 @@ def _angle_delta(target: float, current: float) -> float:
 
 @dataclass(frozen=True)
 class FrozenSearchRoute:
-    """Public action-only route qualified independently of target location."""
+    """Public action-only route with an explicit qualification boundary."""
 
     route_id: str
     task: str
@@ -72,6 +74,8 @@ class FrozenSearchRoute:
     source_qualification_route_digest: str
     action_sequence_digest: str
     action_codes: str
+    route_role: str = TARGET_INDEPENDENT_FALLBACK_ROLE
+    qualification_goal_input_used: bool = False
     target_or_anchor_input_used: bool = False
     schema_version: str = SEARCH_ROUTE_SCHEMA_VERSION
     entry_position_tolerance_meters: float = 0.05
@@ -86,8 +90,29 @@ class FrozenSearchRoute:
             or not self.scene.strip()
         ):
             raise SearchRouteError("route_id, task, and scene must be non-empty")
-        if self.target_or_anchor_input_used is not False:
-            raise SearchRouteError("formal search route must be target independent")
+        if self.route_role not in {
+            TARGET_INDEPENDENT_FALLBACK_ROLE,
+            TASK_SUBGOAL_NAVIGATION_ROLE,
+        }:
+            raise SearchRouteError("unsupported frozen-route role")
+        if self.route_role == TARGET_INDEPENDENT_FALLBACK_ROLE:
+            if self.qualification_goal_input_used is not False:
+                raise SearchRouteError(
+                    "target-independent fallback cannot use qualification goal input"
+                )
+            if self.target_or_anchor_input_used is not False:
+                raise SearchRouteError("formal fallback route must be target independent")
+        else:
+            if self.task != "thor_cup_after_coffee_subgoal":
+                raise SearchRouteError("task-subgoal routes require the ordered R2 task")
+            if self.qualification_goal_input_used is not True:
+                raise SearchRouteError(
+                    "task-subgoal route must disclose qualification goal input"
+                )
+            if self.target_or_anchor_input_used is not True:
+                raise SearchRouteError(
+                    "task-subgoal route must disclose target input during qualification"
+                )
         if not self.action_codes or any(
             code not in _CODE_TO_ACTION for code in self.action_codes
         ):
@@ -126,7 +151,9 @@ class FrozenSearchRoute:
             ),
             "action_sequence_digest": self.action_sequence_digest,
             "action_count": self.action_count,
-            "target_or_anchor_input_used": False,
+            "route_role": self.route_role,
+            "qualification_goal_input_used": self.qualification_goal_input_used,
+            "target_or_anchor_input_used": self.target_or_anchor_input_used,
         }
 
 
@@ -162,6 +189,12 @@ def load_frozen_search_route(
         ),
         action_sequence_digest=str(raw.get("action_sequence_digest", "")),
         action_codes=str(raw.get("action_codes", "")),
+        route_role=str(
+            raw.get("route_role", TARGET_INDEPENDENT_FALLBACK_ROLE)
+        ),
+        qualification_goal_input_used=raw.get(
+            "qualification_goal_input_used", False
+        ),
         target_or_anchor_input_used=raw.get(
             "target_or_anchor_input_used", True
         ),
@@ -201,6 +234,10 @@ class FrozenSearchRouteState:
     @property
     def alignment_action_count(self) -> int:
         return self._alignment_action_count
+
+    @property
+    def complete(self) -> bool:
+        return self._coverage_cursor >= self.route.action_count
 
     def next_directive(self, observation: Mapping[str, Any]) -> dict[str, Any]:
         if self._coverage_cursor > 0:
@@ -275,7 +312,12 @@ class FrozenSearchRouteState:
         action_index: int | None,
     ) -> dict[str, Any]:
         return {
-            "policy": "frozen_target_independent_route",
+            "policy": (
+                "frozen_task_subgoal_route"
+                if self.route.route_role == TASK_SUBGOAL_NAVIGATION_ROLE
+                else "frozen_target_independent_route"
+            ),
+            "route_role": self.route.route_role,
             "route_id": self.route.route_id,
             "action_sequence_digest": self.route.action_sequence_digest,
             "phase": phase,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 import unittest
@@ -16,6 +17,7 @@ from embodied_memory_thor.phase4.planners import (
 )
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
 from embodied_memory_thor.phase4.task import CupAfterCoffeeProgress
+from embodied_memory_thor.phase5.search import FrozenSearchRoute
 from tests.test_phase4_single_case import _SingleCaseThorEnv, _TinyRgbFrame
 
 
@@ -128,6 +130,177 @@ class _CupCoffeeThorEnv(_SingleCaseThorEnv):
 
 
 class Phase5OrderedTaskTests(unittest.TestCase):
+    @staticmethod
+    def _route(
+        route_id: str,
+        action_codes: str,
+        *,
+        role: str,
+        qualification_goal_input_used: bool,
+    ) -> FrozenSearchRoute:
+        action_names = {
+            "D": "LookDown",
+            "F": "MoveAhead",
+            "L": "RotateLeft",
+            "R": "RotateRight",
+            "U": "LookUp",
+        }
+        actions = [{"action": action_names[code]} for code in action_codes]
+        digest = hashlib.sha256(
+            json.dumps(
+                actions,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            ).encode("utf-8")
+        ).hexdigest()
+        return FrozenSearchRoute(
+            route_id=route_id,
+            task="thor_cup_after_coffee_subgoal",
+            scene="FloorPlan1",
+            source_qualification_route_digest="a" * 64,
+            action_sequence_digest=digest,
+            action_codes=action_codes,
+            route_role=role,
+            qualification_goal_input_used=qualification_goal_input_used,
+            target_or_anchor_input_used=qualification_goal_input_used,
+        )
+
+    def test_frozen_r2_routes_are_shared_action_only_and_role_explicit(self) -> None:
+        subgoal = self._route(
+            "FloorPlan1_R2_subgoal_fixture",
+            "R",
+            role="task_subgoal_navigation",
+            qualification_goal_input_used=True,
+        )
+        fallback = self._route(
+            "FloorPlan1_R2_fallback_fixture",
+            "RRR",
+            role="target_independent_fallback",
+            qualification_goal_input_used=False,
+        )
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            summaries = {}
+            traces = {}
+            manifests = {}
+            ordinary_traces = {}
+            for variant in ("no_memory", "short_memory_k2", "object_memory"):
+                output_dir = root / variant
+                summaries[variant] = ThorEpisodeRunner(
+                    ThorEpisodeConfig(
+                        task="thor_cup_after_coffee_subgoal",
+                        memory=variant,
+                        subgoal_route_id=subgoal.route_id,
+                        search_route_id=fallback.route_id,
+                        max_steps=10,
+                        output_dir=output_dir,
+                        save_frames=False,
+                        trace_html=False,
+                    ),
+                    env=_CupCoffeeThorEnv(),
+                    subgoal_route=subgoal,
+                    search_route=fallback,
+                ).run()
+                traces[variant] = self._jsonl(output_dir / "episode.jsonl")
+                manifests[variant] = json.loads(
+                    (output_dir / "run_manifest.json").read_text(encoding="utf-8")
+                )
+                ordinary_traces[variant] = (output_dir / "episode.jsonl").read_text(
+                    encoding="utf-8"
+                )
+
+        for variant, summary in summaries.items():
+            self.assertTrue(summary["success"], (variant, summary["failure_reason"]))
+            self.assertTrue(summary["information_boundary_passed"])
+            self.assertEqual(summary["shared_subgoal_coverage_action_count"], 1)
+            self.assertEqual(summary["shared_subgoal_action_failure_count"], 0)
+            manifest = manifests[variant]
+            self.assertEqual(
+                manifest["subgoal_route"]["route_role"],
+                "task_subgoal_navigation",
+            )
+            self.assertTrue(
+                manifest["subgoal_route"]["qualification_goal_input_used"]
+            )
+            self.assertFalse(
+                manifest["search_route"]["qualification_goal_input_used"]
+            )
+            ordinary = ordinary_traces[variant]
+            for forbidden in (
+                "target_point",
+                "destination_pose",
+                "reachable_positions",
+                "CoffeeMachine|1",
+            ):
+                if forbidden == "CoffeeMachine|1":
+                    continue  # currently visible object IDs are legitimate planner input
+                self.assertNotIn(forbidden, ordinary)
+
+        for trace in traces.values():
+            first = trace[0]["planner_input"]["request"]["shared_search"]
+            self.assertEqual(first["policy"], "frozen_task_subgoal_route")
+            self.assertEqual(first["route_role"], "task_subgoal_navigation")
+            self.assertEqual(first["action"], {"action": "RotateRight"})
+
+        self.assertEqual(summaries["object_memory"]["steps"], 4)
+        self.assertEqual(summaries["no_memory"]["steps"], 6)
+        self.assertEqual(summaries["short_memory_k2"]["steps"], 6)
+        for variant in ("no_memory", "short_memory_k2"):
+            self.assertEqual(
+                summaries[variant]["shared_search_coverage_action_count"], 3
+            )
+        self.assertEqual(
+            summaries["object_memory"]["shared_search_coverage_action_count"], 0
+        )
+
+    def test_frozen_subgoal_action_overrides_early_machine_visibility(self) -> None:
+        route = self._route(
+            "FloorPlan1_R2_subgoal_early_visibility_fixture",
+            "R",
+            role="task_subgoal_navigation",
+            qualification_goal_input_used=True,
+        )
+        observation = {
+            "agent": {
+                "position": {"x": 0.0, "y": 0.9, "z": 0.0},
+                "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+                "cameraHorizon": 0.0,
+            },
+            "objects": [
+                {
+                    "objectType": "CoffeeMachine",
+                    "objectId": "CoffeeMachine|visible_early",
+                    "position": {"x": 0.0, "y": 0.9, "z": 1.0},
+                    "visible": True,
+                    "toggleable": True,
+                }
+            ],
+            "inventory": [],
+        }
+        directive = {
+            "policy": "frozen_task_subgoal_route",
+            "route_role": "task_subgoal_navigation",
+            "route_id": route.route_id,
+            "action_sequence_digest": route.action_sequence_digest,
+            "phase": "coverage",
+            "action_index": 0,
+            "action": {"action": "RotateRight"},
+        }
+        request = PlannerRequest(
+            task_name="thor_cup_after_coffee_subgoal",
+            instruction="Toggle CoffeeMachine before Cup pickup.",
+            task_stage="toggle_coffee_machine",
+            step=1,
+            max_steps=10,
+            observation=observation,
+            allowed_actions=THOR_CUP_COFFEE_ACTIONS,
+            shared_search=directive,
+        )
+        decision = ThorBookReacquirePlanner().plan(request)
+        self.assertEqual(decision.action, {"action": "RotateRight"})
+        self.assertEqual(decision.reason_code, "shared_subgoal_navigation")
+
     def test_three_variants_share_ordered_subgoal_and_memory_only_difference(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_dir:
             root = Path(temporary_dir)

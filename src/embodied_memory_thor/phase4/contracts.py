@@ -218,6 +218,7 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             "action_sequence_digest",
             "phase",
             "policy",
+            "route_role",
             "route_id",
         }
         unknown_keys = sorted(set(map(str, shared)) - allowed_search_keys)
@@ -225,8 +226,28 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             violations.extend(
                 f"shared_search_unknown_key:{key}" for key in unknown_keys
             )
-        if shared.get("policy") != "frozen_target_independent_route":
+        policy = shared.get("policy")
+        allowed_policy_roles = {
+            "frozen_target_independent_route": "target_independent_fallback",
+            "frozen_task_subgoal_route": "task_subgoal_navigation",
+        }
+        route_role = shared.get(
+            "route_role",
+            (
+                "target_independent_fallback"
+                if policy == "frozen_target_independent_route"
+                else None
+            ),
+        )
+        if policy not in allowed_policy_roles:
             violations.append("shared_search_policy")
+        elif route_role != allowed_policy_roles[policy]:
+            violations.append("shared_search_route_role")
+        elif policy == "frozen_task_subgoal_route" and (
+            request.task_name != "thor_cup_after_coffee_subgoal"
+            or request.task_stage != "toggle_coffee_machine"
+        ):
+            violations.append("shared_search_subgoal_stage")
         shared_route_id = str(shared.get("route_id", "")) or None
         if shared_route_id is None:
             violations.append("shared_search_route_id")

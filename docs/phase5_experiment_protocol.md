@@ -1735,3 +1735,49 @@ Formal Phase 5 results require:
 - completed scene qualification with the frozen first-six rule;
 - inspected one-configuration three-variant engineering dry run;
 - a committed manifest on a clean revision.
+
+### R2 real-scene qualification protocol precommit
+
+R2 cannot use the earlier placeholder policy of rotating until a
+CoffeeMachine happens to appear. Each admitted kitchen configuration requires
+two frozen public action-only routes with different, explicit evidence roles:
+
+- `task_subgoal_navigation`: evaluator qualification may use the selected
+  CoffeeMachine interactable pose to construct this route. The public/runtime
+  form contains only primitive navigation actions and digests, discloses
+  `qualification_goal_input_used=true`, and exposes no object ID, coordinate,
+  destination pose, or reachable-position graph to the planner. All memory
+  variants receive the identical route.
+- `target_independent_fallback`: constructed from the clean post-subgoal pose
+  and reachable graph without Cup position or ID. It retains
+  `qualification_goal_input_used=false` and
+  `target_or_anchor_input_used=false`. No-memory and an evicted K=2 memory use
+  this capable fallback; object memory may instead return toward its visible-
+  derived last-seen Cup viewpoint.
+
+The subgoal route is executed to completion even if a CoffeeMachine becomes
+visible early. A frozen route action failure, entry mismatch, exhaustion, or
+missing visible CoffeeMachine at completion invalidates the episode; the
+runner cannot silently fall back to ad-hoc rotations. The common planner-safe
+target-lock policy handles currently visible Cup pickup for every variant.
+
+Qualification is evaluator-only and runs no memory variant. For one scene it
+selects the first pickupable Cup and first initially-off toggleable
+CoffeeMachine by sorted object ID, queries interactable poses on separate fresh
+resets, and freezes at most 12 rank-balanced pose pairs before observing native
+outcomes. A pair passes only if: the start Cup is visible/pickupable and the
+CoffeeMachine is initially hidden; every subgoal navigation action succeeds;
+Cup is continuously hidden for at least K=2 final post-action observations and
+is still hidden at toggle; native `ToggleObjectOn` succeeds; the target-
+independent fallback plus common target lock rediscovers and picks Cup; the
+whole chain passes an identical fresh-reset replay; and reset restoration
+returns Cup visible, CoffeeMachine off, and inventory empty. First fully
+qualified wins. Failed candidates are retained. Public output is coordinate-
+free and remains `formal_use_allowed=false` until a later runtime integration
+gate.
+
+The first launch is restricted to FloorPlan1. It must run from a clean committed
+and pushed revision and stops before FloorPlan2 regardless of pass/fail. Offline
+dual-route, planner-boundary, ordered-task, and route-builder tests pass 23/23,
+and the complete offline regression passes 220/220;
+no real R2 qualification has run at this precommit checkpoint.

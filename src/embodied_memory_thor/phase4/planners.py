@@ -148,6 +148,10 @@ class ThorBookReacquirePlanner:
             )
 
         if stage == "toggle_coffee_machine":
+            if request.shared_search is not None:
+                return self._shared_search_decision(
+                    request, target_type="CoffeeMachine"
+                )
             if visible_coffee_machine is not None:
                 approach = self._approach_visible_target(
                     request, visible_coffee_machine, target_type="CoffeeMachine"
@@ -248,17 +252,30 @@ class ThorBookReacquirePlanner:
         raw_action = directive.get("action", {})
         action = dict(raw_action) if isinstance(raw_action, Mapping) else {}
         phase = str(directive.get("phase", ""))
+        subgoal_route = directive.get("policy") == "frozen_task_subgoal_route"
         if phase == "route_entry_alignment":
-            reason_code = "shared_search_route_entry_alignment"
+            reason_code = (
+                "shared_subgoal_route_entry_alignment"
+                if subgoal_route
+                else "shared_search_route_entry_alignment"
+            )
             rationale = (
                 "Align with the precommitted route-entry heading using shared "
-                "target-independent control state."
+                "action-only control state."
             )
         else:
-            reason_code = "shared_search_coverage"
+            reason_code = (
+                "shared_subgoal_navigation"
+                if subgoal_route
+                else "shared_search_coverage"
+            )
             rationale = (
-                "Execute the next primitive action in the precommitted "
-                "target-independent coverage route."
+                "Execute the next primitive action in the precommitted shared "
+                + (
+                    "task-subgoal navigation route."
+                    if subgoal_route
+                    else "target-independent coverage route."
+                )
             )
         return self._decision(
             action,
@@ -507,7 +524,12 @@ def validate_planner_decision(
             errors.append("decision_diverges_from_shared_search_directive")
         if decision.memory_guided or decision.memory_record_ids:
             errors.append("shared_search_decision_cannot_be_memory_guided")
-        if not decision.reason_code.startswith("shared_search_"):
+        expected_reason_prefix = (
+            "shared_subgoal_"
+            if request.shared_search.get("policy") == "frozen_task_subgoal_route"
+            else "shared_search_"
+        )
+        if not decision.reason_code.startswith(expected_reason_prefix):
             errors.append("shared_search_reason_code_missing")
     if request.target_lock is not None:
         expected = request.target_lock.get("action")

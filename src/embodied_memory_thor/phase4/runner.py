@@ -157,6 +157,7 @@ class ThorEpisodeConfig:
     scene: str = "FloorPlan1"
     planner: str = "deterministic"
     memory: str = "object_memory"
+    subgoal_route_id: str | None = None
     search_route_id: str | None = None
     condition: str = "stable"
     mode: str = "formal"
@@ -199,11 +200,26 @@ class ThorEpisodeConfig:
                 raise ValueError("search_route_id cannot be empty")
             if self.planner != "deterministic":
                 raise ValueError("frozen search routes require the deterministic planner")
-            if self.task != "thor_book_reacquire_k2":
+            if self.task not in {
+                "thor_book_reacquire_k2",
+                "thor_cup_after_coffee_subgoal",
+            }:
                 raise ValueError(
-                    "the currently qualified frozen route requires "
-                    "thor_book_reacquire_k2"
+                    "frozen search routes require a Phase 5 comparison task"
                 )
+        if self.subgoal_route_id is not None:
+            if not self.subgoal_route_id.strip():
+                raise ValueError("subgoal_route_id cannot be empty")
+            if self.planner != "deterministic":
+                raise ValueError("frozen subgoal routes require the deterministic planner")
+            if self.task != "thor_cup_after_coffee_subgoal":
+                raise ValueError("frozen subgoal routes require the ordered R2 task")
+        if self.task == "thor_cup_after_coffee_subgoal" and (
+            (self.search_route_id is None) != (self.subgoal_route_id is None)
+        ):
+            raise ValueError(
+                "ordered R2 frozen execution requires both subgoal and fallback routes"
+            )
         if self.condition not in {"stable", "stale_r1"}:
             raise ValueError(f"unsupported condition: {self.condition}")
         if self.condition == "stale_r1" and self.task != "thor_book_reacquire_k2":
@@ -234,6 +250,7 @@ class ThorEpisodeRunner:
         memory: ThorMemoryProvider | None = None,
         intervention: EvaluatorIntervention | None = None,
         search_route: FrozenSearchRoute | None = None,
+        subgoal_route: FrozenSearchRoute | None = None,
         evaluator_setup: EvaluatorEpisodeSetup | None = None,
         viewer_factory: Callable[..., LiveFrameViewer] | None = None,
     ) -> None:
@@ -244,6 +261,19 @@ class ThorEpisodeRunner:
             config.planner, model=config.model, base_url=config.base_url
         )
         self.memory = memory or build_thor_memory(config.memory)
+        if subgoal_route is not None and config.subgoal_route_id != subgoal_route.route_id:
+            raise ValueError("injected subgoal route does not match subgoal_route_id")
+        self.subgoal_route = subgoal_route
+        if self.subgoal_route is None and config.subgoal_route_id is not None:
+            self.subgoal_route = load_frozen_search_route(config.subgoal_route_id)
+        if self.subgoal_route is not None:
+            self.subgoal_route.validate()
+            if self.subgoal_route.task != config.task:
+                raise ValueError("frozen subgoal route task does not match episode task")
+            if self.subgoal_route.scene != config.scene:
+                raise ValueError("frozen subgoal route scene does not match episode scene")
+            if self.subgoal_route.route_role != "task_subgoal_navigation":
+                raise ValueError("frozen subgoal route has the wrong route role")
         if search_route is not None and config.search_route_id != search_route.route_id:
             raise ValueError("injected search route does not match search_route_id")
         self.search_route = search_route
@@ -255,6 +285,8 @@ class ThorEpisodeRunner:
                 raise ValueError("frozen search route task does not match episode task")
             if self.search_route.scene != config.scene:
                 raise ValueError("frozen search route scene does not match episode scene")
+            if self.search_route.route_role != "target_independent_fallback":
+                raise ValueError("frozen search route has the wrong route role")
         if config.condition == "stale_r1" and intervention is None:
             raise ValueError("stale_r1 requires an evaluator intervention")
         if config.condition == "stable" and intervention is not None:
@@ -294,6 +326,11 @@ class ThorEpisodeRunner:
             "scene": config.scene,
             "planner": config.planner,
             "memory": config.memory,
+            "subgoal_route": (
+                self.subgoal_route.public_reference()
+                if self.subgoal_route is not None
+                else None
+            ),
             "search_route": (
                 self.search_route.public_reference()
                 if self.search_route is not None
@@ -351,6 +388,13 @@ class ThorEpisodeRunner:
                 ),
                 "target_object_history_retained": False,
                 "route_coordinates_in_planner_input": False,
+                "route_action_failure_policy": "invalidate_episode",
+            }
+        if self.subgoal_route is not None:
+            manifest["shared_subgoal_policy"] = {
+                "same_route_available_to_all_memory_variants": True,
+                "route_entry_pose_source": "planner_safe_observation_0_agent_pose_only",
+                "target_coordinates_in_planner_input": False,
                 "route_action_failure_policy": "invalidate_episode",
             }
         if config.task in {
@@ -431,6 +475,12 @@ class ThorEpisodeRunner:
         shared_search_route_exhausted_count = 0
         shared_search_action_failure_count = 0
         search_route_state: FrozenSearchRouteState | None = None
+        shared_subgoal_alignment_action_count = 0
+        shared_subgoal_coverage_action_count = 0
+        shared_subgoal_route_entry_mismatch_count = 0
+        shared_subgoal_route_exhausted_count = 0
+        shared_subgoal_action_failure_count = 0
+        subgoal_route_state: FrozenSearchRouteState | None = None
         target_lock_policy = (
             SharedTargetLockPolicy(target_type=runtime_spec.retrieval_target_type)
             if config.task in {
@@ -539,9 +589,14 @@ class ThorEpisodeRunner:
             self.memory.observe(
                 current_observation, step=0, observation_id="observation:0"
             )
-            if self.search_route is not None:
+            if self.search_route is not None and config.task != "thor_cup_after_coffee_subgoal":
                 search_route_state = FrozenSearchRouteState(
                     self.search_route,
+                    initial_observation=current_observation,
+                )
+            if self.subgoal_route is not None:
+                subgoal_route_state = FrozenSearchRouteState(
+                    self.subgoal_route,
                     initial_observation=current_observation,
                 )
             initial_viewpoint = self._viewpoint_key(current_observation)
@@ -567,6 +622,16 @@ class ThorEpisodeRunner:
                     break
 
                 steps = step
+                if (
+                    config.task == "thor_cup_after_coffee_subgoal"
+                    and progress.stage in {"reacquire_cup", "pickup_cup"}
+                    and self.search_route is not None
+                    and search_route_state is None
+                ):
+                    search_route_state = FrozenSearchRouteState(
+                        self.search_route,
+                        initial_observation=current_observation,
+                    )
                 memory_before = self.memory.snapshot()
                 retrieved = tuple(
                     self.memory.retrieve(runtime_spec.retrieval_target_type)
@@ -579,6 +644,9 @@ class ThorEpisodeRunner:
                 ):
                     short_memory_evicted_before_reacquisition = True
                 shared_search = None
+                active_route_state = None
+                active_route = None
+                active_route_kind = None
                 target_lock = None
                 if (
                     target_lock_policy is not None
@@ -591,14 +659,48 @@ class ThorEpisodeRunner:
                     )
                 if (
                     target_lock is None
+                    and subgoal_route_state is not None
+                    and progress.stage == "toggle_coffee_machine"
+                    and not subgoal_route_state.complete
+                ):
+                    try:
+                        shared_search = subgoal_route_state.next_directive(
+                            current_observation
+                        )
+                        active_route_state = subgoal_route_state
+                        active_route = self.subgoal_route
+                        active_route_kind = "subgoal"
+                    except SearchRouteError as exc:
+                        if str(exc) == "frozen search route exhausted":
+                            shared_subgoal_route_exhausted_count += 1
+                        else:
+                            shared_subgoal_route_entry_mismatch_count += 1
+                        failure_reason = f"shared_subgoal_unavailable:{exc}"
+                        break
+                if (
+                    target_lock is None
+                    and shared_search is None
+                    and subgoal_route_state is not None
+                    and subgoal_route_state.complete
+                    and progress.stage == "toggle_coffee_machine"
+                    and not self._visible_target(current_observation, "CoffeeMachine")
+                ):
+                    failure_reason = "shared_subgoal_completion_target_missing"
+                    break
+                if (
+                    target_lock is None
+                    and shared_search is None
                     and search_route_state is not None
-                    and progress.stage == "reacquire_book"
+                    and progress.stage in {"reacquire_book", "reacquire_cup"}
                     and not retrieved
                 ):
                     try:
                         shared_search = search_route_state.next_directive(
                             current_observation
                         )
+                        active_route_state = search_route_state
+                        active_route = self.search_route
+                        active_route_kind = "fallback"
                     except SearchRouteError as exc:
                         if str(exc) == "frozen search route exhausted":
                             shared_search_route_exhausted_count += 1
@@ -663,20 +765,30 @@ class ThorEpisodeRunner:
                 execution = self.executor.execute(self.env, decision.action)
                 action_latency = perf_counter() - action_started
                 action_latencies.append(action_latency)
-                if shared_search is not None and search_route_state is not None:
-                    if shared_search.get("phase") == "route_entry_alignment":
-                        shared_search_alignment_action_count += 1
-                    elif shared_search.get("phase") == "coverage":
-                        shared_search_coverage_action_count += 1
+                if shared_search is not None and active_route_state is not None:
+                    if active_route_kind == "subgoal":
+                        if shared_search.get("phase") == "route_entry_alignment":
+                            shared_subgoal_alignment_action_count += 1
+                        elif shared_search.get("phase") == "coverage":
+                            shared_subgoal_coverage_action_count += 1
+                    else:
+                        if shared_search.get("phase") == "route_entry_alignment":
+                            shared_search_alignment_action_count += 1
+                        elif shared_search.get("phase") == "coverage":
+                            shared_search_coverage_action_count += 1
                     try:
-                        search_route_state.record_result(
+                        active_route_state.record_result(
                             shared_search,
                             action=execution.action,
                             success=execution.success,
                         )
                     except SearchRouteError as exc:
-                        shared_search_action_failure_count += 1
-                        failure_reason = f"shared_search_action_failed:{exc}"
+                        if active_route_kind == "subgoal":
+                            shared_subgoal_action_failure_count += 1
+                            failure_reason = f"shared_subgoal_action_failed:{exc}"
+                        else:
+                            shared_search_action_failure_count += 1
+                            failure_reason = f"shared_search_action_failed:{exc}"
                 if execution.invalid_action:
                     invalid_action_count += 1
                 action_name = str(execution.action.get("action", ""))
@@ -869,18 +981,19 @@ class ThorEpisodeRunner:
                         "memory_after": memory_after,
                         "shared_search_result": (
                             {
-                                "route_id": self.search_route.route_id,
+                                "route_id": active_route.route_id,
+                                "route_kind": active_route_kind,
                                 "phase": shared_search.get("phase"),
                                 "action_index": shared_search.get("action_index"),
                                 "coverage_cursor_after": (
-                                    search_route_state.coverage_cursor
-                                    if search_route_state is not None
+                                    active_route_state.coverage_cursor
+                                    if active_route_state is not None
                                     else None
                                 ),
                                 "action_accepted": execution.success,
                             }
                             if shared_search is not None
-                            and self.search_route is not None
+                            and active_route is not None
                             else None
                         ),
                         "task_progress": progress.snapshot(),
@@ -1029,6 +1142,19 @@ class ThorEpisodeRunner:
             "shared_search_action_failure_count": (
                 shared_search_action_failure_count
             ),
+            "shared_subgoal_route_id": (
+                self.subgoal_route.route_id if self.subgoal_route is not None else None
+            ),
+            "shared_subgoal_action_sequence_digest": (
+                self.subgoal_route.action_sequence_digest
+                if self.subgoal_route is not None
+                else None
+            ),
+            "shared_subgoal_alignment_action_count": shared_subgoal_alignment_action_count,
+            "shared_subgoal_coverage_action_count": shared_subgoal_coverage_action_count,
+            "shared_subgoal_route_entry_mismatch_count": shared_subgoal_route_entry_mismatch_count,
+            "shared_subgoal_route_exhausted_count": shared_subgoal_route_exhausted_count,
+            "shared_subgoal_action_failure_count": shared_subgoal_action_failure_count,
             **(
                 target_lock_policy.snapshot()
                 if target_lock_policy is not None
