@@ -10,6 +10,10 @@ from typing import Any, Mapping, Protocol
 
 from embodied_memory_thor.actions import ActionSpace
 from embodied_memory_thor.phase4.contracts import PlannerDecision, PlannerRequest
+from embodied_memory_thor.phase5.memory_navigation import (
+    MEMORY_NAVIGATION_ROTATION_STEP_DEGREES,
+    quantize_yaw_to_action_grid,
+)
 
 
 THOR_BOOK_ACTIONS = (
@@ -84,6 +88,9 @@ class ThorBookReacquirePlanner:
         rotation_tolerance_degrees: float = 1.0,
         visible_target_rotation_tolerance_degrees: float = 45.0,
         horizon_tolerance_degrees: float = 1.0,
+        memory_rotation_step_degrees: float = (
+            MEMORY_NAVIGATION_ROTATION_STEP_DEGREES
+        ),
     ) -> None:
         self.position_tolerance = position_tolerance
         self.interaction_distance = interaction_distance
@@ -92,6 +99,7 @@ class ThorBookReacquirePlanner:
             visible_target_rotation_tolerance_degrees
         )
         self.horizon_tolerance_degrees = horizon_tolerance_degrees
+        self.memory_rotation_step_degrees = float(memory_rotation_step_degrees)
 
     def plan(self, request: PlannerRequest) -> PlannerDecision:
         stage = request.task_stage
@@ -373,7 +381,10 @@ class ThorBookReacquirePlanner:
             if distance > self.position_tolerance:
                 current_rotation = _agent_vector(request.observation, "rotation")
                 current_yaw = _number(current_rotation, "y")
-                target_yaw = math.degrees(math.atan2(dx, dz)) % 360.0
+                target_yaw = quantize_yaw_to_action_grid(
+                    math.degrees(math.atan2(dx, dz)) % 360.0,
+                    step_degrees=self.memory_rotation_step_degrees,
+                )
                 delta = _angle_delta(target_yaw, current_yaw)
                 if abs(delta) > self.rotation_tolerance_degrees:
                     action = "RotateRight" if delta > 0 else "RotateLeft"
@@ -403,9 +414,11 @@ class ThorBookReacquirePlanner:
         current_rotation = _agent_vector(request.observation, "rotation")
         target_rotation = record.get("last_seen_agent_rotation")
         if isinstance(target_rotation, Mapping):
-            delta = _angle_delta(
-                _number(target_rotation, "y"), _number(current_rotation, "y")
+            target_yaw = quantize_yaw_to_action_grid(
+                _number(target_rotation, "y"),
+                step_degrees=self.memory_rotation_step_degrees,
             )
+            delta = _angle_delta(target_yaw, _number(current_rotation, "y"))
             if abs(delta) > self.rotation_tolerance_degrees:
                 action = "RotateRight" if delta > 0 else "RotateLeft"
                 return self._decision(
@@ -705,11 +718,16 @@ def build_structured_planner(
     *,
     model: str = "gpt-5.6",
     base_url: str | None = None,
+    memory_rotation_step_degrees: float = (
+        MEMORY_NAVIGATION_ROTATION_STEP_DEGREES
+    ),
 ) -> StructuredPlanner:
     """Build the requested planner without making an API call."""
 
     if name == "deterministic":
-        return ThorBookReacquirePlanner()
+        return ThorBookReacquirePlanner(
+            memory_rotation_step_degrees=memory_rotation_step_degrees
+        )
     if name == "openai_compatible":
         return OpenAICompatiblePlanner(model=model, base_url=base_url)
     raise ValueError(f"unsupported Phase 4 planner: {name}")

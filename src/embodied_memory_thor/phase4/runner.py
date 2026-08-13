@@ -53,6 +53,11 @@ from embodied_memory_thor.phase5.interventions import (
     EvaluatorEpisodeSetup,
     EvaluatorIntervention,
 )
+from embodied_memory_thor.phase5.memory_navigation import (
+    MEMORY_NAVIGATION_POLICY_VERSION,
+    MEMORY_NAVIGATION_ROTATION_STEP_DEGREES,
+    MemoryNavigationGuard,
+)
 from embodied_memory_thor.phase5.search import (
     FrozenSearchRoute,
     FrozenSearchRouteState,
@@ -258,7 +263,12 @@ class ThorEpisodeRunner:
         self.config = config
         self.env = env or ThorEnv(controller_kwargs=config.controller_settings)
         self.planner = planner or build_structured_planner(
-            config.planner, model=config.model, base_url=config.base_url
+            config.planner,
+            model=config.model,
+            base_url=config.base_url,
+            memory_rotation_step_degrees=float(
+                config.controller_settings.get("rotateStepDegrees", 90)
+            ),
         )
         self.memory = memory or build_thor_memory(config.memory)
         if subgoal_route is not None and config.subgoal_route_id != subgoal_route.route_id:
@@ -414,6 +424,13 @@ class ThorEpisodeRunner:
                 "approach_action_budget": TARGET_LOCK_APPROACH_ACTION_BUDGET,
                 "evaluator_coordinates_consumed": False,
             }
+            manifest["memory_navigation_policy"] = {
+                "policy": MEMORY_NAVIGATION_POLICY_VERSION,
+                "rotation_step_degrees": MEMORY_NAVIGATION_ROTATION_STEP_DEGREES,
+                "uses_planner_safe_observations_only": True,
+                "same_escape_policy_for_all_memory_variants": True,
+                "fallback_after_bounded_nonprogress": True,
+            }
         if self.intervention is not None:
             manifest["intervention"] = {
                 "intervention_id": self.intervention.intervention_id,
@@ -494,6 +511,7 @@ class ThorEpisodeRunner:
             }
             else None
         )
+        memory_navigation_guard = MemoryNavigationGuard()
         setup_action_count = 0
         setup_action_latencies: list[float] = []
         setup_completed = False
@@ -638,10 +656,11 @@ class ThorEpisodeRunner:
                         initial_observation=current_observation,
                     )
                 memory_before = self.memory.snapshot()
-                retrieved = tuple(
+                raw_retrieved = tuple(
                     self.memory.retrieve(runtime_spec.retrieval_target_type)
                 )
-                memory_retrieval_count += len(retrieved)
+                memory_retrieval_count += len(raw_retrieved)
+                retrieved = memory_navigation_guard.filter_retrieved(raw_retrieved)
                 if (
                     config.memory == "short_memory_k2"
                     and progress.stage in {"reacquire_book", "reacquire_cup"}
@@ -845,6 +864,14 @@ class ThorEpisodeRunner:
                         )
                 else:
                     current_observation = pre_intervention_observation
+                memory_navigation_suppressed_ids = (
+                    memory_navigation_guard.record_result(
+                        memory_guided=decision.memory_guided,
+                        record_ids=decision.memory_record_ids,
+                        observation_before=request.observation,
+                        observation_after=current_observation,
+                    )
+                )
                 if target_lock is not None and target_lock_policy is not None:
                     target_lock_policy.record_result(
                         target_lock,
@@ -890,6 +917,11 @@ class ThorEpisodeRunner:
                     current_observation,
                     step=step,
                     observation_id=post_observation_id,
+                )
+                memory_navigation_recovered_ids = (
+                    memory_navigation_guard.refresh_visible_records(
+                        updated_record_ids
+                    )
                 )
                 recovered_ids = stale_ids_before_update.intersection(updated_record_ids)
                 if recovered_ids:
@@ -983,6 +1015,17 @@ class ThorEpisodeRunner:
                         "memory_updated_record_ids": updated_record_ids,
                         "memory_marked_stale_record_ids": marked_stale_ids,
                         "memory_recovered_record_ids": sorted(recovered_ids),
+                        "memory_navigation_suppressed_record_ids": list(
+                            memory_navigation_suppressed_ids
+                        ),
+                        "memory_navigation_recovered_record_ids": list(
+                            memory_navigation_recovered_ids
+                        ),
+                        "memory_navigation_guard": (
+                            memory_navigation_guard.snapshot(
+                                include_record_ids=True
+                            )
+                        ),
                         "memory_after": memory_after,
                         "shared_search_result": (
                             {
@@ -1202,6 +1245,7 @@ class ThorEpisodeRunner:
             ),
             "stale_rediscovery_step": stale_rediscovery_step,
             "memory_correction_step": memory_correction_step,
+            "memory_navigation": memory_navigation_guard.snapshot(),
             "intervention_count": intervention_count,
             "intervention_failure_count": intervention_failure_count,
             "intervention_id": (

@@ -18,11 +18,17 @@ if str(SRC_ROOT) not in sys.path:
 
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner  # noqa: E402
 from embodied_memory_thor.phase5.frozen_r2 import load_frozen_r2_runtime  # noqa: E402
+from embodied_memory_thor.phase5.memory_navigation import (  # noqa: E402
+    MEMORY_NAVIGATION_NONPROGRESS_ACTION_BUDGET,
+    MEMORY_NAVIGATION_POLICY_VERSION,
+    MEMORY_NAVIGATION_PROGRESS_EPSILON_METERS,
+    MEMORY_NAVIGATION_ROTATION_STEP_DEGREES,
+)
 from embodied_memory_thor.phase5.protocol import PHASE5_REQUIRED_METRICS, PHASE5_VARIANTS  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase5_r2_production_integration_probe_v1.json"
+DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase5_r2_production_integration_probe_v2.json"
 FORBIDDEN_ORDINARY_KEYS = {
     "anchor_id",
     "candidate_order",
@@ -71,7 +77,7 @@ def _walk_forbidden(value: Any, path: str = "") -> list[str]:
 
 
 def validate_probe_config(config: Mapping[str, Any]) -> None:
-    if config.get("probe_version") != "phase5-r2-production-integration-probe-v1":
+    if config.get("probe_version") != "phase5-r2-production-integration-probe-v2":
         raise ValueError("probe_version mismatch")
     if (
         config.get("task") != "thor_cup_after_coffee_subgoal"
@@ -93,6 +99,21 @@ def validate_probe_config(config: Mapping[str, Any]) -> None:
         raise ValueError("probe expected evidence status mismatch")
     if config.get("run_purpose") != "phase5_r2_production_integration_probe":
         raise ValueError("probe run purpose mismatch")
+    expected_memory_policy = {
+        "memory_navigation_policy": MEMORY_NAVIGATION_POLICY_VERSION,
+        "memory_rotation_step_degrees": MEMORY_NAVIGATION_ROTATION_STEP_DEGREES,
+        "memory_nonprogress_action_budget": (
+            MEMORY_NAVIGATION_NONPROGRESS_ACTION_BUDGET
+        ),
+        "memory_progress_epsilon_meters": (
+            MEMORY_NAVIGATION_PROGRESS_EPSILON_METERS
+        ),
+    }
+    for key, value in expected_memory_policy.items():
+        if config.get(key) != value:
+            raise ValueError(f"probe memory-navigation policy mismatch: {key}")
+    if config.get("episode_reuse_from_v1") is not False:
+        raise ValueError("probe must rerun every v2 episode")
 
 
 def _audit_episode(
@@ -117,6 +138,11 @@ def _audit_episode(
         errors.append("summary_evidence_status")
     if summary.get("intervention_count") != 0:
         errors.append("unexpected_intervention")
+    memory_navigation = summary.get("memory_navigation", {})
+    if not isinstance(memory_navigation, Mapping):
+        errors.append("missing_memory_navigation_metrics")
+    elif memory_navigation.get("policy") != MEMORY_NAVIGATION_POLICY_VERSION:
+        errors.append("memory_navigation_policy")
 
     manifest = json.loads((episode_dir / "run_manifest.json").read_text(encoding="utf-8"))
     if manifest.get("included_in_formal_aggregate") is not False:

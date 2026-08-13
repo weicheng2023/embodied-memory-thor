@@ -764,3 +764,15 @@ recorded in
 must precommit and offline-test discrete-heading convergence and bounded
 memory-to-fallback escape, then rerun all three excluded variants on a clean
 pushed revision before R2 scene expansion resumes.
+
+The fix is now precommitted as `phase5-memory-navigation-v2`: continuous memory
+bearings are quantized to the configured 90-degree action grid, and a second
+planner-safe guard suppresses a cited record after three memory-guided actions
+without 0.05 m positional progress. Suppression exposes the unchanged frozen
+fallback; a later visible-derived update recovers the record. The policy adds
+no hidden state to planner input and is instantiated for every variant.
+
+Probe v2 preserves FloorPlan3, both route digests, order, 140-step cap, and
+excluded labels, with no v1 episode reuse. Focused tests pass 20/20 and full
+regression passes 235/235. The full v2 triplet has not run; commit/push is the
+remaining precondition.

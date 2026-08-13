@@ -47,7 +47,7 @@ class Phase5FrozenR2RuntimeTests(unittest.TestCase):
             self.assertNotIn(forbidden, serialized)
 
         probe = json.loads(
-            (root / "configs" / "phase5_r2_production_integration_probe_v1.json")
+            (root / "configs" / "phase5_r2_production_integration_probe_v2.json")
             .read_text(encoding="utf-8")
         )
         module = self._probe_module(root)

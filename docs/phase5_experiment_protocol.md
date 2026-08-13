@@ -1919,3 +1919,24 @@ a shared discrete-heading convergence rule plus a bounded memory-to-fallback
 escape rule, with offline 90-degree quantization/parity/privacy tests. The full
 three-variant excluded triplet must then be rerun from a clean pushed revision;
 the two passing v1 episodes cannot be selectively reused.
+
+The repair is precommitted as `phase5-memory-navigation-v2`. Continuous
+last-seen-position and last-seen-viewpoint headings are deterministically
+quantized to the runner's 90-degree primitive action grid using half-up ties.
+Separately, a runner guard reads only successive planner-safe agent positions.
+Three consecutive memory-guided actions with less than 0.05 m positional
+progress suppress the cited record for retrieval, exposing the unchanged frozen
+fallback. A later visible-derived observation of the same record removes the
+suppression. No target/anchor/support coordinate, reachable graph, or evaluator
+metadata is added to planner input. The guard exists for every memory variant;
+no-memory and evicted K=2 simply never cite a record.
+
+Probe v2 is frozen in
+`configs/phase5_r2_production_integration_probe_v2.json`. It preserves the same
+FloorPlan3 start, six-action subgoal route, 110-action fallback, variant order,
+140-step limit, artifact policy, and exclusion label. It changes only the
+declared memory-navigation policy and requires a complete triplet rerun with no
+v1 episode reuse. Focused discrete-heading, bounded escape, visible-derived
+recovery, parity, privacy, ordered-task, and stale-recovery tests pass 20/20;
+the complete offline regression passes 235/235. A real v2 launch still requires
+a clean committed and pushed revision.
