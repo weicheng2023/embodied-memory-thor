@@ -2102,3 +2102,40 @@ FloorPlan6/memory variants remain blocked. Any retry needs a separately
 precommitted matched treatment for nondeterministic frozen-start visibility;
 the current run must not be silently repeated until it passes. Public evidence
 is `docs/evidence/phase5_floorplan5_r2_visual_fallback_diagnostic_v1.json`.
+
+### R2 start stability and qualification v4 precommit
+
+`phase5-r2-start-visibility-stability-v1` replaces one-reset admission for new
+R2 scenes. Within each scene, evaluator-only selection still chooses the first
+pickupable Cup with standing interactable poses in deterministic identity order.
+Every normalized standing pose is then checked on exactly three independent
+fresh resets. Each reset repeats only the selected-Cup pose query, locates the
+same pose by its private digest, teleports when present, and evaluates the seven
+fixed conditions: teleport success, Cup existence/pickupability/visibility,
+CoffeeMachine existence/off state/hiddenness. Only 3/3 poses are retained;
+1-2/3 are unstable and 0/3 are ineligible. No stable pose yields the registered
+scene-level class `scene_start_visibility_unstable_no_stable_pose`. Query error
+or reset-restoration failure remains a hard stop. This gate builds no route,
+queries no CoffeeMachine pose, runs no interaction/planner/memory, and saves no
+image.
+
+`phase5-r2-native-qualification-v4` reruns that stability gate in the actual
+qualification process; it never imports a successful audit trial or hardcodes
+an earlier pose. It then queries CoffeeMachine poses and the evaluator-only
+reachable graph, freezes the deterministic rank-balanced first 12 stable-start
+by destination pairs before task outcomes, builds the existing goal-qualified
+subgoal route, and builds the general
+`phase5-target-independent-exhaustive-visual-v1` fallback. That fallback visits
+and scans every reachable node at absolute 0 and +30 degrees, has a fixed 2048
+action limit, and receives no Cup/anchor/memory/variant input. A passing candidate
+must pass one native trial, an independent fresh-reset replay, and restoration.
+
+Scene-level construction, execution, reacquisition, or batch exhaustion classes
+listed in `configs/phase5_r2_qualification_v4.json` may be recorded and skipped
+after restoration and privacy checks. No FloorPlan-specific route or identity
+exception is permitted. FloorPlan3/FloorPlan4 evidence, the one-configuration
+runtime snapshot, and the prior search-route registry are hash-frozen at this
+precommit. Qualification v4 produces evaluator-private drafts under ignored
+outputs; each passing scene is published only as coordinate-free actions and
+digests in its own later evidence commit. No memory variant or formal aggregate
+is authorized by this revision.

@@ -38,6 +38,13 @@ from .search import (
     SearchRouteError,
     load_frozen_search_route,
 )
+from .r2_stability import (
+    REQUIRED_PRECONDITIONS as R2_STABILITY_REQUIRED_PRECONDITIONS,
+    STABILITY_POLICY_VERSION,
+    STABILITY_TRIALS_PER_POSE,
+    StabilityQueryError,
+    audit_start_pose_stability,
+)
 from .target_lock import (
     TARGET_LOCK_APPROACH_ACTION_BUDGET,
     TARGET_LOCK_POLICY_VERSION,
@@ -64,6 +71,10 @@ __all__ = [
     "FrozenSearchRoute",
     "FrozenSearchRouteState",
     "SearchRouteError",
+    "R2_STABILITY_REQUIRED_PRECONDITIONS",
+    "STABILITY_POLICY_VERSION",
+    "STABILITY_TRIALS_PER_POSE",
+    "StabilityQueryError",
     "SharedTargetLockPolicy",
     "TARGET_LOCK_APPROACH_ACTION_BUDGET",
     "TARGET_LOCK_POLICY_VERSION",
@@ -77,6 +88,7 @@ __all__ = [
     "build_type_balanced_native_candidate_plan",
     "build_target_independent_coverage_route",
     "build_target_independent_visual_fallback_route",
+    "audit_start_pose_stability",
     "build_formal_manifest",
     "public_anchor_reference",
     "load_frozen_search_route",
