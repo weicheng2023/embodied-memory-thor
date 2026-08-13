@@ -616,3 +616,23 @@ evaluator-only registry contains six anchors and has digest
 `423cf8ef98d73b56d836edbda83563cf4ebdc0604063e1ccf9530f876f781d92`.
 No coordinates enter public evidence or planner input.
 Completion tests pass 55/55 and the complete offline regression passes 211/211.
+
+The six frozen R1 configurations are now connected to the production episode
+runner without publishing evaluator material. Each public configuration binds
+an opaque anchor ID, start-pose digest, private-set digest, and coordinate-free
+action-only route. A local evaluator-only loader verifies every digest, applies
+the exact `TeleportFull` start before observation 0, and performs exactly one
+`PlaceObjectAtPoint` intervention after distraction transition 3. Native setup
+and intervention details go only to separate private logs.
+
+An offline acceptance test exposed and fixed a real boundary defect: after
+private teleport, AI2-THOR's `lastAction=TeleportFull` would otherwise enter
+planner observation 0. The runner now restores only the reset observation's
+safe last-action fields while retaining the post-teleport camera pose and
+visible objects. All six private/public/start/route joins pass. The excluded
+R1 production integration triplet is preregistered on FloorPlan202 in fixed
+no-memory, K=2, object-memory order, with 260 steps, no images/GUI/debug state,
+stop-on-first-failure, and no formal aggregation. R2 still lacks six qualified
+real configurations, so this triplet cannot complete Phase 5B or unlock the
+54-episode matrix. Focused tests pass 18/18 and full regression 215/215. No real
+memory variant has run at this checkpoint.

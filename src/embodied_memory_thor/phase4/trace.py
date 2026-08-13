@@ -85,6 +85,7 @@ class ThorTraceWriter:
         *,
         evaluator_debug: bool = False,
         intervention_log: bool = False,
+        private_setup_log: bool = False,
     ) -> None:
         self.output_dir = Path(output_dir).expanduser().resolve()
         self.output_dir.mkdir(parents=True, exist_ok=False)
@@ -96,6 +97,7 @@ class ThorTraceWriter:
         self.html_path = self.output_dir / "trace.html"
         self.evaluator_path = self.output_dir / "evaluator_debug.jsonl"
         self.intervention_path = self.output_dir / "intervention.jsonl"
+        self.private_setup_path = self.output_dir / "evaluator_setup.jsonl"
         self.setup_path.write_text("", encoding="utf-8")
         self.episode_path.write_text("", encoding="utf-8")
         self.evaluator_debug = evaluator_debug
@@ -104,6 +106,9 @@ class ThorTraceWriter:
         self.intervention_log = intervention_log
         if intervention_log:
             self.intervention_path.write_text("", encoding="utf-8")
+        self.private_setup_log = private_setup_log
+        if private_setup_log:
+            self.private_setup_path.write_text("", encoding="utf-8")
         self._steps: list[dict[str, Any]] = []
         self._setup_events: list[dict[str, Any]] = []
 
@@ -143,6 +148,17 @@ class ThorTraceWriter:
             **to_jsonable(dict(record)),
         }
         self._append_jsonl(self.intervention_path, payload)
+
+    def log_private_setup(self, record: Mapping[str, Any]) -> None:
+        """Write hidden frozen-start material outside ordinary setup/episode traces."""
+
+        if not self.private_setup_log:
+            raise RuntimeError("private setup logging was not enabled")
+        payload = {
+            "boundary_label": EVALUATOR_ONLY_LABEL,
+            **to_jsonable(dict(record)),
+        }
+        self._append_jsonl(self.private_setup_path, payload)
 
     def log_setup(self, record: Mapping[str, Any]) -> None:
         """Write planner-independent task setup separately from evaluated steps."""

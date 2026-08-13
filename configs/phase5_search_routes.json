@@ -12,6 +12,78 @@
       "target_or_anchor_input_used": false,
       "entry_position_tolerance_meters": 0.05,
       "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan202_R1_fixed_start_001_coverage_absolute_v4",
+      "task": "thor_book_reacquire_k2",
+      "scene": "FloorPlan202",
+      "source_qualification_route_digest": "cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae",
+      "action_sequence_digest": "a73f160b8d399281bfb1cc74840bed864580a212e0167a8d5005e64a2279d890",
+      "action_codes": "DRRRRRFFFFRRRRFFFFRRRRLFFFFRRRRLFFFLFRRRRRFFFFRRRRFFFRFRRRRLFLFFFRRRRRRFFFRFFFFLFFFRRRRFFFRFRRRRRRFRFLFFRRRRRFFFRFFRRRRLFRFFFRRRRFFFRFRRRRRRFFFRFRRRRRRFFFRFRRRRLFFFFRRRRFFFFRRRRRRFRFFFRRRRLFFFFFFFRFFFFRRRRLFFFRFRRRRRFFLFFFRRRRU",
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan302_R1_fixed_start_001_coverage_absolute_v4",
+      "task": "thor_book_reacquire_k2",
+      "scene": "FloorPlan302",
+      "source_qualification_route_digest": "8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a",
+      "action_sequence_digest": "759aa5c8814d571f476d4765c3faf044a46016b9db390f050e4e4dc963a5e8d5",
+      "action_codes": "RRRRRRFFFFRRRRRFFFRFRRRRFFFFRRRRRRFFFFFFFRFRRRRRRFFFRFLFFRRRR",
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan303_R1_fixed_start_001_coverage_absolute_v4_1",
+      "task": "thor_book_reacquire_k2",
+      "scene": "FloorPlan303",
+      "source_qualification_route_digest": "5d4de455b78ab05f17038cb7b5cf4dbc63c736d4b0c0fdf40e733545319c4254",
+      "action_sequence_digest": "2f06c4b56f02d4ae1f3bc005da24cae71ab74930545c71a39583b26d35ec0365",
+      "action_codes": "UURRRRLFFFFRRRRLFFFFRRRRRFFFFRRRRRFFFRFRRRRRRFRFFFRRRRFRFFFRRRRFFFFRRRRLFFFRFRRRRRRFFLFRFFFFRFRRRRDD",
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan305_R1_fixed_start_001_coverage_absolute_v4",
+      "task": "thor_book_reacquire_k2",
+      "scene": "FloorPlan305",
+      "source_qualification_route_digest": "ee28505764f148e0e5b209810333e40cf84cd12d3259c5bc1113918da00dca09",
+      "action_sequence_digest": "d4ea2776c1f2e4d1629f076b16c3a804d8836a57c53594aaab4a4facb285c8bd",
+      "action_codes": "DRRRRRRFFFFRRRRLFFFRFRRRRRRFFFFRRRRFRFFFRRRRRFFFFRRRRLFFRFLFRRRRRRFRFFFFRFRRRRRRFFFFFFFFFFFFRRRRRFFFFRRRRRFFFFRRRRU",
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan306_R1_fixed_start_001_coverage_absolute_v4",
+      "task": "thor_book_reacquire_k2",
+      "scene": "FloorPlan306",
+      "source_qualification_route_digest": "31b9037b881994ab80dc97f732e6b37ae95a330629d112831f78781fd5d3207f",
+      "action_sequence_digest": "627459ab090fe51672b8caa9bbe099df7f48c851f0595eda904208b86d464799",
+      "action_codes": "DRRRRRRFFFFRRRRFFFRFRRRRFFFFRRRRRFFFRFRRRRLFFFRFRRRRRRFFFRFRRRRRRFFFRFRRRRLFFFRFRRRRFFFRFRRRRFFFRFRRRRRFRFFFFRRRRLFFFRFRRRRRFFFRFFFFFFFLFRFLFFFFFRRRRU",
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan307_R1_fixed_start_001_coverage_absolute_v4",
+      "task": "thor_book_reacquire_k2",
+      "scene": "FloorPlan307",
+      "source_qualification_route_digest": "ce1cdda7f8fbf30eaf8f37efce4a52a9a6b48a47c93111023b433ecddf6845eb",
+      "action_sequence_digest": "f96581914f53fe79ee30be931643e3ff98fdc8cd69e85f96e32cb2484a84d242",
+      "action_codes": "RRRRLFFFFRRRRFFFLFRRRRRFFFRFRRRRRFFLFFFFRRRRRFFFRFRRRRLFFFFRRRRLFFFRFRRRRRRFFFFRRRRFFFRFRRRRFFFRFFRRRRRFLFFFFRRRR",
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
     }
   ]
 }

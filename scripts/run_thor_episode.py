@@ -19,6 +19,10 @@ from embodied_memory_thor.phase4.runner import (  # noqa: E402
     ThorEpisodeConfig,
     ThorEpisodeRunner,
 )
+from embodied_memory_thor.phase5.frozen_r1 import (  # noqa: E402
+    FrozenR1ConfigurationError,
+    load_frozen_r1_runtime,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -30,6 +34,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--task", default="thor_book_reacquire")
     parser.add_argument("--scene", default="FloorPlan1")
+    parser.add_argument(
+        "--configuration-id",
+        help=(
+            "opaque frozen R1 configuration; loads its evaluator-only start/anchor "
+            "and public action-only route"
+        ),
+    )
     parser.add_argument(
         "--planner",
         choices=(
@@ -58,6 +69,11 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("--mode", choices=("formal", "debug"), default="formal")
+    parser.add_argument(
+        "--condition",
+        choices=("stable", "stale_r1"),
+        default="stable",
+    )
     parser.add_argument("--max-steps", type=int, default=12)
     parser.add_argument("--output-dir")
     parser.add_argument("--save-frames", action="store_true")
@@ -112,6 +128,7 @@ def _build_config(args: argparse.Namespace) -> ThorEpisodeConfig:
         planner=planner,
         memory=memory,
         search_route_id=args.search_route_id,
+        condition=args.condition,
         mode=args.mode,
         max_steps=args.max_steps,
         output_dir=output_dir,
@@ -139,13 +156,33 @@ def _build_config(args: argparse.Namespace) -> ThorEpisodeConfig:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
+        runtime = None
+        if args.configuration_id:
+            if args.task != "thor_book_reacquire_k2":
+                raise ValueError("--configuration-id currently requires thor_book_reacquire_k2")
+            runtime = load_frozen_r1_runtime(args.configuration_id)
+            if args.scene != "FloorPlan1" and args.scene != runtime.configuration.scene:
+                raise ValueError("--scene conflicts with the frozen configuration")
+            args.scene = runtime.configuration.scene
+            if args.search_route_id and args.search_route_id != runtime.search_route.route_id:
+                raise ValueError("--search-route-id conflicts with the frozen configuration")
+            args.search_route_id = runtime.search_route.route_id
         config = _build_config(args)
         config.validate()
-    except ValueError as exc:
+    except (FrozenR1ConfigurationError, OSError, ValueError) as exc:
         print(f"configuration_error: {exc}", file=sys.stderr)
         return 2
 
-    summary = ThorEpisodeRunner(config).run()
+    summary = ThorEpisodeRunner(
+        config,
+        search_route=runtime.search_route if runtime is not None else None,
+        evaluator_setup=(runtime.configuration if runtime is not None else None),
+        intervention=(
+            runtime.intervention()
+            if runtime is not None and config.condition == "stale_r1"
+            else None
+        ),
+    ).run()
     print(json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True))
     return 0 if summary["success"] else 1
 

@@ -49,7 +49,10 @@ from embodied_memory_thor.phase4.trace import (
     render_console_step,
     rgb_array_diagnostics,
 )
-from embodied_memory_thor.phase5.interventions import EvaluatorIntervention
+from embodied_memory_thor.phase5.interventions import (
+    EvaluatorEpisodeSetup,
+    EvaluatorIntervention,
+)
 from embodied_memory_thor.phase5.search import (
     FrozenSearchRoute,
     FrozenSearchRouteState,
@@ -227,6 +230,7 @@ class ThorEpisodeRunner:
         memory: ThorMemoryProvider | None = None,
         intervention: EvaluatorIntervention | None = None,
         search_route: FrozenSearchRoute | None = None,
+        evaluator_setup: EvaluatorEpisodeSetup | None = None,
         viewer_factory: Callable[..., LiveFrameViewer] | None = None,
     ) -> None:
         config.validate()
@@ -252,6 +256,13 @@ class ThorEpisodeRunner:
         if config.condition == "stable" and intervention is not None:
             raise ValueError("an evaluator intervention requires condition=stale_r1")
         self.intervention = intervention
+        self.evaluator_setup = evaluator_setup
+        if self.evaluator_setup is not None:
+            reference = self.evaluator_setup.public_reference()
+            if str(reference.get("scene", "")) != config.scene:
+                raise ValueError("evaluator setup scene does not match episode scene")
+            if config.task != "thor_book_reacquire_k2":
+                raise ValueError("frozen R1 evaluator setup requires thor_book_reacquire_k2")
         self.action_space = ActionSpace()
         self.executor = ActionExecutor(self.action_space)
         self.viewer_factory = viewer_factory or LiveFrameViewer
@@ -267,6 +278,7 @@ class ThorEpisodeRunner:
             output_dir,
             evaluator_debug=config.save_evaluator_debug,
             intervention_log=self.intervention is not None,
+            private_setup_log=self.evaluator_setup is not None,
         )
         episode_id = writer.output_dir.name
         manifest = {
@@ -321,6 +333,10 @@ class ThorEpisodeRunner:
             ),
             **_git_state(),
         }
+        if self.evaluator_setup is not None:
+            manifest["frozen_configuration"] = dict(
+                self.evaluator_setup.public_reference()
+            )
         if self.search_route is not None:
             manifest["shared_search_policy"] = {
                 "same_route_available_to_all_memory_variants": True,
@@ -469,13 +485,45 @@ class ThorEpisodeRunner:
                     viewer = None
 
             self.env.reset(config.scene)
+            reset_observation = build_planner_observation(
+                self.env.get_observation()
+            )
+            setup_initial_observation = None
+            if self.evaluator_setup is not None:
+                private_setup_record = self.evaluator_setup.apply(
+                    env=self.env,
+                    task_name=config.task,
+                    scene=config.scene,
+                )
+                writer.log_private_setup(private_setup_record)
+                if private_setup_record.get("success") is not True:
+                    private_error = str(
+                        private_setup_record.get("private_error", "")
+                        or "frozen evaluator setup failed"
+                    )
+                    raise RuntimeError(private_error)
+                setup_initial_observation = build_planner_observation(
+                    self.env.get_observation()
+                )
+                for safe_action_field in (
+                    "last_action",
+                    "last_action_success",
+                    "last_action_error",
+                ):
+                    setup_initial_observation[safe_action_field] = deepcopy(
+                        reset_observation.get(safe_action_field)
+                    )
             (
                 current_observation,
                 setup_completed,
                 setup_failure_reason,
                 setup_action_count,
                 setup_action_latencies,
-            ) = self._run_task_setup(writer, runtime_spec)
+            ) = self._run_task_setup(
+                writer,
+                runtime_spec,
+                initial_observation=setup_initial_observation,
+            )
             progress.initialize(current_observation)
             visible_history["observation:0"] = set(visible_object_ids(current_observation))
             self.memory.observe(
@@ -1038,6 +1086,11 @@ class ThorEpisodeRunner:
             ),
             "manifest": str(writer.manifest_path),
             "setup_log": str(writer.setup_path),
+            "evaluator_setup_log": (
+                str(writer.private_setup_path)
+                if self.evaluator_setup is not None
+                else None
+            ),
             "episode_log": str(writer.episode_path),
             "summary": str(writer.summary_path),
             "frames_dir": str(writer.frames_dir) if config.save_frames else None,
@@ -1058,11 +1111,19 @@ class ThorEpisodeRunner:
         return summary
 
     def _run_task_setup(
-        self, writer: ThorTraceWriter, runtime_spec: _TaskRuntimeSpec
+        self,
+        writer: ThorTraceWriter,
+        runtime_spec: _TaskRuntimeSpec,
+        *,
+        initial_observation: Mapping[str, Any] | None = None,
     ) -> tuple[dict[str, Any], bool, str, int, list[float]]:
         """Establish the frozen initial view without planner or hidden-state access."""
 
-        observation = build_planner_observation(self.env.get_observation())
+        observation = (
+            deepcopy(dict(initial_observation))
+            if initial_observation is not None
+            else build_planner_observation(self.env.get_observation())
+        )
         frame_record, _ = self._capture_observation_frame(
             writer,
             file_stem="setup_000_reset",

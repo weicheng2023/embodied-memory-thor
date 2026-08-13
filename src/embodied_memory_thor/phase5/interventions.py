@@ -24,3 +24,21 @@ class EvaluatorIntervention(Protocol):
         pre_intervention_observation: Mapping[str, Any],
     ) -> Mapping[str, Any] | None:
         """Return a private audit record when the frozen intervention fires."""
+
+
+class EvaluatorEpisodeSetup(Protocol):
+    """Apply one frozen evaluator-only start before planner observation zero."""
+
+    configuration_id: str
+
+    def public_reference(self) -> Mapping[str, Any]:
+        """Return an opaque coordinate-free reference for the ordinary manifest."""
+
+    def apply(
+        self,
+        *,
+        env: EmbodiedEnv,
+        task_name: str,
+        scene: str,
+    ) -> Mapping[str, Any]:
+        """Return a private audit record for the frozen setup action."""

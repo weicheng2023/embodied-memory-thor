@@ -1660,6 +1660,39 @@ The merged file remains Git-ignored and planner-invisible. Public completion
 evidence is `docs/evidence/phase5_r1_frozen_six_anchor_set_v1.json`.
 Completion tests passed 55/55 and the complete offline regression passed 211/211.
 
+### Production R1 runtime and excluded integration probe precommit
+
+The final six anchors and their qualified search routes are now available to
+the ordinary runner through a strict public/private join. Public configuration
+rows contain only `configuration_id`, scene, opaque anchor and route IDs, and
+SHA-256 digests. The evaluator-only loader verifies the merged private-set
+digest, start-pose digest, source qualification-route digest, and action-only
+route digest before it can create a runtime.
+
+The frozen start is a private `TeleportFull` action after reset and before
+planner observation 0. Its action, coordinates, and exact Book ID are written
+only to `evaluator_setup.jsonl`; the reset event's safe last-action fields are
+copied into observation 0 so `TeleportFull` cannot leak into planner input. The
+post-teleport agent pose and visible objects remain the real observation. In the
+stale condition, one private `PlaceObjectAtPoint` fires only after successful
+distraction transition 3 while the exact Book is hidden. Its destination and
+native action appear only in `intervention.jsonl`; ordinary post-action fields
+remain those of the agent action.
+
+Before any real variant result, the first frozen scene, FloorPlan202, is fixed
+as `phase5-r1-production-integration-probe-v1`: R1 stale, variants in declared
+no-memory/K=2/object-memory order, maximum 260 evaluated actions, formal runner
+mode, no frames, HTML, live view, or evaluator debug, stop on the first episode
+or integrity failure, and `included_in_formal_aggregate=false`. This is narrower
+than Phase 5B because R2 six-configuration real qualification remains incomplete.
+Even a fully passing triplet proves only that the R1 production setup, stale
+intervention, route, logging, and metrics work together; it cannot unlock or be
+pooled into the 54-episode formal matrix.
+
+Offline acceptance found and corrected the `TeleportFull` last-action leak,
+then passed 18/18 focused tests and 215/215 full regression tests. No real memory
+variant had run when this contract was frozen.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
