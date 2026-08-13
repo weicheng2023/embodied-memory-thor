@@ -1344,6 +1344,26 @@ agent. Its executable definition is
 Focused transition tests passed 30/30 and the complete offline regression
 passed 186/186. No FloorPlan303 route, query, or placement has run yet.
 
+### FloorPlan303 route-v4 floating-boundary stop
+
+The clean `37b7b8f` route-only attempt stopped before a route was constructed.
+The retained start requested camera horizon 60 degrees. After a successful
+TeleportFull, AI2-THOR reported `60.00001525878906`, and route-v4's strict
+`> 60.0` validation raised `initial camera horizon is outside the supported
+range`. The excess is approximately 0.000015 degrees.
+
+A reset/Teleport-only diagnostic reproduced the exact value without support
+queries or placement. Therefore this is normal simulator floating-point drift
+at a declared valid boundary, not a failed start or scene. No route, support
+query, placement, memory agent, image, anchor, or later scene exists from this
+attempt. FloorPlan303 and FloorPlan304 remain blocked. The next revision must
+precommit a small bounded horizon normalization/tolerance, add the observed
+real value to offline tests, and rerun route-only from the beginning. Public
+evidence is
+`docs/evidence/phase5_floorplan303_route_v4_float_boundary_stop.json`.
+Stop-evidence tests passed 31/31 and the complete offline regression passed
+187/187.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

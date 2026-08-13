@@ -908,6 +908,48 @@ class Phase5AnchorTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan303_route_v4_stop_is_float_boundary_only_and_private_safe(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan303_route_v4_float_boundary_stop.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertFalse(evidence["passed"])
+        self.assertEqual(
+            evidence["classification"],
+            "camera_horizon_float_boundary_rejection",
+        )
+        self.assertEqual(evidence["requested_start_horizon_degrees"], 60.0)
+        self.assertGreater(evidence["observed_start_horizon_degrees"], 60.0)
+        self.assertLess(evidence["observed_boundary_excess_degrees"], 0.001)
+        self.assertTrue(evidence["teleport_probe_succeeded"])
+        for key in (
+            "route_constructed",
+            "support_queries_run",
+            "placement_actions_run",
+            "memory_agents_run",
+            "images_saved",
+            "anchor_frozen",
+            "later_scenes_started",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_public_anchor_candidate_contract_has_no_exact_pose_or_object_id(self) -> None:
         root = Path(__file__).resolve().parents[1]
         raw = json.loads(

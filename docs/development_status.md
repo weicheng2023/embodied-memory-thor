@@ -420,3 +420,15 @@ query or placement. No memory, image, force, rotation, or FloorPlan304+ work is
 authorized. Offline acceptance is pending.
 Focused transition tests pass 30/30 and the complete offline regression passes
 186/186. FloorPlan303 route-only construction has not started.
+
+The clean `37b7b8f` FloorPlan303 route-only run stopped before route
+construction. Its retained start requested horizon 60 degrees, but AI2-THOR
+returned `60.00001525878906`; the strict route-v4 upper-bound comparison
+rejected the 0.000015-degree floating deviation. A reset/Teleport-only probe
+confirmed Teleport success and the exact returned value. No support query,
+placement, memory, image, anchor, or later scene ran. This is a route numerical
+boundary bug, not FloorPlan303 infeasibility. The next gate is a separately
+precommitted bounded normalization/tolerance fix and offline test of the
+observed value; FloorPlan303 route-only must then restart from the beginning.
+Stop-evidence tests pass 31/31 and the complete offline regression passes
+187/187.
