@@ -560,3 +560,14 @@ placement, planner, recovery, memory, or image ran. The native candidate
 contract now binds both route and baseline evidence; offline acceptance and a
 clean push are required before FloorPlan305 placement. Gate/result tests pass
 47/47 and the complete offline regression passes 203/203.
+
+After the route/baseline contract was pushed as `60aca71`, FloorPlan305 native
+qualification passed its first balanced Bed candidate. The Book moved 2.855426
+m, became invisible from the old view, stayed stable, retained the expected
+support relation, and had zero extra overlap. Common fallback rediscovered at
+step 38 and picked up at 39 with no failed action. Fresh-reset replay and reset
+restoration passed, freezing one anchor. No memory, image, force, rotation, or
+later scene ran. R1 now has 4/6 qualified scenes; FloorPlan306 is next under the
+route-construction/baseline-execution gate.
+Result-focused tests pass 48/48 and the complete offline regression passes
+204/204.

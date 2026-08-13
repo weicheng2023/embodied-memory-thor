@@ -1583,6 +1583,25 @@ machine-requires the baseline pass. Native qualification remains blocked until
 these files are committed and pushed. Gate/result tests passed 47/47 and the
 complete offline regression passed 203/203.
 
+### FloorPlan305 native qualification-v7 pass
+
+Only after the route and baseline pass contract was pushed as `60aca71`, native
+qualification ran. The first balanced candidate, a Bed candidate, passed all
+gates. The same Book moved 2.855426 m, was hidden from its old view, remained
+stable, retained the expected support relation, and introduced no non-support
+overlap. Common fallback rediscovered it at action 38 and picked it up at 39;
+all actions succeeded. Fresh-reset replay and reset restoration also passed, so
+the opaque anchor was frozen.
+
+No memory agent, image, force action, Book rotation, formal episode, or later
+scene ran. The qualified R1 set is now FloorPlan202, FloorPlan302,
+FloorPlan303, and FloorPlan305 (4/6). Public evidence is
+`docs/evidence/phase5_floorplan305_native_qualification_v7.json`. FloorPlan306
+is the next retained route-construction-eligible scene and must independently
+pass construction plus baseline execution before native work.
+Result-focused tests passed 48/48 and the complete offline regression passed
+204/204.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
