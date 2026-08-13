@@ -1,0 +1,68 @@
+{
+  "evidence_version": "phase5-floorplan5-r2-paired-horizon-diagnostic-v1",
+  "claim_boundary": "one excluded matched real AI2-THOR FloorPlan5 fallback diagnostic; no memory variants and no formal result",
+  "diagnostic_version": "phase5-r2-floorplan5-paired-horizon-v1",
+  "scene": "FloorPlan5",
+  "candidate_order": 2,
+  "code_revision": "3ed2cbeca00f8ebd3e0ba5dc2da23a1d0c43dec0",
+  "working_tree_dirty": false,
+  "integrity_passed": true,
+  "fresh_reset_per_arm": true,
+  "same_start_subgoal_toggle_and_spatial_fallback": true,
+  "arms": [
+    {
+      "arm": "control_0_degrees",
+      "scan_horizon_degrees": 0.0,
+      "start_preconditions_passed": true,
+      "subgoal_passed": true,
+      "toggle_passed": true,
+      "fallback_actions_executed": 162,
+      "fallback_action_failure_count": 0,
+      "target_lock_entered_count": 0,
+      "pickup_attempt_count": 0,
+      "passed": false,
+      "reason": "target_not_rediscovered_before_fallback_exhaustion"
+    },
+    {
+      "arm": "treatment_downward_30_degrees",
+      "scan_horizon_degrees": 30.0,
+      "start_preconditions_passed": true,
+      "subgoal_passed": true,
+      "toggle_passed": true,
+      "fallback_actions_executed": 160,
+      "fallback_action_failure_count": 0,
+      "target_lock_entered_count": 0,
+      "pickup_attempt_count": 0,
+      "passed": false,
+      "reason": "target_not_rediscovered_before_fallback_exhaustion"
+    }
+  ],
+  "vertical_scan_coverage_attributed": false,
+  "spatial_route_diagnosis": {
+    "reachable_node_count": 127,
+    "scan_waypoint_count": 16,
+    "move_destination_node_count": 58,
+    "initial_cup_viewpoint_node_scanned": false,
+    "initial_cup_viewpoint_node_traversed": false,
+    "nearest_scan_waypoint_distance_grid_steps": 3,
+    "nominal_scan_radius_grid_steps": 3,
+    "nominal_scan_radius_meters": 0.75,
+    "route_declared_complete_graph_coverage": true,
+    "interpretation": "the route guarantees that every reachable node is within a geometric radius of a scan waypoint, but the matched failure proves this is not sufficient visual coverage under occlusion"
+  },
+  "object_persistence_check": {
+    "fresh_reset_restoration_passed": true,
+    "cup_visible_at_frozen_start_after_reset": true,
+    "cup_not_in_inventory_after_reset": true,
+    "coffee_machine_off_after_reset": true
+  },
+  "memory_agents_run": false,
+  "coordinates_exposed": false,
+  "object_ids_exposed": false,
+  "images_saved": false,
+  "formal_use_allowed": false,
+  "source_output": "outputs/phase5_r2_floorplan5_horizon_diagnostic/floorplan5_3ed2cbe",
+  "conclusion": "a 30-degree downward view is insufficient; the capable no-memory baseline requires a precommitted spatial/visual coverage revision rather than a FloorPlan5-specific target route",
+  "later_scenes_run": false,
+  "next_gate": "redesign and offline-test a target-independent fallback whose capability claim is based on executed spatial and visual coverage rather than nominal waypoint radius; do not enter FloorPlan6 or run memory variants"
+}

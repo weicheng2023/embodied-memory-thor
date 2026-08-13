@@ -2029,3 +2029,22 @@ control failure paired with a clean treatment success attributes the defect to
 vertical scan coverage.
 The paired diagnostic passes 21/21 focused tests and 244/244 full offline tests;
 real execution requires a clean pushed revision.
+
+The clean pushed `3ed2cbe` pair passed every integrity gate but both arms
+failed: the 0-degree control executed 162 fallback actions and the +30-degree
+treatment executed the identical 160 intervening actions, with zero action
+failures, yet neither observed Cup or entered target lock. Therefore a downward
+horizon alone is not causal or sufficient.
+
+Read-only route audit locates the stronger baseline defect. The 127-node graph
+was represented by only 16 full-scan waypoints and 58 traversed destination
+nodes. The Cup's frozen initial viewpoint node was neither scanned nor
+traversed; its nearest scan waypoint was exactly the configured three-grid-step
+(0.75 m) nominal radius. Thus `complete_graph_coverage=true` means geometric
+radius coverage, not guaranteed visual coverage under occlusion. Fresh-reset
+restoration confirms Cup still exists, is visible at the frozen start, and is
+not in inventory. The next revision must strengthen the target-independent
+capable baseline's spatial/visual coverage generally; it cannot use Cup
+coordinates or a FloorPlan5-specific route. FloorPlan6 and all memory variants
+remain blocked. Public evidence is
+`docs/evidence/phase5_floorplan5_r2_paired_horizon_diagnostic_v1.json`.

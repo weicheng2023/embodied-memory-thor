@@ -301,6 +301,15 @@ blocked.
 Paired-diagnostic/R2 focused tests pass 21/21 and full offline regression passes
 244/244. The real two-arm diagnostic remains pending clean commit/push.
 
+The clean `3ed2cbe` pair completed with full integrity but both arms exhausted:
+0 degrees used 162 actions and +30 degrees used the same 160 spatial actions;
+both had zero failures and zero Cup observations. Downward horizon is therefore
+insufficient. The route audit shows the Cup's initial viewpoint node is neither
+scanned nor traversed. It is merely within the configured 3-step/0.75 m radius
+of a scan waypoint, demonstrating that nominal geometric coverage does not
+guarantee visual coverage under occlusion. Work stops before FloorPlan6 and
+memory variants pending a general capable-baseline fallback redesign.
+
 The real successor then ran on clean revision `3b5e8d7`. FloorPlan202 (3/3
 pairs) and FloorPlan301 (9/9) completed, but FloorPlan302 stopped after pair 3
 of 9 at Shelf ordinal 1. The successful query had 0.261734 degrees more maximum
