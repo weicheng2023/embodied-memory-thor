@@ -1514,6 +1514,30 @@ executable contract is
 Diagnostic-focused tests passed 42/42 and the complete offline regression
 passed 198/198. No real paired diagnostic has run yet.
 
+### FloorPlan304 paired route-mutation diagnostic result
+
+The clean `336fa40` diagnostic was valid and did not produce good news. In the
+original scene after four matched Pass actions, route steps 1--108 succeeded
+and step 109, a coverage `MoveAhead`, failed because a LaundryHamper blocked
+the agent. After frozen Bed candidate 1 placement and three matched Pass
+actions, placement succeeded, route steps 1--108 again succeeded, and the same
+step 109 failed for the same blocker.
+
+The LaundryHamper was not moving in either condition and its recorded drift was
+below one micrometer. No non-Book object changed by more than 1 mm between the
+two pre-route conditions. This isolates the failure to the frozen route's
+runtime traversability and rejects Book placement as its cause. The earlier
+route-only evidence remains valid only as construction/digest/horizon/bound QA;
+that tool did not execute all constructed actions.
+
+By the preregistered decision rule, FloorPlan304 is marked route-failed and the
+work stops. A general obstacle-recovery policy was neither chosen nor executed;
+such a change would require separate preregistration. FloorPlan305 remains
+blocked. Public evidence is
+`docs/evidence/phase5_floorplan304_route_mutation_diagnostic_v1.json`.
+Result-focused tests passed 43/43 and the complete offline regression passed
+199/199.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

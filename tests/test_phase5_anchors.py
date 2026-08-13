@@ -275,6 +275,72 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertTrue(both_pass["good_news"])
         self.assertEqual(invalid["decision"], "stop")
 
+    def test_floorplan304_paired_diagnostic_marks_original_route_failed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan304_route_mutation_diagnostic_v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        route = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan304_absolute_route_v4_1_precommit.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(evidence["diagnostic_valid"])
+        self.assertFalse(evidence["good_news"])
+        self.assertEqual(
+            evidence["classification"], "original_route_intrinsically_blocked"
+        )
+        self.assertEqual(
+            evidence["decision"], "mark_floorplan304_route_failure_and_stop"
+        )
+        self.assertEqual(evidence["route_digest"], route["route_digest"])
+        self.assertEqual(evidence["route_action_count"], route["route_action_count"])
+        self.assertTrue(evidence["placement"]["placement_success"])
+        for condition in ("baseline", "placement"):
+            row = evidence[condition]
+            self.assertFalse(row["route_completed"])
+            self.assertEqual(row["route_actions_attempted"], 109)
+            self.assertEqual(row["first_failed_route_step"], 109)
+            self.assertEqual(row["failed_action_name"], "MoveAhead")
+            self.assertEqual(row["failed_route_phase"], "coverage_move")
+            self.assertEqual(row["blocker_object_type"], "LaundryHamper")
+        self.assertTrue(evidence["same_failure_step_action_phase_and_blocker"])
+        self.assertFalse(evidence["book_placement_caused_route_failure"])
+        self.assertTrue(evidence["route_execution_failure_present_without_book_placement"])
+        self.assertFalse(evidence["obstacle_recovery_policy_selected"])
+        for key in (
+            "support_queries_run",
+            "new_candidates_generated",
+            "planner_run",
+            "memory_agents_run",
+            "images_saved",
+            "obstacle_recovery_actions_run",
+            "anchor_frozen",
+            "later_scenes_started",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+            '"private_registry":',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_support_policy_v3_is_predeclared_semantic_and_not_census_selected(self) -> None:
         root = Path(__file__).resolve().parents[1]
         policy = json.loads(

@@ -518,3 +518,20 @@ within FloorPlan304 allowed. The diagnostic cannot query supports, create new
 candidates, recover obstacles, run memory/images, or enter FloorPlan305.
 Diagnostic-focused tests pass 42/42 and the complete offline regression passes
 198/198. The real paired diagnostic has not started.
+
+The clean `336fa40` paired diagnostic produced a conclusive non-good result.
+The original-scene control and frozen Bed-candidate-1 placement condition both
+failed at the identical route action 109: a coverage `MoveAhead` blocked by a
+LaundryHamper. Step 108 succeeded in both conditions. Placement itself
+succeeded. The LaundryHamper remained non-moving with sub-micrometer drift, and
+no non-Book object differed by more than 1 mm between pre-route conditions.
+Therefore Book placement did not cause the route failure; FloorPlan304's frozen
+route is not runtime-traversable.
+
+The earlier route-only pass is retained but narrowed correctly: it proved
+route construction, digest, horizon, and action bound, not execution of all
+actions. No obstacle recovery was selected or run. No support query, new
+candidate, planner, memory, image, anchor, or FloorPlan305 occurred. Per the
+preregistered rule, FloorPlan304 is marked route-failed and execution stops.
+Result-focused tests pass 43/43 and the complete offline regression passes
+199/199.
