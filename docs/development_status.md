@@ -748,3 +748,19 @@ GUI, evaluator debug, or formal aggregation and stop-on-first-failure. Offline
 runtime, tamper, privacy, CLI, qualification, and ordered-task tests pass 18/18.
 The complete offline regression passes 229/229. The probe has not run; it first
 requires a clean committed and pushed revision.
+
+The clean `a32a6bc` FloorPlan3 excluded R2 probe has now stopped at a real
+object-memory integration failure. No-memory and K=2 passed in 13 steps with
+six common subgoal actions and four fallback actions. Object memory reached the
+140-step ceiling after 132 memory-guided heading actions, zero fallback actions,
+and 131 repeated viewpoints. All privacy/evidence audits passed.
+
+The trace shows a deterministic 90-degree quantization oscillation: a continuous
+last-seen-position bearing falls between adjacent executable headings, but the
+planner requires one-degree alignment, so it alternates left/right indefinitely
+and retained memory prevents fallback. FloorPlan4 did not run. The failure is
+recorded in
+`docs/evidence/phase5_floorplan3_r2_production_probe_v1_stop.json`. Next work
+must precommit and offline-test discrete-heading convergence and bounded
+memory-to-fallback escape, then rerun all three excluded variants on a clean
+pushed revision before R2 scene expansion resumes.

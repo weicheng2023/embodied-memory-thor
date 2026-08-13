@@ -1892,3 +1892,30 @@ stop on the first episode or audit failure. This checkpoint implements and
 tests the runtime and probe only. It deliberately does not run the memory
 variants yet. The real probe requires a clean committed and pushed revision.
 Focused tests pass 18/18 and the complete offline regression passes 229/229.
+
+#### FloorPlan3 production probe v1 stop
+
+The clean pushed `a32a6bc` excluded probe ran the complete fixed triplet.
+No-memory and K=2 both passed in 13 steps, using all six subgoal-route actions
+and four actions from the capable shared fallback; K=2 was confirmed evicted
+before reacquisition. Object memory failed at the 140-step limit. It executed
+132 memory-guided actions, zero fallback actions, and accumulated 131 repeated
+viewpoint visits. Every variant passed the information-boundary audit, and the
+probe remained excluded from formal aggregation.
+
+Trace diagnosis identifies a deterministic discrete-control defect. Beginning
+at reacquisition step 9, the stored viewpoint bearing lay between two headings
+available under 90-degree primitive rotation. The memory planner compared the
+continuous bearing against a one-degree convergence tolerance, alternated
+`RotateLeft` and `RotateRight`, never translated, and never relinquished the
+still-present memory record to the fallback. This is not evidence that object
+memory is intrinsically worse; it is an integration failure in the shared
+memory-navigation controller.
+
+Public stop evidence is
+`docs/evidence/phase5_floorplan3_r2_production_probe_v1_stop.json`. FloorPlan4
+and later scenes remain unrun. The next change must be separately precommitted:
+a shared discrete-heading convergence rule plus a bounded memory-to-fallback
+escape rule, with offline 90-degree quantization/parity/privacy tests. The full
+three-variant excluded triplet must then be rerun from a clean pushed revision;
+the two passing v1 episodes cannot be selectively reused.
