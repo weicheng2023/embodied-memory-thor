@@ -1636,6 +1636,30 @@ query, placement, planner, recovery, memory, or image. Public evidence and a
 machine-gated native contract are prepared; test/commit/push precede native.
 Gate/result tests passed 51/51 and the complete offline regression passed 207/207.
 
+### FloorPlan307 pass and six-anchor completion
+
+After `55cf276` was pushed, FloorPlan307's first balanced Bed candidate passed.
+Book movement was 3.627789 m; old-view invisibility, stability, expected support,
+and zero-overlap gates passed. Fallback rediscovered at action 39 and picked up
+at 40 with no failed action. Replay and reset restoration passed.
+
+The declared stop condition is now met. The six qualified scenes, in selection
+order, are FloorPlan202, FloorPlan302, FloorPlan303, FloorPlan305,
+FloorPlan306, and FloorPlan307. FloorPlan301 is retained as native-candidate-
+ineligible; FloorPlan304 is retained as route-execution-ineligible. No
+FloorPlan308 environment was started. The public frozen manifest is
+`configs/phase5_r1_frozen_anchor_set_v1.json`; the merge utility validates the
+six source registries and writes coordinates only to an ignored evaluator-only
+output. This completes anchor infrastructure, not a memory-agent comparison.
+
+The evaluator-only merge then validated all six source registry digests,
+scene identities, public qualification passes, and one unique anchor per scene.
+Its private digest is
+`423cf8ef98d73b56d836edbda83563cf4ebdc0604063e1ccf9530f876f781d92`.
+The merged file remains Git-ignored and planner-invisible. Public completion
+evidence is `docs/evidence/phase5_r1_frozen_six_anchor_set_v1.json`.
+Completion tests passed 55/55 and the complete offline regression passed 211/211.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

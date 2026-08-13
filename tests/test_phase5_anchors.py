@@ -677,6 +677,84 @@ class Phase5AnchorTests(unittest.TestCase):
             for forbidden in ("objectId", "support_id", "selected_pose", "target_point", '"x"', '"y"', '"z"'):
                 self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan307_native_v7_result_completes_six_scene_target(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads((root / "docs" / "evidence" / "phase5_floorplan307_native_qualification_v7.json").read_text(encoding="utf-8"))
+        baseline = json.loads((root / "docs" / "evidence" / "phase5_floorplan307_baseline_route_execution_v1.json").read_text(encoding="utf-8"))
+        self.assertTrue(baseline["passed"])
+        self.assertTrue(evidence["passed"])
+        self.assertTrue(evidence["anchor_frozen"])
+        self.assertEqual(evidence["candidate_trial_count"], 1)
+        self.assertEqual(evidence["selected_support_type"], "Bed")
+        self.assertGreaterEqual(evidence["target_move_distance_xz_meters"], 0.5)
+        self.assertTrue(evidence["old_view_invisible"])
+        self.assertTrue(evidence["three_sample_stability_passed"])
+        self.assertTrue(evidence["expected_support_relation_passed"])
+        self.assertEqual(evidence["post_placement_non_support_overlap_count"], 0)
+        self.assertTrue(evidence["common_fallback_passed"])
+        self.assertEqual(evidence["fallback_discovery_step"], 39)
+        self.assertEqual(evidence["fallback_pickup_step"], 40)
+        self.assertEqual(evidence["fallback_failed_action_count"], 0)
+        self.assertTrue(evidence["fresh_reset_replay_passed"])
+        self.assertTrue(evidence["reset_restoration_passed"])
+        self.assertEqual(evidence["qualified_r1_scene_count_after_run"], 6)
+        self.assertEqual(
+            evidence["qualified_r1_scenes_after_run"],
+            ["FloorPlan202", "FloorPlan302", "FloorPlan303", "FloorPlan305", "FloorPlan306", "FloorPlan307"],
+        )
+        for key in ("query_state_reused", "memory_agents_run", "images_saved", "later_scenes_started", "coordinates_exposed"):
+            self.assertFalse(evidence[key])
+
+    def test_frozen_six_anchor_manifest_is_private_safe_and_source_complete(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        manifest = json.loads((root / "configs" / "phase5_r1_frozen_anchor_set_v1.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["target_anchor_count"], 6)
+        self.assertEqual(
+            [row["scene"] for row in manifest["scenes"]],
+            ["FloorPlan202", "FloorPlan302", "FloorPlan303", "FloorPlan305", "FloorPlan306", "FloorPlan307"],
+        )
+        self.assertEqual(
+            [row["scene"] for row in manifest["excluded_scenes"]],
+            ["FloorPlan301", "FloorPlan304"],
+        )
+        self.assertTrue(manifest["scene_expansion_complete"])
+        self.assertFalse(manifest["next_scene_started"])
+        self.assertFalse(manifest["planner_visible"])
+        self.assertFalse(manifest["coordinates_public"])
+        serialized = json.dumps(manifest, sort_keys=True)
+        for forbidden in ("objectId", "support_id", "selected_pose", "target_point", '"x"', '"y"', '"z"'):
+            self.assertNotIn(forbidden, serialized)
+
+    def test_private_six_anchor_merge_verifies_sources_without_leaking_publicly(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        path = root / "scripts" / "freeze_phase5_r1_anchor_set.py"
+        spec = importlib.util.spec_from_file_location("freeze_phase5_r1_anchor_set", path)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        manifest = json.loads((root / "configs" / "phase5_r1_frozen_anchor_set_v1.json").read_text(encoding="utf-8"))
+        frozen = module.build_frozen_anchor_set(manifest, root=root)
+        self.assertEqual(frozen["anchor_count"], 6)
+        self.assertEqual(len(frozen["anchors"]), 6)
+        self.assertEqual(len(set(frozen["scenes"])), 6)
+        self.assertFalse(frozen["planner_visible"])
+        self.assertFalse(frozen["included_in_planner_metrics"])
+        self.assertEqual(len(frozen["private_anchor_set_digest"]), 64)
+
+    def test_frozen_six_anchor_public_result_matches_private_merge_digest(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads((root / "docs" / "evidence" / "phase5_r1_frozen_six_anchor_set_v1.json").read_text(encoding="utf-8"))
+        self.assertEqual(evidence["anchor_count"], 6)
+        self.assertEqual(evidence["scenes"], ["FloorPlan202", "FloorPlan302", "FloorPlan303", "FloorPlan305", "FloorPlan306", "FloorPlan307"])
+        self.assertEqual(evidence["private_anchor_set_digest"], "423cf8ef98d73b56d836edbda83563cf4ebdc0604063e1ccf9530f876f781d92")
+        for key in ("source_registry_scene_match_passed", "source_registry_digest_match_passed", "one_unique_anchor_per_scene_passed", "public_qualification_evidence_passed", "private_registry_written", "private_registry_git_ignored", "scene_expansion_complete"):
+            self.assertTrue(evidence[key])
+        for key in ("planner_visible", "coordinates_exposed", "memory_agents_run", "images_saved", "floorplan308_started"):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in ("objectId", "support_id", "selected_pose", "target_point", '"x"', '"y"', '"z"'):
+            self.assertNotIn(forbidden, serialized)
+
     def test_support_policy_v3_is_predeclared_semantic_and_not_census_selected(self) -> None:
         root = Path(__file__).resolve().parents[1]
         policy = json.loads(

@@ -598,3 +598,21 @@ alignment was needed. No query, placement, planner, recovery, memory, or image
 ran. Its baseline-gated native contract is prepared; tests and push precede any
 placement.
 Gate/result tests pass 51/51 and the complete offline regression passes 207/207.
+
+After `55cf276` was pushed, FloorPlan307 candidate 1 (Bed) fully qualified.
+The Book moved 3.627789 m and passed invisibility, stability, support, and
+overlap gates. Fallback rediscovered/picked at actions 39/40 with no failure;
+replay and reset restoration passed. This freezes the sixth distinct R1 anchor.
+The final ordered set is FloorPlan202, FloorPlan302, FloorPlan303,
+FloorPlan305, FloorPlan306, and FloorPlan307. FloorPlan301 remains native-
+candidate-ineligible and FloorPlan304 route-execution-ineligible. Scene
+expansion stopped before FloorPlan308. An evaluator-only merged registry tool
+and coordinate-free six-scene manifest are prepared; this is still anchor
+qualification, not a memory comparison.
+
+The six private source registries were then merged offline with all scene,
+digest, public-pass, and one-anchor uniqueness checks passing. The ignored
+evaluator-only registry contains six anchors and has digest
+`423cf8ef98d73b56d836edbda83563cf4ebdc0604063e1ccf9530f876f781d92`.
+No coordinates enter public evidence or planner input.
+Completion tests pass 55/55 and the complete offline regression passes 211/211.

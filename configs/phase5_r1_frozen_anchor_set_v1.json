@@ -1,0 +1,74 @@
+{
+  "anchor_set_version": "phase5-r1-frozen-six-anchor-set-v1",
+  "target_anchor_count": 6,
+  "selection_rule": "declared scene order with route-construction, applicable route-execution, and native qualification gates; stop at six distinct passing scenes",
+  "scenes": [
+    {
+      "scene": "FloorPlan202",
+      "anchor_id": "FloorPlan202_R1_stale_Book_anchor_001",
+      "public_evidence": "docs/evidence/phase5_floorplan202_axis_aware_v2_anchor_qualification.json",
+      "private_registry": "outputs/phase5_anchor_qualification_v9/FloorPlan202_a2b3629/evaluator_only_anchor_registry.json",
+      "private_registry_digest": "501510add9ac14ab3947b96a15e1e56c219d30241cd2ba1a5f51ba2587f85225",
+      "baseline_execution_gate_status": "predates_gate_v1; qualified shared fallback passed"
+    },
+    {
+      "scene": "FloorPlan302",
+      "anchor_id": "FloorPlan302_R1_stale_Book_anchor_001",
+      "public_evidence": "docs/evidence/phase5_floorplan302_native_qualification_v6.json",
+      "private_registry": "outputs/phase5_native_qualification_v6/floorplan302_90a1ec7/evaluator_only_anchor_registry.json",
+      "private_registry_digest": "8d5ddfb93ac3c75c7e6eefd0b2fcd0c50620f2d8cc3a141d78f5e9cd62884bd5",
+      "baseline_execution_gate_status": "predates_gate_v1; qualified shared fallback passed"
+    },
+    {
+      "scene": "FloorPlan303",
+      "anchor_id": "FloorPlan303_R1_stale_Book_anchor_001",
+      "public_evidence": "docs/evidence/phase5_floorplan303_native_qualification_v7.json",
+      "private_registry": "outputs/phase5_native_qualification_v7/floorplan303_9a79fc6/evaluator_only_anchor_registry.json",
+      "private_registry_digest": "d6ea7ccdc4bfd214451425f3b5357aa98c29d40fd232cc74fe67b92841f621ca",
+      "baseline_execution_gate_status": "predates_gate_v1; qualified shared fallback passed"
+    },
+    {
+      "scene": "FloorPlan305",
+      "anchor_id": "FloorPlan305_R1_stale_Book_anchor_001",
+      "public_evidence": "docs/evidence/phase5_floorplan305_native_qualification_v7.json",
+      "private_registry": "outputs/phase5_route_execution_gate_v1/floorplan305_60aca71/native_qualification/evaluator_only_anchor_registry.json",
+      "private_registry_digest": "e65fd345fa363c7da4001054271a3a13df4678a154d3f4c7588e08c1b4d99c05",
+      "baseline_execution_gate_status": "passed_v1"
+    },
+    {
+      "scene": "FloorPlan306",
+      "anchor_id": "FloorPlan306_R1_stale_Book_anchor_001",
+      "public_evidence": "docs/evidence/phase5_floorplan306_native_qualification_v7.json",
+      "private_registry": "outputs/phase5_route_execution_gate_v1/floorplan306_d475fee/native_qualification/evaluator_only_anchor_registry.json",
+      "private_registry_digest": "f1adceedf02d6ece0afcc0399b806a728f27dcdc0d7517837909d293ff4f7438",
+      "baseline_execution_gate_status": "passed_v1"
+    },
+    {
+      "scene": "FloorPlan307",
+      "anchor_id": "FloorPlan307_R1_stale_Book_anchor_001",
+      "public_evidence": "docs/evidence/phase5_floorplan307_native_qualification_v7.json",
+      "private_registry": "outputs/phase5_route_execution_gate_v1/floorplan307_55cf276/native_qualification/evaluator_only_anchor_registry.json",
+      "private_registry_digest": "ab288c010103384dad7f0646d3806a04ed5d5859423c9f140a18e7613c1a6917",
+      "baseline_execution_gate_status": "passed_v1"
+    }
+  ],
+  "excluded_scenes": [
+    {
+      "scene": "FloorPlan301",
+      "classification": "native_candidate_ineligible",
+      "evidence": "docs/evidence/phase5_floorplan301_native_qualification_v5.json"
+    },
+    {
+      "scene": "FloorPlan304",
+      "classification": "route_execution_ineligible",
+      "evidence": "docs/evidence/phase5_floorplan304_route_execution_ineligible_v1.json"
+    }
+  ],
+  "planner_visible": false,
+  "coordinates_public": false,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "scene_expansion_complete": true,
+  "next_scene_started": false,
+  "claim_boundary": "six real THOR relocation anchors only; not a memory-agent comparison or formal episode"
+}
