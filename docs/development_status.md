@@ -776,3 +776,18 @@ Probe v2 preserves FloorPlan3, both route digests, order, 140-step cap, and
 excluded labels, with no v1 episode reuse. Focused tests pass 20/20 and full
 regression passes 235/235. The full v2 triplet has not run; commit/push is the
 remaining precondition.
+
+The full v2 triplet then ran from clean pushed revision `29db132` and passed.
+No-memory and K=2 again completed in 13 steps with six shared-subgoal and four
+shared-fallback actions; K=2 eviction was confirmed. Object memory completed in
+20 steps using 11 memory-guided actions, zero fallback actions, zero invalid
+actions, and zero failed interactions. Its bounded escape did not trigger, so
+the former oscillation was resolved by executable-heading quantization itself.
+All three information-boundary audits passed.
+
+This is integration evidence, not a positive memory result: in this excluded
+single configuration, object memory took seven more steps than either control.
+Public evidence is
+`docs/evidence/phase5_floorplan3_r2_production_probe_v2.json`. The next allowed
+gate is ascending R2 qualification beginning with FloorPlan4; no later memory
+variants may run until the six-configuration runtime is frozen.

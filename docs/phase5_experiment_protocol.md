@@ -1940,3 +1940,19 @@ v1 episode reuse. Focused discrete-heading, bounded escape, visible-derived
 recovery, parity, privacy, ordered-task, and stale-recovery tests pass 20/20;
 the complete offline regression passes 235/235. A real v2 launch still requires
 a clean committed and pushed revision.
+
+The complete v2 triplet subsequently passed from clean pushed revision
+`29db132`. No-memory and K=2 each completed in 13 steps using the same six
+subgoal actions and four fallback actions; K=2 was evicted before
+reacquisition. Object memory completed in 20 steps with 11 memory-guided
+actions and no fallback, invalid action, interaction failure, guard escape, or
+remaining suppressed record. Thus executable-heading quantization fixed the
+observed v1 oscillation without relying on the escape guard. All ordinary-trace
+privacy audits passed.
+
+The result remains excluded integration QA. It cannot establish a memory
+benefit, and the honest single-episode observation is that object memory was
+seven steps slower than both controls. Public coordinate-free evidence is
+`docs/evidence/phase5_floorplan3_r2_production_probe_v2.json`. The next gate is
+ascending R2 qualification from FloorPlan4 until six frozen configurations;
+no additional memory variants are allowed during qualification.
