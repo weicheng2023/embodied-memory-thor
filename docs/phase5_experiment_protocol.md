@@ -1429,6 +1429,26 @@ improvement evidence. Public evidence is
 Result-focused tests passed 36/36 and the complete offline regression passed
 192/192.
 
+### FloorPlan304 qualification-v7 scene-transition precommit
+
+The audited sequence now contains qualified anchors in FloorPlan202,
+FloorPlan302, and FloorPlan303, with FloorPlan301 retained as a cleanly
+exhausted failure. The unchanged scene-order rule therefore admits only
+FloorPlan304 next; prior native outcomes do not select or rank its candidates.
+
+FloorPlan304 reuses qualification/registry v7, the type-balanced 12-candidate
+maximum, fresh-reset query isolation, native placement and physical QA, common
+fallback, replay, restoration, privacy, and action prohibitions. Its first gate
+is route-only QA under the already frozen absolute-horizon v4.1 policy. That run
+may use reachable positions and the retained evaluator-only start pose, but no
+support query, placement, target/anchor input, memory agent, or image. A passing
+coordinate-free route digest/count must be tested, committed, and pushed before
+exactly one native qualification-v7 batch may start. This transition authorizes
+neither FloorPlan305 nor any memory variant. The executable contract is
+`configs/phase5_r1_native_qualification_v7_floorplan304.json`.
+Focused transition tests passed 37/37 and the complete offline regression
+passed 193/193. No FloorPlan304 THOR process has been started.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

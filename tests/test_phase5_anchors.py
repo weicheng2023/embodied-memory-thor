@@ -354,6 +354,53 @@ class Phase5AnchorTests(unittest.TestCase):
         self.assertFalse(protocol["memory_agents_allowed"])
         self.assertFalse(protocol["later_scenes_allowed_by_this_contract"])
 
+    def test_floorplan304_v7_follows_audited_pass_in_declared_order(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        protocol = json.loads(
+            (
+                root
+                / "configs"
+                / "phase5_r1_native_qualification_v7_floorplan304.json"
+            ).read_text(encoding="utf-8")
+        )
+        predecessor = json.loads(
+            (root / protocol["predecessor_public_evidence"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(protocol["scene"], "FloorPlan304")
+        self.assertEqual(protocol["declared_scene_predecessor"], "FloorPlan303")
+        self.assertEqual(protocol["qualification_version"], ANCHOR_QUALIFICATION_VERSION)
+        self.assertEqual(protocol["private_registry_version"], ANCHOR_REGISTRY_VERSION)
+        self.assertEqual(protocol["qualified_scene_count_before_run"], 3)
+        self.assertEqual(
+            protocol["qualified_scenes_before_run"],
+            ["FloorPlan202", "FloorPlan302", "FloorPlan303"],
+        )
+        self.assertEqual(protocol["failed_scenes_before_run"], ["FloorPlan301"])
+        self.assertEqual(
+            predecessor["passed"], protocol["predecessor_required_passed"]
+        )
+        self.assertEqual(
+            predecessor["anchor_frozen"],
+            protocol["predecessor_required_anchor_frozen"],
+        )
+        self.assertEqual(
+            predecessor["reset_restoration_passed"],
+            protocol["predecessor_required_reset_restoration_passed"],
+        )
+        self.assertEqual(
+            protocol["horizon_policy_version"], ABSOLUTE_HORIZON_POLICY_VERSION
+        )
+        self.assertTrue(protocol["route_only_precommit_required_before_placement"])
+        self.assertFalse(protocol["prior_scene_outcomes_used_to_select_candidates"])
+        self.assertEqual(protocol["maximum_native_candidate_trials"], 12)
+        self.assertFalse(protocol["force_action_allowed"])
+        self.assertFalse(protocol["book_rotation_action_allowed"])
+        self.assertFalse(protocol["memory_agents_allowed"])
+        self.assertFalse(protocol["images_allowed"])
+        self.assertFalse(protocol["later_scenes_allowed_by_this_contract"])
+
     def test_floorplan301_v3_launch_stop_is_pre_environment_and_private_safe(self) -> None:
         root = Path(__file__).resolve().parents[1]
         evidence = json.loads(

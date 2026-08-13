@@ -465,3 +465,15 @@ image, force action, Book rotation, formal episode, or later scene ran. R1 now
 has three qualified scenes: FloorPlan202, FloorPlan302, and FloorPlan303.
 Result-focused tests pass 36/36 and the complete offline regression passes
 192/192.
+
+FloorPlan304 is now the sole declared successor after the audited FloorPlan303
+pass. The running state is three qualified scenes (FloorPlan202, FloorPlan302,
+FloorPlan303) and one retained clean failure (FloorPlan301). Qualification v7,
+type-balanced candidate ordering, native gates, privacy boundaries, and the
+240-action route bound are unchanged. Before any support query or placement,
+FloorPlan304 must pass route-only QA under absolute-horizon policy v4.1 and its
+coordinate-free digest/count contract must be tested, committed, and pushed.
+Only then is exactly one native qualification-v7 batch, capped at 12 balanced
+candidates, allowed. No memory agent, image, FloorPlan305, force action, or Book
+rotation is authorized. Focused transition tests pass 37/37 and the complete
+offline regression passes 193/193. No THOR run for FloorPlan304 has started.
