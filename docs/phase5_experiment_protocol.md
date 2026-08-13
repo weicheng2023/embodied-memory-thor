@@ -2010,3 +2010,22 @@ and CoffeeMachine-pose rank before any route/task outcome. All downstream gates
 and public/private boundaries remain unchanged. Only FloorPlan5 may rerun from
 the clean pushed v3 revision; FloorPlan6 and memory variants remain blocked.
 The v3 pre-run gate passes 24/24 focused tests and 241/241 full offline tests.
+
+The clean pushed `c26402b` FloorPlan5 v3 retry found five joint-feasible starts
+among 92 standing poses but exhausted all 12 candidate pairs. Two poses failed
+to reproduce Cup visibility on the later fresh-reset trial. The other ten each
+completed the subgoal, K=2 hidden gate, CoffeeMachine toggle, and every action
+of a 160-164-action zero-degree fallback with no action failure, yet never
+observed Cup and never entered target lock. This is a fallback visual-coverage
+failure, not navigation or interaction failure. FloorPlan6 remains blocked.
+
+The next diagnostic fixes candidate 2, its private start, six-action subgoal,
+and full spatial fallback sequence. A fresh-reset control retains the leading
+30-to-0 LookUp and trailing 0-to-30 LookDown (162 actions). A fresh-reset
+treatment removes only those boundary actions and executes the identical 160
+intervening actions at absolute +30 degrees downward. No memory variant, image,
+formal result, new route geometry, or later scene is allowed. Only a clean
+control failure paired with a clean treatment success attributes the defect to
+vertical scan coverage.
+The paired diagnostic passes 21/21 focused tests and 244/244 full offline tests;
+real execution requires a clean pushed revision.

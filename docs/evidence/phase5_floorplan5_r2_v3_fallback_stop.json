@@ -1,0 +1,32 @@
+{
+  "evidence_version": "phase5-floorplan5-r2-v3-fallback-stop-v1",
+  "claim_boundary": "single-scene real AI2-THOR evaluator qualification stop; no memory variant and no formal result",
+  "scene": "FloorPlan5",
+  "code_revision": "c26402ba365ba7af6fcfdbf5174181cc1c638c76",
+  "working_tree_dirty": false,
+  "qualification_version": "phase5-r2-native-qualification-v3",
+  "standing_cup_pose_count": 92,
+  "joint_start_feasible_pose_count": 5,
+  "candidate_pair_count": 12,
+  "candidate_trials_run": 12,
+  "passed": false,
+  "failure_classification": "candidate_qualification_exhausted",
+  "start_precondition_replay_failure_count": 2,
+  "fallback_exhaustion_count": 10,
+  "fallback_action_failure_count_across_exhausted_candidates": 0,
+  "fallback_action_count_range": [
+    160,
+    164
+  ],
+  "subgoal_pass_count_among_fallback_cases": 10,
+  "toggle_pass_count_among_fallback_cases": 10,
+  "target_lock_entered_count_across_fallback_cases": 0,
+  "control_scan_horizon_degrees": 0.0,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "formal_use_allowed": false,
+  "source_output": "outputs/phase5_r2_qualification_v3/floorplan5_c26402b",
+  "diagnosis": "joint start filtering repaired candidate coverage, but every reproducible candidate completed subgoal, toggle, and the full zero-degree target-independent fallback without ever observing Cup",
+  "later_scenes_run": false,
+  "next_gate": "run one separately precommitted matched candidate-2 0-degree versus 30-degree-downward fallback diagnostic; do not enter FloorPlan6"
+}

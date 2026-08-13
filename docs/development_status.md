@@ -298,6 +298,8 @@ Successor-specific tests pass 8/8 (24/24 with adjacent census/replication
 tests), and the complete offline regression passes 170/170. The real six-scene
 census has not started, so support policy v3 and FloorPlan301 candidate 1 remain
 blocked.
+Paired-diagnostic/R2 focused tests pass 21/21 and full offline regression passes
+244/244. The real two-arm diagnostic remains pending clean commit/push.
 
 The real successor then ran on clean revision `3b5e8d7`. FloorPlan202 (3/3
 pairs) and FloorPlan301 (9/9) completed, but FloorPlan302 stopped after pair 3
@@ -824,3 +826,11 @@ unchanged first-12 rank-balanced pairs. FloorPlan5-only rerun remains pending
 commit/push; no memory variant is authorized.
 Qualifier-v3/R2 focused tests pass 24/24 and the full offline regression passes
 241/241.
+
+FloorPlan5 v3 on clean `c26402b` found 5/92 joint-feasible starts but qualified
+0/12 pairs. Two start views did not reproduce on trial reset. Ten candidates
+passed subgoal/toggle and all 160-164 fallback actions with zero action failure,
+but Cup was never visible and target lock never entered. A candidate-2 paired
+0-degree versus +30-degree downward diagnostic is now precommitted; it changes
+only the two horizon-boundary actions. FloorPlan6 and memory agents remain
+blocked.
