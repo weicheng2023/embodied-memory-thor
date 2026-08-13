@@ -94,8 +94,71 @@ class Phase5R2FloorPlan5VisualFallbackTests(unittest.TestCase):
         )
         self.assertTrue(summary["diagnostic_passed"])
         self.assertTrue(summary["qualification_retry_allowed"])
+        self.assertTrue(summary["fallback_capability_interpretable"])
         self.assertFalse(summary["memory_agents_run"])
         serialized = json.dumps(summary, sort_keys=True)
+        for forbidden in ("Cup|", "CoffeeMachine|", "objectId", '"x":', '"y":', '"z":'):
+            self.assertNotIn(forbidden, serialized)
+
+    def test_start_visibility_nonreproduction_is_not_a_fallback_result(self) -> None:
+        module = self._module()
+        summary = module.build_public_summary(
+            trial={
+                "passed": False,
+                "reason": "start_precondition_failed",
+                "preconditions": {
+                    "teleport_success": True,
+                    "cup_exists": True,
+                    "cup_visible": False,
+                    "cup_pickupable": True,
+                    "coffee_machine_exists": True,
+                    "coffee_machine_initially_off": True,
+                    "coffee_machine_initially_hidden": True,
+                },
+            },
+            restoration={"passed": True, "cup_visible": True},
+            route={
+                "route_version": "phase5-target-independent-exhaustive-visual-v1",
+                "action_limit": 2048,
+                "reachable_node_count": 127,
+                "visited_node_count": 127,
+                "scan_node_count": 127,
+                "scan_horizons_degrees": [0.0, 30.0],
+                "route_digest": "a" * 64,
+                "target_or_anchor_input_used": False,
+                "qualification_goal_input_used": False,
+                "memory_variant_input_used": False,
+                "every_reachable_node_visited": True,
+                "every_reachable_node_scanned_at_both_horizons": True,
+                "actions": [{}] * 1645,
+            },
+            git_state={"code_revision": "b" * 40, "working_tree_dirty": False},
+            output_dir=Path("outputs/private"),
+        )
+        self.assertEqual(
+            summary["failure_classification"],
+            "frozen_start_visibility_nonreproduction",
+        )
+        self.assertFalse(summary["fallback_capability_interpretable"])
+        self.assertFalse(summary["qualification_retry_allowed"])
+
+    def test_real_stop_evidence_is_public_safe_and_noninterpretable(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads((
+            root / "docs" / "evidence"
+            / "phase5_floorplan5_r2_visual_fallback_diagnostic_v1.json"
+        ).read_text(encoding="utf-8"))
+        self.assertEqual(
+            evidence["failure_classification"],
+            "frozen_start_visibility_nonreproduction",
+        )
+        self.assertEqual(evidence["fallback_actions_executed"], 0)
+        self.assertFalse(evidence["fallback_capability_interpretable"])
+        self.assertFalse(evidence["qualification_retry_allowed"])
+        self.assertFalse(evidence["memory_agents_run"])
+        self.assertFalse(evidence["later_scenes_run"])
+        self.assertTrue(evidence["reset_restoration"]["cup_visible"])
+        serialized = json.dumps(evidence, sort_keys=True)
         for forbidden in ("Cup|", "CoffeeMachine|", "objectId", '"x":', '"y":', '"z":'):
             self.assertNotIn(forbidden, serialized)
 

@@ -2084,3 +2084,21 @@ trial. Only clean target rediscovery and pickup plus reset restoration permits
 a separately versioned FloorPlan5 qualification retry. Route-action failure,
 exhaustion without rediscovery, privacy failure, or frozen-hash failure stops
 the protocol without qualification or FloorPlan6.
+
+The clean pushed `4df165c` real candidate-2 diagnostic stopped at the start
+gate. The new target-independent route itself constructed successfully for all
+127 reachable nodes: 127 nodes visited and scanned at both 0 and +30 degrees,
+1645 planned actions under the 2048 limit and 2028 conservative bound. However,
+after the diagnostic's fresh reset and TeleportFull, Cup existed and remained
+pickupable but was not visible. All other start preconditions passed. No
+subgoal, toggle, target lock, or fallback action executed. A subsequent fresh
+reset and the same frozen start restored Cup visibility, so the precise class
+is `frozen_start_visibility_nonreproduction`, consistent with the earlier
+cross-reset variability rather than a failure of the newly built fallback.
+
+This result cannot be used to claim either success or failure of exhaustive
+visual fallback. FloorPlan5 qualification retry remains prohibited and
+FloorPlan6/memory variants remain blocked. Any retry needs a separately
+precommitted matched treatment for nondeterministic frozen-start visibility;
+the current run must not be silently repeated until it passes. Public evidence
+is `docs/evidence/phase5_floorplan5_r2_visual_fallback_diagnostic_v1.json`.

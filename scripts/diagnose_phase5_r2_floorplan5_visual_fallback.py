@@ -192,6 +192,14 @@ def build_public_summary(
     reason = str(trial.get("reason", ""))
     if passed:
         failure_classification = "resolved_visual_coverage_failure"
+    elif (
+        reason == "start_precondition_failed"
+        and isinstance(preconditions, Mapping)
+        and preconditions.get("cup_visible") is False
+        and restoration.get("passed") is True
+        and restoration.get("cup_visible") is True
+    ):
+        failure_classification = "frozen_start_visibility_nonreproduction"
     elif reason == "target_not_rediscovered_before_fallback_exhaustion":
         failure_classification = "visual_coverage_failure_persists"
     elif reason == "fallback_route_action_failed":
@@ -232,6 +240,9 @@ def build_public_summary(
         "diagnostic_passed": passed,
         "failure_reason": "" if passed else reason,
         "failure_classification": failure_classification,
+        "fallback_capability_interpretable": bool(
+            task_integrity and isinstance(action_log, list) and len(action_log) > 0
+        ),
         "qualification_retry_allowed": passed,
         "memory_agents_run": False,
         "shared_variant_contract_unchanged": True,
