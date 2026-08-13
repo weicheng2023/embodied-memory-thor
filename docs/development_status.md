@@ -791,3 +791,16 @@ Public evidence is
 `docs/evidence/phase5_floorplan3_r2_production_probe_v2.json`. The next allowed
 gate is ascending R2 qualification beginning with FloorPlan4; no later memory
 variants may run until the six-configuration runtime is frozen.
+
+FloorPlan4 then qualified from clean pushed `4877f3e` on precommitted candidate
+1. Its 11-action goal-qualified subgoal, 110-action target-independent fallback,
+K=2 eviction gate, fresh-reset replay, and reset restoration all passed. No
+memory agent or image ran. R2 qualification is now 2/6: FloorPlan3 and
+FloorPlan4.
+
+The one-configuration `frozen_runtime_v1` remains immutable because its private
+digest is part of the completed FloorPlan3 integration probe. Qualified scenes
+are recorded separately; after 6/6, a new six-configuration runtime-set version
+will be frozen. FloorPlan5 is next.
+Focused R2 runtime/qualification tests pass 25/25 and the full offline
+regression passes 236/236.

@@ -112,6 +112,34 @@
       "target_or_anchor_input_used": false,
       "entry_position_tolerance_meters": 0.05,
       "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan4_R2_fixed_start_001_subgoal_v1",
+      "task": "thor_cup_after_coffee_subgoal",
+      "scene": "FloorPlan4",
+      "source_qualification_route_digest": "ae4f07ab61a3e73a86dd1a9e076f76ba32c6120431e0ccc44f5254f684e0b66e",
+      "action_sequence_digest": "f268687f8c012e2392965eba502dc28425e017fa172cd0f0993fec1a968c0066",
+      "action_codes": "LFFFFFFRFFF",
+      "route_role": "task_subgoal_navigation",
+      "qualification_goal_input_used": true,
+      "target_or_anchor_input_used": true,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
+    },
+    {
+      "schema_version": "phase5-search-route-v1",
+      "route_id": "FloorPlan4_R2_fixed_start_001_fallback_absolute_v4",
+      "task": "thor_cup_after_coffee_subgoal",
+      "scene": "FloorPlan4",
+      "source_qualification_route_digest": "ae4f07ab61a3e73a86dd1a9e076f76ba32c6120431e0ccc44f5254f684e0b66e",
+      "action_sequence_digest": "c8c43b410ad3a095741d2c0fd6afd04bdca3a21debee003f678efee37151e2de",
+      "action_codes": "RRRRRRFFFFRRRRLFFFRFRRRRRRFFFFRRRRFRFFFRRRRRRFRFFFRRRRFFFRFRRRRRRFLFFFFRFFFFFFFLFFFRFRRRRRRFFFFFFFRFFFFFFFRRRR",
+      "route_role": "target_independent_fallback",
+      "qualification_goal_input_used": false,
+      "target_or_anchor_input_used": false,
+      "entry_position_tolerance_meters": 0.05,
+      "entry_angle_tolerance_degrees": 1.0
     }
   ]
 }

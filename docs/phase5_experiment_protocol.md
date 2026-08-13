@@ -1956,3 +1956,19 @@ seven steps slower than both controls. Public coordinate-free evidence is
 `docs/evidence/phase5_floorplan3_r2_production_probe_v2.json`. The next gate is
 ascending R2 qualification from FloorPlan4 until six frozen configurations;
 no additional memory variants are allowed during qualification.
+
+FloorPlan4 qualified at candidate 1 from clean pushed revision `4877f3e`: the
+11-action task-subgoal route, 110-action target-independent fallback, K=2
+eviction requirement, fresh-reset replay, and reset restoration all passed.
+No memory variant or image ran. Public evidence is
+`docs/evidence/phase5_floorplan4_r2_v2_qualification.json`, bringing the count
+to 2/6.
+
+Runtime-set immutability rule: the one-configuration v1 set remains the exact
+snapshot used by the completed FloorPlan3 integration probe and must not be
+mutated as later scenes qualify. Coordinate-free qualification evidence and
+ignored evaluator outputs accumulate separately. Once the ascending procedure
+reaches 6/6, freeze a new versioned six-configuration public/private set and
+only then authorize the next multi-configuration runtime gate.
+The FloorPlan4 public route/evidence gate passes 25/25 focused tests and the
+complete offline regression passes 236/236.

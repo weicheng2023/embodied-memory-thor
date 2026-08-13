@@ -19,6 +19,7 @@ from embodied_memory_thor.phase5.frozen_r2 import (
     FrozenR2ConfigurationError,
     load_frozen_r2_runtime,
 )
+from embodied_memory_thor.phase5.search import load_frozen_search_route
 from tests.test_phase5_ordered_task import _CupCoffeeThorEnv
 
 
@@ -33,6 +34,39 @@ class _NativeFrozenR2Fixture(_CupCoffeeThorEnv):
 
 
 class Phase5FrozenR2RuntimeTests(unittest.TestCase):
+    def test_floorplan4_qualified_routes_are_frozen_and_coordinate_free(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        subgoal = load_frozen_search_route(
+            "FloorPlan4_R2_fixed_start_001_subgoal_v1"
+        )
+        fallback = load_frozen_search_route(
+            "FloorPlan4_R2_fixed_start_001_fallback_absolute_v4"
+        )
+        self.assertEqual(subgoal.action_codes, "LFFFFFFRFFF")
+        self.assertEqual(subgoal.action_count, 11)
+        self.assertEqual(subgoal.route_role, "task_subgoal_navigation")
+        self.assertTrue(subgoal.qualification_goal_input_used)
+        self.assertEqual(fallback.action_count, 110)
+        self.assertEqual(fallback.route_role, "target_independent_fallback")
+        self.assertFalse(fallback.target_or_anchor_input_used)
+        evidence = json.loads(
+            (root / "docs" / "evidence" / "phase5_floorplan4_r2_v2_qualification.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertTrue(evidence["passed"])
+        self.assertFalse(evidence["memory_agents_run"])
+        self.assertEqual(evidence["qualified_r2_count_after_scene"], 2)
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "Cup|",
+            "CoffeeMachine|",
+            "TeleportFull",
+            '"x"',
+            '"y"',
+            '"z"',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_real_public_runtime_and_probe_are_coordinate_free(self) -> None:
         root = Path(__file__).resolve().parents[1]
         runtime = load_frozen_r2_runtime("FloorPlan3_R2_fixed_start_001")
