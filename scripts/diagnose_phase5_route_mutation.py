@@ -97,7 +97,10 @@ def _blocker_type(metadata: Mapping[str, Any], error: str) -> str:
             (len(str(obj.get("objectId", ""))), str(obj.get("objectType", "")))
             for obj in raw if isinstance(raw, list) and isinstance(obj, Mapping)
             if str(obj.get("objectId", ""))
-            and str(obj.get("objectId", "")) in error
+            and (
+                str(obj.get("objectId", "")) in error
+                or f"{str(obj.get('objectType', ''))}_" in error
+            )
         ),
         reverse=True,
     )

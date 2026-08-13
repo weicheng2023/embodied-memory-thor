@@ -535,3 +535,17 @@ candidate, planner, memory, image, anchor, or FloorPlan305 occurred. Per the
 preregistered rule, FloorPlan304 is marked route-failed and execution stops.
 Result-focused tests pass 43/43 and the complete offline regression passes
 199/199.
+
+Route-execution gate v1 now formalizes the FloorPlan304 result and the forward
+protocol. FloorPlan304 is route-construction-eligible but
+route-execution-ineligible; its valid fresh-reset baseline failure permits a
+recorded scene skip to FloorPlan305. From FloorPlan305 onward every scene must
+pass, in order: absolute-horizon route construction, full fresh-reset baseline
+route execution, then native qualification. Baseline execution uses four Pass
+actions and direct route replay with no placement/planner. An ordinary action
+failure with valid contract and reset restoration is skippable; fatal, launch,
+contract, precondition, or restoration failures stop. New native contracts are
+machine-gated on matching public baseline-pass evidence. Memory, images, and
+obstacle recovery remain disabled. Offline acceptance is pending.
+Gate-focused tests pass 46/46 and the complete offline regression passes
+202/202. FloorPlan305 has not started.

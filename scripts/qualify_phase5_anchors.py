@@ -172,6 +172,30 @@ def _load_candidate_contract(path: Path, scene: str) -> dict[str, Any]:
     return matches[0]
 
 
+def _validate_baseline_execution_gate(
+    contract: Mapping[str, Any], *, scene: str
+) -> None:
+    if contract.get("baseline_route_execution_required") is not True:
+        return
+    raw_path = contract.get("baseline_route_execution_evidence")
+    if not isinstance(raw_path, str) or not raw_path:
+        raise ValueError("baseline route execution evidence is required")
+    path = (PROJECT_ROOT / raw_path).resolve()
+    evidence = json.loads(path.read_text(encoding="utf-8"))
+    if (
+        evidence.get("scene") != scene
+        or evidence.get("passed") is not True
+        or evidence.get("classification") != "baseline_route_execution_passed"
+        or evidence.get("route_digest") != contract.get("coverage_route_digest")
+        or evidence.get("route_action_count")
+        != contract.get("coverage_route_action_count")
+        or evidence.get("reset_restoration_passed") is not True
+        or evidence.get("placement_actions_run") is not False
+        or evidence.get("memory_agents_run") is not False
+    ):
+        raise ValueError("baseline route execution gate does not match contract")
+
+
 def _load_private_start(paths: Sequence[Path], scene: str) -> dict[str, Any]:
     matches: list[dict[str, Any]] = []
     for path in paths:
@@ -207,6 +231,7 @@ def _setup_actions_for_candidate(
         if not start_registries:
             raise ValueError("--candidate-contract requires at least one --start-registry")
         contract = _load_candidate_contract(candidate_contract.resolve(), scene)
+        _validate_baseline_execution_gate(contract, scene=scene)
         start = _load_private_start(
             [path.resolve() for path in start_registries], scene
         )

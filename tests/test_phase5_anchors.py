@@ -341,6 +341,131 @@ class Phase5AnchorTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    @staticmethod
+    def _baseline_route_module():
+        root = Path(__file__).resolve().parents[1]
+        path = root / "scripts" / "execute_phase5_baseline_route.py"
+        spec = importlib.util.spec_from_file_location(
+            "execute_phase5_baseline_route", path
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_route_execution_gate_freezes_floorplan304_and_floorplan305_order(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        gate = json.loads(
+            (
+                root / "configs" / "phase5_r1_route_execution_gate_v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        ineligible = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan304_route_execution_ineligible_v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        source = json.loads(
+            (root / ineligible["source_execution_diagnostic"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(gate["qualified_scene_count_before_gate"], 3)
+        self.assertEqual(
+            gate["remaining_route_construction_eligible_scene_order"][0],
+            "FloorPlan305",
+        )
+        self.assertEqual(ineligible["classification"], "route_execution_ineligible")
+        self.assertTrue(ineligible["route_construction_eligible"])
+        self.assertFalse(ineligible["route_execution_eligible"])
+        self.assertTrue(ineligible["scene_skip_allowed"])
+        self.assertEqual(
+            ineligible["first_failed_route_step"],
+            source["baseline"]["first_failed_route_step"],
+        )
+        self.assertEqual(ineligible["blocker_object_type"], "LaundryHamper")
+        self.assertFalse(gate["support_queries_allowed_during_route_gates"])
+        self.assertFalse(gate["placement_allowed_during_route_gates"])
+        self.assertFalse(gate["obstacle_recovery_policy_enabled"])
+        self.assertFalse(gate["memory_agents_allowed"])
+        self.assertFalse(gate["images_allowed"])
+
+    def test_baseline_route_execution_classification_distinguishes_skip_from_stop(self) -> None:
+        module = self._baseline_route_module()
+        passed = module.classify_execution(
+            {"route_completed": True},
+            precondition_passed=True,
+            reset_restoration_passed=True,
+            fatal_error="",
+        )
+        blocked = module.classify_execution(
+            {"route_completed": False},
+            precondition_passed=True,
+            reset_restoration_passed=True,
+            fatal_error="",
+        )
+        invalid = module.classify_execution(
+            {"route_completed": False},
+            precondition_passed=True,
+            reset_restoration_passed=False,
+            fatal_error="",
+        )
+        fatal = module.classify_execution(
+            {"route_completed": False},
+            precondition_passed=True,
+            reset_restoration_passed=True,
+            fatal_error="RuntimeError: fixture",
+        )
+        self.assertTrue(passed["passed"])
+        self.assertEqual(passed["classification"], "baseline_route_execution_passed")
+        self.assertFalse(blocked["passed"])
+        self.assertEqual(blocked["classification"], "route_execution_ineligible")
+        self.assertTrue(blocked["scene_skip_allowed"])
+        for row in (invalid, fatal):
+            self.assertEqual(row["classification"], "baseline_route_execution_invalid")
+            self.assertFalse(row["scene_skip_allowed"])
+
+    def test_native_contract_baseline_gate_rejects_missing_or_mismatched_pass(self) -> None:
+        module = self._qualifier_module()
+        with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[1]) as raw:
+            temp_root = Path(raw)
+            evidence_path = temp_root / "baseline.json"
+            relative = evidence_path.relative_to(Path(__file__).resolve().parents[1])
+            contract = {
+                "baseline_route_execution_required": True,
+                "baseline_route_execution_evidence": str(relative),
+                "coverage_route_digest": "route-digest",
+                "coverage_route_action_count": 7,
+            }
+            evidence = {
+                "scene": "FloorPlanFixture",
+                "passed": True,
+                "classification": "baseline_route_execution_passed",
+                "route_digest": "route-digest",
+                "route_action_count": 7,
+                "reset_restoration_passed": True,
+                "placement_actions_run": False,
+                "memory_agents_run": False,
+            }
+            evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+            module._validate_baseline_execution_gate(
+                contract, scene="FloorPlanFixture"
+            )
+            evidence["route_action_count"] = 8
+            evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "does not match"):
+                module._validate_baseline_execution_gate(
+                    contract, scene="FloorPlanFixture"
+                )
+            contract.pop("baseline_route_execution_evidence")
+            with self.assertRaisesRegex(ValueError, "is required"):
+                module._validate_baseline_execution_gate(
+                    contract, scene="FloorPlanFixture"
+                )
+
     def test_support_policy_v3_is_predeclared_semantic_and_not_census_selected(self) -> None:
         root = Path(__file__).resolve().parents[1]
         policy = json.loads(

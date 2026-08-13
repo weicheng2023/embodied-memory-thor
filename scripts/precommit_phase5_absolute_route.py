@@ -112,7 +112,8 @@ def _coordinate_free_summary(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scene", required=True)
-    parser.add_argument("--candidate-contract", type=Path, required=True)
+    parser.add_argument("--candidate-contract", type=Path)
+    parser.add_argument("--configuration-id")
     parser.add_argument("--start-registry", type=Path, action="append", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--absolute-scan-horizon-degrees", type=float, default=0.0)
@@ -131,9 +132,13 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(summary, indent=2))
         return 2
 
-    contract = _load_candidate_contract(
-        args.candidate_contract.resolve(), args.scene
+    contract = (
+        _load_candidate_contract(args.candidate_contract.resolve(), args.scene)
+        if args.candidate_contract is not None
+        else None
     )
+    if contract is None and not args.configuration_id:
+        parser.error("--configuration-id is required without --candidate-contract")
     start = _load_private_start(
         [path.resolve() for path in args.start_registry], args.scene
     )
@@ -141,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
     pose_digest = stable_digest(pose)
     if pose_digest != start["selected_pose_digest"]:
         raise ValueError("private start pose does not match its retained digest")
-    if pose_digest != contract.get("start_pose_digest"):
+    if contract is not None and pose_digest != contract.get("start_pose_digest"):
         raise ValueError("private start pose does not match the public contract")
 
     env = ThorEnv(controller_kwargs=CONTROLLER_SETTINGS)
@@ -177,7 +182,11 @@ def main(argv: list[str] | None = None) -> int:
     _write_json(output_dir / "evaluator_only_coverage_route.json", route)
     summary = _coordinate_free_summary(
         scene=args.scene,
-        configuration_id=str(contract["configuration_id"]),
+        configuration_id=(
+            str(contract["configuration_id"])
+            if contract is not None
+            else str(args.configuration_id)
+        ),
         start_pose_digest=pose_digest,
         route=route,
         git_state=git_state,

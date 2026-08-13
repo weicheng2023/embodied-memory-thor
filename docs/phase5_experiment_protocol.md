@@ -1538,6 +1538,33 @@ blocked. Public evidence is
 Result-focused tests passed 43/43 and the complete offline regression passed
 199/199.
 
+### Route-execution gate v1 and sequential completion rule
+
+FloorPlan304 is now formally classified `route_execution_ineligible`: its route
+is deterministically constructible within the action bound, but its valid
+fresh-reset no-placement baseline cannot execute through action 109. This
+classification is distinct from FloorPlan301's native-candidate exhaustion and
+permits advancing to FloorPlan305 under a new explicit rule.
+
+For every remaining scene in the retained route-construction-eligible order,
+the gates are sequential. First construct the absolute-horizon route and bind
+its digest/count. Second, from a fresh reset and retained start, run four Pass
+actions and execute every route action directly, with no planner, placement,
+support query, recovery, memory, or image. Third, only a complete baseline pass
+with successful reset restoration may authorize native qualification. The
+native loader validates scene, digest, count, restoration, and no-placement
+fields from public baseline evidence before it can create the environment.
+
+An ordinary baseline route action failure is skippable only when the frozen
+contract and reset restoration remain valid and no fatal error occurs. Contract
+mismatch, launch/reset/precondition/restoration failure, or exception stops the
+sequence. No obstacle recovery is enabled in v1. The declared order begins at
+FloorPlan305 and continues through the retained route-eligible registry until
+six distinct R1 anchors qualify. Current qualified count remains 3/6. The
+executable policy is `configs/phase5_r1_route_execution_gate_v1.json`.
+Gate-focused tests passed 46/46 and the complete offline regression passed
+202/202. No FloorPlan305 environment has been started.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
