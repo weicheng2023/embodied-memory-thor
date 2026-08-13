@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from copy import deepcopy
@@ -67,6 +68,17 @@ MAX_SUBGOAL_ACTIONS = 240
 MAX_FALLBACK_ACTIONS = 240
 MAX_TARGET_LOCK_ACTIONS = 32
 K_SHORT_MEMORY = 2
+
+
+class SceneStartIneligibleError(RuntimeError):
+    """A scene lacks the pre-registered standing Cup start."""
+
+
+def _kitchen_scene_number(scene: str) -> int:
+    match = re.fullmatch(r"FloorPlan([1-9]|[12][0-9]|30)", scene)
+    if match is None:
+        raise ValueError("R2 qualification scene must be FloorPlan1-FloorPlan30")
+    return int(match.group(1))
 
 
 def _utc_now() -> str:
@@ -739,8 +751,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--scene", default="FloorPlan1")
     parser.add_argument("--output-dir", type=Path)
     args = parser.parse_args(argv)
-    if args.scene != "FloorPlan1":
-        raise ValueError("the first R2 qualification run is frozen to FloorPlan1")
+    scene_order = _kitchen_scene_number(args.scene)
     output_dir = (
         args.output_dir.expanduser().resolve()
         if args.output_dir is not None
@@ -766,6 +777,8 @@ def main(argv: list[str] | None = None) -> int:
     selected_public: dict[str, Any] | None = None
     cup_selection_audit: list[dict[str, Any]] = []
     fatal_error = ""
+    failure_classification = ""
+    scene_skip_allowed = False
     try:
         metadata = _reset(env, args.scene)
         machine = _first_target(
@@ -791,7 +804,7 @@ def main(argv: list[str] | None = None) -> int:
             },
         )
         if cup is None:
-            raise RuntimeError(
+            raise SceneStartIneligibleError(
                 "no pickupable Cup has a standing interactable pose"
             )
         cup_id = str(cup["objectId"])
@@ -860,6 +873,7 @@ def main(argv: list[str] | None = None) -> int:
             "selection_uses_trial_outcomes": False,
             "selection_rule": "first fully qualified pair in precommitted order",
             "scene": args.scene,
+            "scene_order": scene_order,
             "cup_object_id": cup_id,
             "cup_selection_rule": (
                 "first-standing-interactable in sorted objectId order; "
@@ -1012,8 +1026,14 @@ def main(argv: list[str] | None = None) -> int:
                     "formal_use_allowed": False,
                 }
                 break
+    except SceneStartIneligibleError as exc:
+        fatal_error = f"{type(exc).__name__}: {exc}"
+        failure_classification = "scene_start_ineligible_no_standing_cup"
+        scene_skip_allowed = True
     except Exception as exc:
         fatal_error = f"{type(exc).__name__}: {exc}"
+        failure_classification = "qualification_invalid_requires_review"
+        scene_skip_allowed = False
     finally:
         env.close()
 
@@ -1052,10 +1072,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     if fatal_error:
         summary["failure_reason"] = fatal_error
+        summary["failure_classification"] = failure_classification
+        summary["scene_skip_allowed"] = scene_skip_allowed
     elif selected_public is None:
         summary["failure_reason"] = "no_candidate_fully_qualified"
+        summary["failure_classification"] = "candidate_qualification_exhausted"
+        summary["scene_skip_allowed"] = False
     else:
         summary["failure_reason"] = ""
+        summary["failure_classification"] = "qualified"
+        summary["scene_skip_allowed"] = False
     _write_json(output_dir / "summary.json", summary)
     print(json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True))
     return 0 if summary["passed"] else 1

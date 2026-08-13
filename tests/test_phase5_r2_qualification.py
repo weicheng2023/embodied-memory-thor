@@ -221,6 +221,21 @@ class Phase5R2QualificationTests(unittest.TestCase):
                 _QueryFailureEnv(), scene="FloorPlan1"
             )
 
+    def test_kitchen_scene_range_is_explicit(self) -> None:
+        module = self._qualifier_module()
+        self.assertEqual(module._kitchen_scene_number("FloorPlan1"), 1)
+        self.assertEqual(module._kitchen_scene_number("FloorPlan2"), 2)
+        self.assertEqual(module._kitchen_scene_number("FloorPlan30"), 30)
+        for scene in ("FloorPlan0", "FloorPlan31", "FloorPlan201", "FloorPlan"):
+            with self.subTest(scene=scene):
+                with self.assertRaisesRegex(ValueError, "FloorPlan1-FloorPlan30"):
+                    module._kitchen_scene_number(scene)
+
+    def test_no_standing_cup_has_scene_skippable_class(self) -> None:
+        module = self._qualifier_module()
+        error = module.SceneStartIneligibleError("no standing Cup")
+        self.assertIsInstance(error, RuntimeError)
+
     @staticmethod
     def _qualifier_module() -> Any:
         path = Path(__file__).resolve().parents[1] / "scripts" / "qualify_phase5_r2.py"

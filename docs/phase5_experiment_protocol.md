@@ -1828,3 +1828,23 @@ Offline v2 selection tests cover sorted-ID order, one fresh reset per Cup,
 skipping a zero-standing-pose Cup, stopping at the first passing Cup, retaining
 the all-fail audit, and treating query failure as fatal. The complete offline
 regression passes 223/223. No real v2 rerun has started at this checkpoint.
+
+The clean pushed `b1f42ec` v2 rerun checked the complete FloorPlan1 pickupable
+Cup set: one Cup, one successful pose query, and zero returned poses. It again
+stopped with zero candidate pairs and zero task trials. Under the v2 rule this
+is now a scene-level eligibility result,
+`scene_start_ineligible_no_standing_cup`, with `scene_skip_allowed=true`.
+FloorPlan1 cannot supply an R2 configuration under the standing-start protocol,
+but the protocol itself behaved as registered. No route, toggle, fallback,
+target lock, memory variant, image, or later scene ran. Public evidence is
+`docs/evidence/phase5_floorplan1_r2_v2_scene_start_ineligible.json`.
+
+The qualifier may now accept only the kitchen family FloorPlan1-FloorPlan30,
+while orchestration remains strictly ascending and one scene at a time. A
+scene-start-ineligible result permits advancing exactly to the next kitchen
+scene after its evidence and range gate are committed and pushed. Other fatal
+errors remain `qualification_invalid_requires_review` and cannot be skipped;
+candidate exhaustion also requires review rather than automatic skipping.
+
+Classification/range tests pass 8/8 and the complete offline regression passes
+225/225. FloorPlan2 has not run at this checkpoint.

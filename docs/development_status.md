@@ -710,3 +710,15 @@ FloorPlan1 rerun; memory variants and FloorPlan2 remain prohibited meanwhile.
 The revised selection tests cover sorted order, fresh-reset isolation,
 first-pass stopping, all-fail audit retention, and fatal query errors. The full
 offline regression passes 223/223; no real v2 rerun has started yet.
+
+The clean `b1f42ec` FloorPlan1 v2 rerun inspected its only pickupable Cup. The
+pose query succeeded but returned zero poses, so the scene has no standing-
+interactable Cup start under the registered rule. Candidate pairs/trials stayed
+0/0 and no route/task/memory/image action ran. This is classified as
+`scene_start_ineligible_no_standing_cup`, `scene_skip_allowed=true`; the next
+legal scene is FloorPlan2 after the classification and kitchen-range gate are
+tested, committed, and pushed. Public evidence is
+`docs/evidence/phase5_floorplan1_r2_v2_scene_start_ineligible.json`.
+
+Classification/range tests pass 8/8 and the full regression passes 225/225.
+FloorPlan2 has not run yet.
