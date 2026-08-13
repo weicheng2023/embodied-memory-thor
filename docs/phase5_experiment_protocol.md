@@ -1972,3 +1972,23 @@ reaches 6/6, freeze a new versioned six-configuration public/private set and
 only then authorize the next multi-configuration runtime gate.
 The FloorPlan4 public route/evidence gate passes 25/25 focused tests and the
 complete offline regression passes 236/236.
+
+FloorPlan5 qualification v2 stopped after all 12 precommitted pairs failed the
+start precondition. Teleport, object existence, Cup pickupability, and initial
+machine-off status passed 12/12; Cup visibility passed 8/12, while machine
+hidden status passed 0/12. The pair prefix used only Cup pose orders 1-4 from
+92 standing poses. Therefore the result cannot distinguish a structurally
+ineligible scene from a rank-balanced-prefix coverage defect.
+
+Before FloorPlan6 or any qualifier revision, run only the precommitted
+`phase5-r2-start-visibility-census-v1` on FloorPlan5. It exhausts the selected
+Cup's pose-sort-ordered standing poses under one fresh reset and one
+TeleportFull per pose, checking only the seven already-declared start
+preconditions. It may not query CoffeeMachine poses or reachable positions,
+build/execute routes, interact, plan, use memory, save images, or contribute to
+formal results. A nonzero eligible-pose count permits a separately precommitted
+start-feasibility filter before rank-balanced pairing; zero permits structural
+scene exclusion. Public stop evidence is
+`docs/evidence/phase5_floorplan5_r2_v2_candidate_stop.json`.
+The pre-run gate passes 16/16 focused tests and 239/239 full offline tests. The
+real census may start only from a clean committed and pushed revision.

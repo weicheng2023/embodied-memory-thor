@@ -1,0 +1,43 @@
+{
+  "census_version": "phase5-r2-start-visibility-census-v1",
+  "scene": "FloorPlan5",
+  "trigger_evidence": "outputs/phase5_r2_qualification/floorplan5_997d054/summary.json",
+  "trigger_failure_classification": "candidate_qualification_exhausted",
+  "selected_cup_policy": "same first standing-interactable pickupable Cup in sorted objectId order used by qualification v2",
+  "coffee_machine_policy": "same first initially-off toggleable CoffeeMachine in sorted objectId order used by qualification v2",
+  "pose_order": "normalized standing Cup interactable poses sorted by pose_sort_key",
+  "pose_scope": "exhaustive selected-Cup standing pose list",
+  "maximum_pose_trials": 256,
+  "fresh_reset_per_pose": true,
+  "required_preconditions": [
+    "teleport_success",
+    "cup_exists",
+    "cup_visible",
+    "cup_pickupable",
+    "coffee_machine_exists",
+    "coffee_machine_initially_off",
+    "coffee_machine_initially_hidden"
+  ],
+  "allowed_environment_actions": [
+    "Reset",
+    "GetInteractablePoses:selected_cup_only",
+    "TeleportFull:one_per_pose_after_fresh_reset"
+  ],
+  "forbidden_environment_actions": [
+    "GetInteractablePoses:coffee_machine",
+    "GetReachablePositions",
+    "ToggleObjectOn",
+    "PickupObject",
+    "route_execution",
+    "planner",
+    "memory_variant"
+  ],
+  "public_output_policy": "aggregate booleans, counts, pose-order and pose digest only; no object IDs, coordinates, poses, or actions",
+  "private_output_policy": "evaluator-only rows retain identities and poses under ignored outputs",
+  "formal_use_allowed": false,
+  "images_saved": false,
+  "decision_rule": {
+    "eligible_pose_count_gt_zero": "precommit qualifier revision that admits only start-feasible Cup poses before rank-balanced pairing",
+    "eligible_pose_count_zero": "classify FloorPlan5 as structural ordered-start-ineligible and continue to FloorPlan6"
+  }
+}

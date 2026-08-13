@@ -804,3 +804,13 @@ are recorded separately; after 6/6, a new six-configuration runtime-set version
 will be frozen. FloorPlan5 is next.
 Focused R2 runtime/qualification tests pass 25/25 and the full offline
 regression passes 236/236.
+
+FloorPlan5 v2 exhausted 12/12 candidate pairs at start preconditions. All
+teleports and object/state checks passed except Cup visibility (8/12) and
+CoffeeMachine hidden status (0/12). Because the prefix covers only Cup pose
+orders 1-4 out of 92, this is not yet a valid structural scene exclusion.
+FloorPlan6 remains blocked. A FloorPlan5-only exhaustive start-visibility
+census is precommitted with fresh reset per pose and no route, interaction,
+planner, memory, image, or formal result.
+Focused census/R2 tests pass 16/16 and the full offline regression passes
+239/239. The real census has not run and requires a clean pushed revision.
