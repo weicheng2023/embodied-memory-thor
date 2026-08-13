@@ -1449,6 +1449,24 @@ neither FloorPlan305 nor any memory variant. The executable contract is
 Focused transition tests passed 37/37 and the complete offline regression
 passed 193/193. No FloorPlan304 THOR process has been started.
 
+### FloorPlan304 route-v4.1 pass
+
+The clean `7495931` route-only run passed. Its observed start horizon was
+30.000003814697266 degrees and normalized to 30 under the frozen 0.001-degree
+tolerance. One LookUp action aligned the scan to 0 degrees and one LookDown
+action restored the start horizon. The complete route used 127 of 240 actions;
+its digest is
+`6892b381c8957171367a3513d278ddbb5300b039dae50ed998a684bed0a3679b`.
+
+No target/anchor input, support query, placement, memory agent, or image was
+used. Public evidence is
+`docs/evidence/phase5_floorplan304_absolute_route_v4_1_precommit.json`; the
+coordinate-free binding is
+`configs/phase5_r1_anchor_candidates_absolute_v4_1_floorplan304.json`.
+Exactly one native qualification-v7 batch remains blocked until this contract
+is committed and pushed. FloorPlan305 is not allowed. Route-contract tests
+passed 38/38 and the complete offline regression passed 194/194.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

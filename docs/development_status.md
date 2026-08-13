@@ -477,3 +477,13 @@ Only then is exactly one native qualification-v7 batch, capped at 12 balanced
 candidates, allowed. No memory agent, image, FloorPlan305, force action, or Book
 rotation is authorized. Focused transition tests pass 37/37 and the complete
 offline regression passes 193/193. No THOR run for FloorPlan304 has started.
+
+The clean `7495931` FloorPlan304 route-only run passed under absolute-horizon
+policy v4.1. AI2-THOR reported a 30.000003814697266-degree start horizon, which
+normalized to 30 within the frozen tolerance. One LookUp alignment and one
+LookDown restoration action produced a 127/240-action route with digest
+`6892b381c8957171367a3513d278ddbb5300b039dae50ed998a684bed0a3679b`.
+The route used no target/anchor input and ran no support query, placement,
+memory agent, or image. Route-contract tests pass 38/38 and the complete offline
+regression passes 194/194. Its public coordinate-free contract is prepared;
+native qualification remains blocked until commit and push.
