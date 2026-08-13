@@ -1491,6 +1491,29 @@ Public coordinate-free evidence is
 Result-focused tests passed 39/39 and the complete offline regression passed
 195/195.
 
+### FloorPlan304 paired route-mutation diagnostic precommit
+
+The stop evidence admits one diagnosis, not a recovery or scene transition.
+From separate fresh resets, both conditions receive the retained start and the
+same frozen route. The original-scene control performs four Pass actions before
+route replay. The intervention performs frozen Bed candidate 1 placement plus
+three Pass actions. This matches the number of pre-route environment steps and
+reproduces the original placement stability delay. Route actions are replayed
+directly so a visible original Book cannot trigger target lock or pickup.
+
+The decision is fixed in advance. A baseline route failure marks FloorPlan304's
+route invalid and stops. A baseline pass plus placement failure isolates a
+placement-induced state effect and stops pending a separately preregistered,
+general obstacle-recovery fallback. Both full routes passing means only that
+the prior block was not reproduced and allows continuation with FloorPlan304
+candidate 1; it does not erase the retained negative result. Any placement or
+contract mismatch invalidates the diagnostic. No support query, new candidate,
+recovery action, planner, memory, image, or FloorPlan305 is allowed. The
+executable contract is
+`configs/phase5_floorplan304_route_mutation_diagnostic_v1.json`.
+Diagnostic-focused tests passed 42/42 and the complete offline regression
+passed 198/198. No real paired diagnostic has run yet.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

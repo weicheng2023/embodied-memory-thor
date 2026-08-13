@@ -505,3 +505,16 @@ the qualified count remains 3/6. The next gate is a separately preregistered
 diagnosis/protocol decision for shared fallback route execution. This scope
 stops here. Result-focused tests pass 39/39 and the complete offline regression
 passes 195/195.
+
+A FloorPlan304 route-mutation diagnostic is now preregistered but has not run.
+It pairs two fresh resets and replays the identical frozen 127-action route
+directly, without planner or target-lock behavior. The baseline uses four Pass
+actions; the placement condition uses frozen Bed candidate 1 followed by three
+Pass actions, matching four pre-route environment actions. If baseline fails,
+FloorPlan304 is marked route-failed and work stops. If only placement fails,
+the effect is placement-induced and a general obstacle-recovery policy must be
+separately preregistered before any rerun. Only if both complete is continuation
+within FloorPlan304 allowed. The diagnostic cannot query supports, create new
+candidates, recover obstacles, run memory/images, or enter FloorPlan305.
+Diagnostic-focused tests pass 42/42 and the complete offline regression passes
+198/198. The real paired diagnostic has not started.

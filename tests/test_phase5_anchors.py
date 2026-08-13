@@ -167,6 +167,114 @@ def _box(
 
 
 class Phase5AnchorTests(unittest.TestCase):
+    @staticmethod
+    def _route_mutation_module():
+        root = Path(__file__).resolve().parents[1]
+        path = root / "scripts" / "diagnose_phase5_route_mutation.py"
+        spec = importlib.util.spec_from_file_location(
+            "diagnose_phase5_route_mutation", path
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_floorplan304_route_mutation_protocol_is_paired_and_non_recovering(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        protocol = json.loads(
+            (
+                root
+                / "configs"
+                / "phase5_floorplan304_route_mutation_diagnostic_v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        stop = json.loads(
+            (root / protocol["source_stop_evidence"]).read_text(encoding="utf-8")
+        )
+        route = json.loads(
+            (root / protocol["source_route_evidence"]).read_text(encoding="utf-8")
+        )
+        self.assertEqual(protocol["scene"], "FloorPlan304")
+        self.assertEqual(protocol["route_digest"], route["route_digest"])
+        self.assertEqual(protocol["route_digest"], stop["coverage_route_digest"])
+        self.assertEqual(protocol["route_probe_step"], 109)
+        self.assertEqual(protocol["frozen_candidate_order"], 1)
+        self.assertEqual(protocol["matched_pre_route_intervention_count"], 4)
+        self.assertTrue(protocol["fresh_reset_per_condition"])
+        self.assertTrue(protocol["direct_route_replay_without_planner"])
+        for key in (
+            "support_queries_allowed",
+            "new_candidate_generation_allowed",
+            "memory_agents_allowed",
+            "images_allowed",
+            "obstacle_recovery_actions_allowed",
+            "later_scenes_allowed",
+        ):
+            self.assertFalse(protocol[key])
+
+    def test_route_mutation_replay_stops_at_first_failure_and_reports_type(self) -> None:
+        module = self._route_mutation_module()
+        route = {
+            "actions": [
+                {"action": {"action": "Pass"}, "phase": "one"},
+                {"action": {"action": "MoveAhead"}, "phase": "two"},
+                {"action": {"action": "RotateRight"}, "phase": "three"},
+            ]
+        }
+        success = _Event(
+            {"objects": [], "lastActionSuccess": True, "errorMessage": ""}
+        )
+        failure = _Event(
+            {
+                "objects": [
+                    {"objectId": "LaundryHamper|private", "objectType": "LaundryHamper"}
+                ],
+                "lastActionSuccess": False,
+                "errorMessage": "LaundryHamper|private is blocking Agent 0",
+            }
+        )
+        env = Mock()
+        env.step.side_effect = [success, failure]
+        result = module.replay_route(env, route, probe_step=2)
+        self.assertFalse(result["route_completed"])
+        self.assertEqual(result["route_actions_attempted"], 2)
+        self.assertEqual(result["first_failed_route_step"], 2)
+        self.assertFalse(result["probe_step_success"])
+        self.assertEqual(result["blocker_object_type"], "LaundryHamper")
+        self.assertEqual(env.step.call_count, 2)
+
+    def test_route_mutation_classification_never_runs_recovery_implicitly(self) -> None:
+        module = self._route_mutation_module()
+        baseline_fail = module.classify_pair(
+            {"route_completed": False},
+            {"route_completed": False},
+            placement_success=True,
+        )
+        placement_fail = module.classify_pair(
+            {"route_completed": True},
+            {"route_completed": False},
+            placement_success=True,
+        )
+        both_pass = module.classify_pair(
+            {"route_completed": True},
+            {"route_completed": True},
+            placement_success=True,
+        )
+        invalid = module.classify_pair(
+            {"route_completed": True},
+            {"route_completed": True},
+            placement_success=False,
+        )
+        self.assertEqual(
+            baseline_fail["decision"], "mark_floorplan304_route_failure_and_stop"
+        )
+        self.assertEqual(
+            placement_fail["decision"],
+            "preregister_general_obstacle_recovery_and_stop",
+        )
+        self.assertTrue(both_pass["good_news"])
+        self.assertEqual(invalid["decision"], "stop")
+
     def test_support_policy_v3_is_predeclared_semantic_and_not_census_selected(self) -> None:
         root = Path(__file__).resolve().parents[1]
         policy = json.loads(

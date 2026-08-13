@@ -1,0 +1,33 @@
+{
+  "protocol_version": "phase5-floorplan304-route-mutation-diagnostic-v1",
+  "scene": "FloorPlan304",
+  "source_stop_evidence": "docs/evidence/phase5_floorplan304_native_qualification_v7.json",
+  "source_route_evidence": "docs/evidence/phase5_floorplan304_absolute_route_v4_1_precommit.json",
+  "route_version": "phase5-target-independent-absolute-horizon-v4.1",
+  "route_digest": "6892b381c8957171367a3513d278ddbb5300b039dae50ed998a684bed0a3679b",
+  "route_action_count": 127,
+  "route_probe_step": 109,
+  "frozen_candidate_order": 1,
+  "frozen_candidate_support_type": "Bed",
+  "paired_condition_order": [
+    "original_scene_matched_pass_control",
+    "bed_placement_then_three_passes"
+  ],
+  "matched_pre_route_intervention_count": 4,
+  "fresh_reset_per_condition": true,
+  "direct_route_replay_without_planner": true,
+  "support_queries_allowed": false,
+  "new_candidate_generation_allowed": false,
+  "memory_agents_allowed": false,
+  "images_allowed": false,
+  "obstacle_recovery_actions_allowed": false,
+  "placement_condition_count": 1,
+  "later_scenes_allowed": false,
+  "decision_rules": {
+    "baseline_route_fails": "mark FloorPlan304 route-v4.1 execution failure; do not skip scene or add recovery retroactively",
+    "baseline_passes_placement_fails": "classify placement-induced physical-state effect; preregister a general obstacle-recovery policy before any rerun",
+    "both_routes_complete": "classify the prior block as not reproduced in this paired probe and allow only the already-defined FloorPlan304 candidate-1 continuation",
+    "placement_action_fails_or_contract_mismatch": "diagnostic invalid; stop"
+  },
+  "claim_boundary": "paired route-mutation isolation only; not anchor qualification, memory comparison, or formal episode"
+}
