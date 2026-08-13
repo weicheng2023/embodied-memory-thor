@@ -1693,6 +1693,27 @@ Offline acceptance found and corrected the `TeleportFull` last-action leak,
 then passed 18/18 focused tests and 215/215 full regression tests. No real memory
 variant had run when this contract was frozen.
 
+#### V1 label-audit invalidation and v2 correction
+
+The first real v1 triplet on clean `a364289` was behaviorally complete: every
+variant succeeded in 31 steps, ordinary information-boundary audits passed,
+no/K=2 shared the same route, and object memory produced one stale use, one
+old-viewpoint miss, 26 shared fallback actions, and one visible-derived record
+correction. These values are retained as engineering diagnostics only.
+
+The post-run evidence audit found that generic per-episode manifests used
+`evidence_status=formal_acceptance_candidate` even though the enclosing probe
+correctly set `included_in_formal_aggregate=false`. This is an evidence-label
+ambiguity, not a behavior or information-leak failure. V1 is therefore not the
+final probe evidence. V2 changes no scene, start, intervention, route, variant
+order, planner, memory, max steps, output policy, stopping rule, or metric. It
+only requires each episode manifest and summary to say
+`included_in_formal_aggregate=false`, identify the integration-probe purpose,
+and use `evidence_status=excluded_engineering_probe`. After commit/push, the
+whole triplet must be rerun; individual v1 episodes cannot be reused.
+The v2 label gate passes 18/18 focused tests and 215/215 full regression tests;
+the real rerun still requires a clean committed and pushed revision.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

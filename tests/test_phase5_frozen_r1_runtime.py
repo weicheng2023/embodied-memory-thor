@@ -6,6 +6,7 @@ import json
 import tempfile
 import unittest
 import importlib.util
+from unittest.mock import patch
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping
@@ -45,7 +46,7 @@ class Phase5FrozenR1RuntimeTests(unittest.TestCase):
     def test_production_probe_is_precommitted_excluded_and_private_safe(self) -> None:
         root = Path(__file__).resolve().parents[1]
         config = json.loads(
-            (root / "configs" / "phase5_r1_production_integration_probe_v1.json")
+            (root / "configs" / "phase5_r1_production_integration_probe_v2.json")
             .read_text(encoding="utf-8")
         )
         spec = importlib.util.spec_from_file_location(
@@ -107,29 +108,40 @@ class Phase5FrozenR1RuntimeTests(unittest.TestCase):
             actions: dict[str, list[str]] = {}
             for variant in ("no_memory", "short_memory_k2", "object_memory"):
                 episode_dir = root / variant
-                summary = ThorEpisodeRunner(
-                    ThorEpisodeConfig(
-                        task="thor_book_reacquire_k2",
-                        scene="FloorPlanFixture",
-                        planner="deterministic",
-                        memory=variant,
-                        search_route_id=runtime.search_route.route_id,
-                        condition="stale_r1",
-                        mode="formal",
-                        max_steps=12,
-                        output_dir=episode_dir,
-                        save_frames=False,
-                        trace_html=False,
-                        visualize=False,
-                    ),
-                    env=_NativeFrozenR1Fixture(),
-                    search_route=runtime.search_route,
-                    evaluator_setup=runtime.configuration,
-                    intervention=runtime.intervention(),
-                ).run()
+                with patch(
+                    "embodied_memory_thor.phase4.runner._git_state",
+                    return_value={
+                        "code_revision": "b" * 40,
+                        "working_tree_dirty": False,
+                    },
+                ):
+                    summary = ThorEpisodeRunner(
+                        ThorEpisodeConfig(
+                            task="thor_book_reacquire_k2",
+                            scene="FloorPlanFixture",
+                            planner="deterministic",
+                            memory=variant,
+                            search_route_id=runtime.search_route.route_id,
+                            condition="stale_r1",
+                            mode="formal",
+                            max_steps=12,
+                            output_dir=episode_dir,
+                            save_frames=False,
+                            trace_html=False,
+                            visualize=False,
+                            included_in_formal_aggregate=False,
+                            run_purpose="phase5_r1_production_integration_probe",
+                        ),
+                        env=_NativeFrozenR1Fixture(),
+                        search_route=runtime.search_route,
+                        evaluator_setup=runtime.configuration,
+                        intervention=runtime.intervention(),
+                    ).run()
                 self.assertTrue(summary["success"], (variant, summary["failure_reason"]))
                 self.assertTrue(summary["information_boundary_passed"])
                 self.assertEqual(summary["intervention_count"], 1)
+                self.assertFalse(summary["included_in_formal_aggregate"])
+                self.assertEqual(summary["evidence_status"], "excluded_engineering_probe")
                 ordinary = (
                     (episode_dir / "setup.jsonl").read_text(encoding="utf-8")
                     + (episode_dir / "episode.jsonl").read_text(encoding="utf-8")

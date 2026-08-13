@@ -636,3 +636,22 @@ stop-on-first-failure, and no formal aggregation. R2 still lacks six qualified
 real configurations, so this triplet cannot complete Phase 5B or unlock the
 54-episode matrix. Focused tests pass 18/18 and full regression 215/215. No real
 memory variant has run at this checkpoint.
+
+The first real v1 R1 integration triplet ran from clean `a364289` and all three
+variants succeeded in 31 steps with complete metric and information-boundary
+audits. No memory and K=2 used the same 26 public coverage actions plus one
+entry alignment; object memory used one stale-memory action, detected the old-
+viewpoint miss, used the same 26 coverage actions, rediscovered/corrected the
+record at step 30, and picked up at step 31. This is a stale-risk/recovery QA
+result, not a memory-benefit result.
+
+Post-run evidence review found a labeling defect: the top-level probe manifest
+correctly excluded all episodes, but each generic runner manifest still said
+`formal_acceptance_candidate`. Behavior, privacy, and metrics passed, but v1 is
+not the final public evidence. Probe v2 preserves every behavioral choice and
+adds explicit per-episode `included_in_formal_aggregate=false`,
+`run_purpose=phase5_r1_production_integration_probe`, and
+`evidence_status=excluded_engineering_probe`. V2 must pass tests on a clean
+pushed revision and rerun the complete triplet; no selective episode reuse.
+V2 label-focused tests pass 18/18 and the full offline regression remains
+215/215; the clean-revision v2 rerun has not started.

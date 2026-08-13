@@ -167,6 +167,8 @@ class ThorEpisodeConfig:
     visualize: bool = False
     step_delay: float = 0.0
     save_evaluator_debug: bool = False
+    included_in_formal_aggregate: bool | None = None
+    run_purpose: str = "single_episode"
     model: str = "gpt-5.6"
     base_url: str | None = None
     controller_settings: dict[str, Any] = field(
@@ -212,6 +214,8 @@ class ThorEpisodeConfig:
             raise ValueError("max_steps must be positive")
         if self.step_delay < 0:
             raise ValueError("step_delay cannot be negative")
+        if not self.run_purpose.strip():
+            raise ValueError("run_purpose must be non-empty")
         if self.visualize and self.mode != "debug":
             raise ValueError("--visualize is available only in debug mode")
         if self.step_delay and not self.visualize:
@@ -310,6 +314,8 @@ class ThorEpisodeRunner:
                 "native_stderr_captured_separately": True,
             },
             "save_evaluator_debug": config.save_evaluator_debug,
+            "included_in_formal_aggregate": config.included_in_formal_aggregate,
+            "run_purpose": config.run_purpose,
             "task_setup": {
                 "policy": (
                     "fixed_planner_independent_visible_observation_sequence"
@@ -367,9 +373,13 @@ class ThorEpisodeRunner:
                 "destination_visible_to_planner": False,
             }
         manifest["evidence_status"] = (
-            "formal_acceptance_candidate"
-            if manifest["working_tree_dirty"] is False and config.mode == "formal"
-            else "development_only"
+            "development_only"
+            if manifest["working_tree_dirty"] is not False or config.mode != "formal"
+            else (
+                "excluded_engineering_probe"
+                if config.included_in_formal_aggregate is False
+                else "formal_acceptance_candidate"
+            )
         )
         if config.planner == "openai_compatible":
             manifest["external_planner"] = {
@@ -969,6 +979,9 @@ class ThorEpisodeRunner:
             "memory": config.memory,
             "condition": config.condition,
             "mode": config.mode,
+            "included_in_formal_aggregate": config.included_in_formal_aggregate,
+            "run_purpose": config.run_purpose,
+            "evidence_status": manifest["evidence_status"],
             "visualization_requested": visualization_requested,
             "visualization_started": visualization_started,
             "visualization_available": visualization_available,

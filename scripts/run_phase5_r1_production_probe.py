@@ -30,7 +30,7 @@ from embodied_memory_thor.phase5.protocol import (  # noqa: E402
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
-DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase5_r1_production_integration_probe_v1.json"
+DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase5_r1_production_integration_probe_v2.json"
 FORBIDDEN_ORDINARY_KEYS = {
     "anchor_id",
     "candidate_order",
@@ -89,6 +89,7 @@ def _audit_episode(
     summary: Mapping[str, Any],
     episode_dir: Path,
     expected_route_digest: str,
+    expected_evidence_status: str,
 ) -> list[str]:
     errors: list[str] = []
     for key in PHASE5_REQUIRED_METRICS:
@@ -104,6 +105,17 @@ def _audit_episode(
         errors.append("intervention_failure")
     if summary.get("shared_search_action_sequence_digest") != expected_route_digest:
         errors.append("search_route_digest")
+    if summary.get("included_in_formal_aggregate") is not False:
+        errors.append("summary_formal_aggregate_label")
+    if summary.get("evidence_status") != expected_evidence_status:
+        errors.append("summary_evidence_status")
+    run_manifest = json.loads(
+        (episode_dir / "run_manifest.json").read_text(encoding="utf-8")
+    )
+    if run_manifest.get("included_in_formal_aggregate") is not False:
+        errors.append("manifest_formal_aggregate_label")
+    if run_manifest.get("evidence_status") != expected_evidence_status:
+        errors.append("manifest_evidence_status")
 
     records: list[Any] = []
     for name in ("setup.jsonl", "episode.jsonl"):
@@ -123,7 +135,7 @@ def _audit_episode(
 
 
 def validate_probe_config(config: Mapping[str, Any]) -> None:
-    if config.get("probe_version") != "phase5-r1-production-integration-probe-v1":
+    if config.get("probe_version") != "phase5-r1-production-integration-probe-v2":
         raise ValueError("probe_version mismatch")
     if (
         config.get("task") != "thor_book_reacquire_k2"
@@ -144,6 +156,10 @@ def validate_probe_config(config: Mapping[str, Any]) -> None:
     ):
         if config.get(key) is not False:
             raise ValueError(f"probe output/evidence policy mismatch: {key}")
+    if config.get("expected_episode_evidence_status") != "excluded_engineering_probe":
+        raise ValueError("probe expected evidence status mismatch")
+    if config.get("run_purpose") != "phase5_r1_production_integration_probe":
+        raise ValueError("probe run purpose mismatch")
 
 
 def run_probe(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
@@ -194,6 +210,8 @@ def run_probe(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
                 trace_html=False,
                 visualize=False,
                 save_evaluator_debug=False,
+                included_in_formal_aggregate=False,
+                run_purpose=str(config["run_purpose"]),
             ),
             search_route=runtime.search_route,
             evaluator_setup=runtime.configuration,
@@ -203,6 +221,9 @@ def run_probe(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
             summary=episode,
             episode_dir=episode_dir,
             expected_route_digest=runtime.search_route.action_sequence_digest,
+            expected_evidence_status=str(
+                config["expected_episode_evidence_status"]
+            ),
         )
         rows.append(
             {
