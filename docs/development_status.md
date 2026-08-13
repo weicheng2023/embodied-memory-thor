@@ -729,3 +729,22 @@ successful isolated pose query returned zero poses. It is classified
 pairs/trials 0/0. No route/task/memory/image/FloorPlan3 action ran. Public
 evidence is `docs/evidence/phase5_floorplan2_r2_v2_scene_start_ineligible.json`.
 FloorPlan3 is next only after this evidence is committed and pushed.
+
+On clean pushed `318db5f`, FloorPlan3 fully qualified candidate 1. Its public
+ordered-subgoal route has 6 actions and discloses evaluator goal use; its
+target-independent fallback has 110 actions and no Cup/anchor input. K=2
+eviction, native interaction, fallback pickup, fresh-reset replay, and reset
+restoration all passed. No memory variant or image ran. Evidence is
+`docs/evidence/phase5_floorplan3_r2_v2_qualification.json`; R2 qualified count
+is now 1/6.
+
+The qualified result is now wired into a public/private frozen R2 loader. The
+public registry exposes only opaque IDs and digests; the ignored private
+registry holds the native start and selected object IDs. Digest/scene/route
+joins and ordered-start preconditions fail closed. The generic runner and CLI
+now accept this evaluator setup with both action-only R2 routes. An excluded
+three-variant production probe is precommitted for FloorPlan3 with no images,
+GUI, evaluator debug, or formal aggregation and stop-on-first-failure. Offline
+runtime, tamper, privacy, CLI, qualification, and ordered-task tests pass 18/18.
+The complete offline regression passes 229/229. The probe has not run; it first
+requires a clean committed and pushed revision.

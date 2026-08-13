@@ -23,6 +23,10 @@ from embodied_memory_thor.phase5.frozen_r1 import (  # noqa: E402
     FrozenR1ConfigurationError,
     load_frozen_r1_runtime,
 )
+from embodied_memory_thor.phase5.frozen_r2 import (  # noqa: E402
+    FrozenR2ConfigurationError,
+    load_frozen_r2_runtime,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -37,8 +41,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--configuration-id",
         help=(
-            "opaque frozen R1 configuration; loads its evaluator-only start/anchor "
-            "and public action-only route"
+            "opaque frozen R1 or R2 configuration; loads evaluator-only setup "
+            "and public action-only routes"
         ),
     )
     parser.add_argument(
@@ -62,10 +66,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="explicit memory mode; mainly used with deterministic/openai_compatible",
     )
     parser.add_argument(
+        "--subgoal-route-id",
+        help="public ordered-R2 task-subgoal navigation route ID",
+    )
+    parser.add_argument(
         "--search-route-id",
         help=(
-            "public target-independent Phase 5 route ID; currently qualified "
-            "only for the frozen FloorPlan1 R1 configuration"
+            "public target-independent Phase 5 fallback route ID"
         ),
     )
     parser.add_argument("--mode", choices=("formal", "debug"), default="formal")
@@ -127,6 +134,7 @@ def _build_config(args: argparse.Namespace) -> ThorEpisodeConfig:
         scene=args.scene,
         planner=planner,
         memory=memory,
+        subgoal_route_id=args.subgoal_route_id,
         search_route_id=args.search_route_id,
         condition=args.condition,
         mode=args.mode,
@@ -156,30 +164,68 @@ def _build_config(args: argparse.Namespace) -> ThorEpisodeConfig:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        runtime = None
+        r1_runtime = None
+        r2_runtime = None
         if args.configuration_id:
-            if args.task != "thor_book_reacquire_k2":
-                raise ValueError("--configuration-id currently requires thor_book_reacquire_k2")
-            runtime = load_frozen_r1_runtime(args.configuration_id)
+            if args.task == "thor_book_reacquire_k2":
+                r1_runtime = load_frozen_r1_runtime(args.configuration_id)
+                runtime = r1_runtime
+            elif args.task == "thor_cup_after_coffee_subgoal":
+                r2_runtime = load_frozen_r2_runtime(args.configuration_id)
+                runtime = r2_runtime
+            else:
+                raise ValueError(
+                    "--configuration-id requires a Phase 5 comparison task"
+                )
             if args.scene != "FloorPlan1" and args.scene != runtime.configuration.scene:
                 raise ValueError("--scene conflicts with the frozen configuration")
             args.scene = runtime.configuration.scene
-            if args.search_route_id and args.search_route_id != runtime.search_route.route_id:
+            frozen_search_route = (
+                r1_runtime.search_route
+                if r1_runtime is not None
+                else r2_runtime.fallback_route
+            )
+            if args.search_route_id and args.search_route_id != frozen_search_route.route_id:
                 raise ValueError("--search-route-id conflicts with the frozen configuration")
-            args.search_route_id = runtime.search_route.route_id
+            args.search_route_id = frozen_search_route.route_id
+            if r2_runtime is not None:
+                if (
+                    args.subgoal_route_id
+                    and args.subgoal_route_id != r2_runtime.subgoal_route.route_id
+                ):
+                    raise ValueError(
+                        "--subgoal-route-id conflicts with the frozen configuration"
+                    )
+                args.subgoal_route_id = r2_runtime.subgoal_route.route_id
+            elif args.subgoal_route_id:
+                raise ValueError("--subgoal-route-id requires an ordered-R2 configuration")
         config = _build_config(args)
         config.validate()
-    except (FrozenR1ConfigurationError, OSError, ValueError) as exc:
+    except (
+        FrozenR1ConfigurationError,
+        FrozenR2ConfigurationError,
+        OSError,
+        ValueError,
+    ) as exc:
         print(f"configuration_error: {exc}", file=sys.stderr)
         return 2
 
     summary = ThorEpisodeRunner(
         config,
-        search_route=runtime.search_route if runtime is not None else None,
-        evaluator_setup=(runtime.configuration if runtime is not None else None),
+        search_route=(
+            r1_runtime.search_route
+            if r1_runtime is not None
+            else r2_runtime.fallback_route if r2_runtime is not None else None
+        ),
+        subgoal_route=(r2_runtime.subgoal_route if r2_runtime is not None else None),
+        evaluator_setup=(
+            r1_runtime.configuration
+            if r1_runtime is not None
+            else r2_runtime.configuration if r2_runtime is not None else None
+        ),
         intervention=(
-            runtime.intervention()
-            if runtime is not None and config.condition == "stale_r1"
+            r1_runtime.intervention()
+            if r1_runtime is not None and config.condition == "stale_r1"
             else None
         ),
     ).run()

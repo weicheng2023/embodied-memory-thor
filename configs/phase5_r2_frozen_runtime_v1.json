@@ -1,0 +1,23 @@
+{
+  "runtime_set_version": "phase5-r2-frozen-runtime-set-v1",
+  "private_configuration_set_digest": "f20ebc33385620b2d926e9df326c5e13e63704eb43ba701ebe0c45cf69fda529",
+  "configuration_count": 1,
+  "configurations": [
+    {
+      "configuration_id": "FloorPlan3_R2_fixed_start_001",
+      "scene": "FloorPlan3",
+      "start_pose_digest": "4f8aca6dcf970a4de00b89c83bc7b26321b21663a32171f1a8a4ded47b3adbaf",
+      "source_qualification_digest": "32d54bb1600098be2afebff810cf47a2c399475614e1506b594500d5f12993f9",
+      "subgoal_route_id": "FloorPlan3_R2_fixed_start_001_subgoal_v1",
+      "subgoal_route_action_sequence_digest": "1250f83c234dbefdd4dd0c62f979818e179152f4ad2ed89b331c79e13290f4e0",
+      "fallback_route_id": "FloorPlan3_R2_fixed_start_001_fallback_absolute_v4",
+      "fallback_route_action_sequence_digest": "8c88b189fcbd11938ee94700f6abfef37b2a386893f38d6ae48c9c9372f92e67",
+      "public_evidence": "docs/evidence/phase5_floorplan3_r2_v2_qualification.json"
+    }
+  ],
+  "planner_visible": false,
+  "coordinates_public": false,
+  "memory_agents_run": false,
+  "formal_use_allowed": false,
+  "claim_boundary": "one qualified R2 runtime contract; no memory-agent comparison or formal result"
+}

@@ -297,8 +297,13 @@ class ThorEpisodeRunner:
             reference = self.evaluator_setup.public_reference()
             if str(reference.get("scene", "")) != config.scene:
                 raise ValueError("evaluator setup scene does not match episode scene")
-            if config.task != "thor_book_reacquire_k2":
-                raise ValueError("frozen R1 evaluator setup requires thor_book_reacquire_k2")
+            if config.task not in {
+                "thor_book_reacquire_k2",
+                "thor_cup_after_coffee_subgoal",
+            }:
+                raise ValueError(
+                    "frozen evaluator setup requires a Phase 5 comparison task"
+                )
         self.action_space = ActionSpace()
         self.executor = ActionExecutor(self.action_space)
         self.viewer_factory = viewer_factory or LiveFrameViewer

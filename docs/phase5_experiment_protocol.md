@@ -1860,3 +1860,35 @@ is `docs/evidence/phase5_floorplan2_r2_v2_scene_start_ineligible.json`.
 The one-scene stopping rule therefore halts here. FloorPlan3 is the next
 eligible scene in order, but it may run only after the FloorPlan2 result is
 committed and pushed; this result does not authorize batching later scenes.
+
+After clean pushed `318db5f`, exactly FloorPlan3 ran. The first sorted
+pickupable Cup supplied 158 standing poses, 12 rank-balanced Cup/CoffeeMachine
+pairs were frozen before outcomes, and candidate 1 fully passed. The public
+task-subgoal route is six primitive actions and honestly retains
+`qualification_goal_input_used=true`; the target-independent fallback is 110
+actions with no Cup/anchor input. K=2 eviction, native CoffeeMachine toggle,
+fallback rediscovery/pickup, identical fresh-reset replay, and reset restoration
+all passed. No memory variant or image ran. Public coordinate-free evidence is
+`docs/evidence/phase5_floorplan3_r2_v2_qualification.json`.
+
+### Production R2 runtime and excluded integration probe precommit
+
+The first qualified R2 result is joined into a production runtime through two
+strictly separated artifacts. `configs/phase5_r2_frozen_runtime_v1.json`
+contains only the opaque configuration ID, scene, route IDs, and digests. The
+local ignored registry contains the TeleportFull start and selected object IDs;
+its complete digest is bound into the public contract. Runtime loading rejects
+private-set, start-pose, scene, qualification, route-role, or route-digest
+mismatches before planner observation zero. The setup privately verifies the
+qualified Cup is visible/pickupable and the CoffeeMachine is toggleable, hidden,
+and off. Ordinary traces may contain current visible observation state, but not
+the private native setup, candidate plan, destination pose, or reachable graph.
+
+One three-variant integration probe is precommitted in
+`configs/phase5_r2_production_integration_probe_v1.json`. It uses fixed order
+no-memory, K=2, object-memory; identical start/subgoal/fallback/target-lock; 140
+steps; no images, GUI, evaluator debug, or formal aggregation; and immediate
+stop on the first episode or audit failure. This checkpoint implements and
+tests the runtime and probe only. It deliberately does not run the memory
+variants yet. The real probe requires a clean committed and pushed revision.
+Focused tests pass 18/18 and the complete offline regression passes 229/229.
