@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -235,6 +236,74 @@ class Phase5R2QualificationTests(unittest.TestCase):
         module = self._qualifier_module()
         error = module.SceneStartIneligibleError("no standing Cup")
         self.assertIsInstance(error, RuntimeError)
+
+    def test_joint_start_filter_is_exhaustive_reset_isolated_and_precondition_only(
+        self,
+    ) -> None:
+        module = self._qualifier_module()
+
+        class _StartFilterEnv:
+            def __init__(self) -> None:
+                self.reset_count = 0
+                self.actions: list[tuple[int, Mapping[str, Any]]] = []
+
+            def reset(self, scene: str) -> Any:
+                self.reset_count += 1
+                return SimpleNamespace(metadata={"sceneName": scene})
+
+            def get_evaluator_state(self) -> Mapping[str, Any]:
+                return {}
+
+            def step(self, action: Mapping[str, Any]) -> Any:
+                self.actions.append((self.reset_count, dict(action)))
+                eligible = action["x"] in (1.0, 2.0)
+                return SimpleNamespace(metadata={
+                    "lastActionSuccess": True,
+                    "objects": [
+                        {"objectId": "Cup|fixture", "visible": True, "pickupable": True},
+                        {"objectId": "CoffeeMachine|fixture", "visible": not eligible, "isToggled": False},
+                    ],
+                })
+
+        poses = [
+            {"x": float(index), "y": 0.9, "z": 0.0, "rotation": 0.0,
+             "horizon": 0.0, "standing": True}
+            for index in range(3)
+        ]
+        env = _StartFilterEnv()
+        feasible, audit = module._filter_joint_start_feasible_poses(
+            env, scene="FloorPlan5", cup_id="Cup|fixture",
+            machine_id="CoffeeMachine|fixture", cup_poses=poses,
+        )
+        self.assertEqual([pose["x"] for pose in feasible], [1.0, 2.0])
+        self.assertEqual([reset for reset, _ in env.actions], [1, 2, 3])
+        self.assertTrue(all(action["action"] == "TeleportFull" for _, action in env.actions))
+        self.assertEqual([row["eligible_pose_order"] for row in audit], [None, 1, 2])
+        self.assertTrue(all(row["fresh_reset_before_teleport"] for row in audit))
+
+    def test_v3_contract_filters_before_pairing_without_agent_or_private_public_data(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        config = json.loads(
+            (root / "configs" / "phase5_r2_qualification_v3.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            config["qualification_version"], "phase5-r2-native-qualification-v3"
+        )
+        self.assertFalse(config["start_feasibility_filter"]["route_or_task_outcomes_used"])
+        self.assertFalse(config["memory_agents_run"])
+        self.assertFalse(config["public_output_contains_coordinates_or_object_ids"])
+        census = json.loads(
+            (root / "docs" / "evidence" / "phase5_floorplan5_r2_start_visibility_census_v1.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(census["eligible_pose_count"], 4)
+        self.assertTrue(census["pose_count_variability_observed"])
+        serialized = json.dumps(census, sort_keys=True)
+        for forbidden in ("Cup|", "CoffeeMachine|", "TeleportFull", '"x"', '"y"', '"z"'):
+            self.assertNotIn(forbidden, serialized)
 
     @staticmethod
     def _qualifier_module() -> Any:

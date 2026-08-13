@@ -1,0 +1,38 @@
+{
+  "qualification_version": "phase5-r2-native-qualification-v3",
+  "script_version": "phase5-r2-qualification-batch-v3",
+  "supersedes": "phase5-r2-native-qualification-v2",
+  "trigger_scene": "FloorPlan5",
+  "trigger_evidence": "docs/evidence/phase5_floorplan5_r2_start_visibility_census_v1.json",
+  "unchanged_target_selection": "first pickupable Cup in sorted objectId order with at least one normalized standing interactable pose; first initially-off toggleable CoffeeMachine in sorted objectId order",
+  "start_feasibility_filter": {
+    "scope": "all standing poses returned for the selected Cup in the current qualification run",
+    "order": "pose_sort_key",
+    "fresh_reset_per_pose": true,
+    "allowed_action_per_pose": "TeleportFull",
+    "required": [
+      "teleport_success",
+      "cup_exists",
+      "cup_visible",
+      "cup_pickupable",
+      "coffee_machine_exists",
+      "coffee_machine_initially_off",
+      "coffee_machine_initially_hidden"
+    ],
+    "route_or_task_outcomes_used": false
+  },
+  "candidate_pair_policy": "first 12 rank-balanced pairs over eligible Cup pose rank and CoffeeMachine pose rank, frozen before native route/task outcomes",
+  "unchanged_gates": [
+    "navigation-only subgoal route succeeds",
+    "Cup hidden for K=2 observations",
+    "CoffeeMachine toggles on",
+    "target-independent fallback plus shared target lock picks Cup",
+    "fresh-reset replay passes",
+    "reset restoration passes"
+  ],
+  "scene_order": "retry FloorPlan5 only; FloorPlan6 remains blocked until FloorPlan5 is classified",
+  "memory_agents_run": false,
+  "images_saved": false,
+  "formal_use_allowed": false,
+  "public_output_contains_coordinates_or_object_ids": false
+}

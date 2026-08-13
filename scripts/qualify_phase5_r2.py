@@ -51,7 +51,7 @@ from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
 BOUNDARY = "EVALUATOR-ONLY R2 QUALIFICATION - NEVER PLANNER INPUT"
-SCRIPT_VERSION = "phase5-r2-qualification-batch-v2"
+SCRIPT_VERSION = "phase5-r2-qualification-batch-v3"
 CONTROLLER_SETTINGS = {
     "width": 300,
     "height": 300,
@@ -72,6 +72,10 @@ K_SHORT_MEMORY = 2
 
 class SceneStartIneligibleError(RuntimeError):
     """A scene lacks the pre-registered standing Cup start."""
+
+
+class SceneJointStartIneligibleError(RuntimeError):
+    """No standing Cup pose satisfies the ordered-task visibility boundary."""
 
 
 def _kitchen_scene_number(scene: str) -> int:
@@ -311,6 +315,55 @@ def _candidate_pairs(
         pairs,
         key=lambda row: (max(row[0], row[1]), row[0] + row[1], row[0], row[1]),
     )[:MAX_CANDIDATE_PAIRS]
+
+
+def _filter_joint_start_feasible_poses(
+    env: ThorEnv,
+    *,
+    scene: str,
+    cup_id: str,
+    machine_id: str,
+    cup_poses: Sequence[Mapping[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Filter only declared start preconditions, before route/task outcomes."""
+
+    feasible: list[dict[str, Any]] = []
+    audit: list[dict[str, Any]] = []
+    for source_pose_order, raw_pose in enumerate(cup_poses, start=1):
+        pose = dict(raw_pose)
+        _reset(env, scene)
+        event = env.step({"action": "TeleportFull", **pose})
+        metadata = event.metadata
+        cup = _object(metadata, cup_id)
+        machine = _object(metadata, machine_id)
+        preconditions = {
+            "teleport_success": metadata.get("lastActionSuccess") is True,
+            "cup_exists": cup is not None,
+            "cup_visible": bool(cup and cup.get("visible") is True),
+            "cup_pickupable": bool(cup and cup.get("pickupable") is True),
+            "coffee_machine_exists": machine is not None,
+            "coffee_machine_initially_off": bool(
+                machine and machine.get("isToggled") is not True
+            ),
+            "coffee_machine_initially_hidden": bool(
+                machine and machine.get("visible") is not True
+            ),
+        }
+        eligible = all(preconditions.values())
+        audit.append(
+            {
+                "source_pose_order": source_pose_order,
+                "pose": pose,
+                "pose_digest": stable_digest(pose),
+                "fresh_reset_before_teleport": True,
+                "preconditions": preconditions,
+                "eligible": eligible,
+                "eligible_pose_order": len(feasible) + 1 if eligible else None,
+            }
+        )
+        if eligible:
+            feasible.append(pose)
+    return feasible, audit
 
 
 def _actions(route: Mapping[str, Any]) -> list[dict[str, str]]:
@@ -654,6 +707,7 @@ def _public_summary(
     cup_selection_audit: Sequence[Mapping[str, Any]],
     trial_records: Sequence[Mapping[str, Any]],
     selected: Mapping[str, Any] | None,
+    start_feasibility_audit: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     return {
         "qualification_version": R2_QUALIFICATION_VERSION,
@@ -663,7 +717,8 @@ def _public_summary(
         ),
         "scene": scene,
         "candidate_pair_policy": (
-            "first-12 lexicographic rank-balanced pairs frozen before outcomes"
+            "fresh-reset joint-start-feasible Cup poses, then first-12 "
+            "lexicographic rank-balanced pairs frozen before route/task outcomes"
         ),
         "candidate_pair_limit": MAX_CANDIDATE_PAIRS,
         "candidate_pair_count": candidate_count,
@@ -680,6 +735,14 @@ def _public_summary(
                 if row.get("selected") is True
             ),
             None,
+        ),
+        "standing_cup_pose_count": len(start_feasibility_audit),
+        "joint_start_feasible_pose_count": sum(
+            1 for row in start_feasibility_audit if row.get("eligible") is True
+        ),
+        "joint_start_feasibility_policy": (
+            "every standing Cup pose after its own fresh reset; filter only "
+            "declared Cup-visible/pickupable and CoffeeMachine-hidden/off preconditions"
         ),
         "passed": selected is not None,
         "selected_candidate_order": (
@@ -776,6 +839,7 @@ def main(argv: list[str] | None = None) -> int:
     selected_private: dict[str, Any] | None = None
     selected_public: dict[str, Any] | None = None
     cup_selection_audit: list[dict[str, Any]] = []
+    start_feasibility_audit: list[dict[str, Any]] = []
     fatal_error = ""
     failure_classification = ""
     scene_skip_allowed = False
@@ -811,6 +875,18 @@ def main(argv: list[str] | None = None) -> int:
         machine_id = str(machine["objectId"])
         if machine.get("isToggled") is True:
             raise RuntimeError("deterministically selected CoffeeMachine starts toggled")
+        cup_poses, start_feasibility_audit = _filter_joint_start_feasible_poses(
+            env,
+            scene=args.scene,
+            cup_id=cup_id,
+            machine_id=machine_id,
+            cup_poses=cup_poses,
+        )
+        if not cup_poses:
+            raise SceneJointStartIneligibleError(
+                "no standing Cup pose has Cup visible/pickupable with "
+                "CoffeeMachine initially hidden/off"
+            )
         machine_poses = _query_poses(env, scene=args.scene, object_id=machine_id)
         reachable = _reachable(env, scene=args.scene)
         pairs = _candidate_pairs(cup_poses, machine_poses)
@@ -880,6 +956,15 @@ def main(argv: list[str] | None = None) -> int:
                 "fresh reset per Cup query"
             ),
             "cup_selection_audit": cup_selection_audit,
+            "start_feasibility_policy": (
+                "exhaustive standing Cup poses; one fresh reset plus TeleportFull "
+                "per pose; declared start preconditions only"
+            ),
+            "start_feasibility_audit": start_feasibility_audit,
+            "standing_cup_pose_count_before_start_filter": len(
+                start_feasibility_audit
+            ),
+            "joint_start_feasible_pose_count": len(cup_poses),
             "cup_instance_count": len(cup_selection_audit),
             "selected_cup_order": next(
                 row["cup_order"]
@@ -1030,6 +1115,10 @@ def main(argv: list[str] | None = None) -> int:
         fatal_error = f"{type(exc).__name__}: {exc}"
         failure_classification = "scene_start_ineligible_no_standing_cup"
         scene_skip_allowed = True
+    except SceneJointStartIneligibleError as exc:
+        fatal_error = f"{type(exc).__name__}: {exc}"
+        failure_classification = "scene_start_ineligible_no_joint_visibility_pose"
+        scene_skip_allowed = True
     except Exception as exc:
         fatal_error = f"{type(exc).__name__}: {exc}"
         failure_classification = "qualification_invalid_requires_review"
@@ -1043,6 +1132,7 @@ def main(argv: list[str] | None = None) -> int:
         "boundary": BOUNDARY,
         "candidate_plan_digest": candidate_plan.get("candidate_plan_digest"),
         "cup_selection_audit": cup_selection_audit,
+        "start_feasibility_audit": start_feasibility_audit,
         "trials": trials,
         "selected_configuration": selected_private,
         "fatal_error": fatal_error,
@@ -1058,6 +1148,7 @@ def main(argv: list[str] | None = None) -> int:
         candidate_count=len(candidate_plan.get("candidate_pairs", [])),
         cup_selection_audit=cup_selection_audit,
         trial_records=trials,
+        start_feasibility_audit=start_feasibility_audit,
         selected=(
             {
                 **selected_public,

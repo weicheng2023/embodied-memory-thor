@@ -1992,3 +1992,21 @@ scene exclusion. Public stop evidence is
 `docs/evidence/phase5_floorplan5_r2_v2_candidate_stop.json`.
 The pre-run gate passes 16/16 focused tests and 239/239 full offline tests. The
 real census may start only from a clean committed and pushed revision.
+
+The clean pushed `4f23dd0` census exhaustively checked 86 standing poses and
+found four joint-start-feasible poses; the first was pose order 39. Cup was
+visible in 51/86 views and CoffeeMachine was hidden in 5/86, with four views
+satisfying every condition. No route, interaction, target pose query, planner,
+memory agent, image, private coordinate exposure, or formal result occurred.
+The earlier qualification query returned 92 standing poses versus 86 here, so
+pose count/order is not treated as a cross-run constant and no order or
+coordinate is hardcoded.
+
+Qualification v3 therefore performs an exhaustive, within-run evaluator filter
+over the currently returned standing Cup poses, each after its own fresh reset.
+It retains only poses satisfying the already-declared joint start preconditions,
+then freezes the original first-12 rank-balanced pairs over eligible-pose rank
+and CoffeeMachine-pose rank before any route/task outcome. All downstream gates
+and public/private boundaries remain unchanged. Only FloorPlan5 may rerun from
+the clean pushed v3 revision; FloorPlan6 and memory variants remain blocked.
+The v3 pre-run gate passes 24/24 focused tests and 241/241 full offline tests.

@@ -814,3 +814,13 @@ census is precommitted with fresh reset per pose and no route, interaction,
 planner, memory, image, or formal result.
 Focused census/R2 tests pass 16/16 and the full offline regression passes
 239/239. The real census has not run and requires a clean pushed revision.
+
+The clean `4f23dd0` census completed 86/86 pose trials and found four eligible
+joint starts, first at within-run order 39. Thus FloorPlan5 is feasible and the
+v2 pair prefix was incomplete. A 92-versus-86 cross-run pose-count difference
+also rules out hardcoding an order/coordinate. Qualifier v3 now prefilters every
+within-run standing pose using fresh-reset start booleans before freezing the
+unchanged first-12 rank-balanced pairs. FloorPlan5-only rerun remains pending
+commit/push; no memory variant is authorized.
+Qualifier-v3/R2 focused tests pass 24/24 and the full offline regression passes
+241/241.
