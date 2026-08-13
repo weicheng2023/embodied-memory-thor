@@ -696,3 +696,17 @@ scene or establish an R2 result. The protocol must pre-register either
 first-standing-interactable Cup selection across sorted Cup instances
 (recommended) or non-standing start support before a new real launch. Public
 stop evidence is `docs/evidence/phase5_floorplan1_r2_start_pose_stop.json`.
+
+The recommended R2 start-selection revision is now adopted in code: sorted
+pickupable Cup IDs are checked one by one, each after an independent fresh
+reset, and the first Cup with a normalized standing interactable pose is
+selected. Later Cups are not queried after a pass. This evaluator-only
+feasibility gate runs before and cannot inspect route, toggle, fallback,
+pickup, or memory outcomes. Query errors remain fatal; an all-fail scene keeps
+the complete private audit. No downstream candidate-pair or task gate changes.
+Offline tests and a clean pushed revision are required before the one allowed
+FloorPlan1 rerun; memory variants and FloorPlan2 remain prohibited meanwhile.
+
+The revised selection tests cover sorted order, fresh-reset isolation,
+first-pass stopping, all-fail audit retention, and fatal query errors. The full
+offline regression passes 223/223; no real v2 rerun has started yet.

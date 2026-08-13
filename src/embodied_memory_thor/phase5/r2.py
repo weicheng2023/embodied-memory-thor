@@ -9,7 +9,7 @@ from typing import Any, Mapping, Sequence
 from embodied_memory_thor.phase5.anchors import stable_digest
 
 
-R2_QUALIFICATION_VERSION = "phase5-r2-native-qualification-v1"
+R2_QUALIFICATION_VERSION = "phase5-r2-native-qualification-v2"
 R2_SUBGOAL_ROUTE_VERSION = "phase5-r2-task-subgoal-navigation-v1"
 
 

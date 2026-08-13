@@ -1801,3 +1801,30 @@ starts. The conservative recommended revision is the first rule because it
 preserves standing navigation and changes target selection only by an
 evaluator-side feasibility predicate. Public stop evidence is
 `docs/evidence/phase5_floorplan1_r2_start_pose_stop.json`.
+
+#### R2 start-selection revision v2
+
+The conservative revision is adopted. On a fresh scene reset, enumerate every
+pickupable Cup in ascending `objectId` order. For each Cup, perform exactly one
+`GetInteractablePoses` query after its own fresh reset, retain the result in an
+evaluator-only audit, and select the first Cup with at least one normalized
+standing pose. Stop checking later Cups as soon as one passes. Query failure is
+fatal rather than silently skipped. If no Cup passes, the scene is classified
+as lacking a standing-interactable Cup start.
+
+This feasibility selection occurs before route-pair construction and cannot
+use route execution, CoffeeMachine interaction, fallback, pickup, or memory
+outcomes. All subsequent candidate pairs are built only for the selected Cup;
+the previous 12-pair ordering and every downstream gate remain unchanged.
+Exact Cup IDs and per-Cup query results remain evaluator-only. The public
+summary exposes only aggregate selection/qualification status.
+
+After offline tests and full regression, v2 must be committed and pushed. Only
+FloorPlan1 may then be rerun, with no memory variants. A FloorPlan1 success may
+advance the existing scene-order protocol; a failure must first be classified
+before deciding whether it is a scene-skippable failure or a protocol defect.
+
+Offline v2 selection tests cover sorted-ID order, one fresh reset per Cup,
+skipping a zero-standing-pose Cup, stopping at the first passing Cup, retaining
+the all-fail audit, and treating query failure as fatal. The complete offline
+regression passes 223/223. No real v2 rerun has started at this checkpoint.

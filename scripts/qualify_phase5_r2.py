@@ -50,7 +50,7 @@ from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
 BOUNDARY = "EVALUATOR-ONLY R2 QUALIFICATION - NEVER PLANNER INPUT"
-SCRIPT_VERSION = "phase5-r2-qualification-batch-v1"
+SCRIPT_VERSION = "phase5-r2-qualification-batch-v2"
 CONTROLLER_SETTINGS = {
     "width": 300,
     "height": 300,
@@ -150,9 +150,9 @@ def _toggled(metadata: Mapping[str, Any], object_id: str) -> bool:
     return bool(item and item.get("isToggled") is True)
 
 
-def _first_target(
+def _sorted_targets(
     metadata: Mapping[str, Any], *, object_type: str, predicate: str
-) -> Mapping[str, Any]:
+) -> list[Mapping[str, Any]]:
     matches = sorted(
         (
             item
@@ -165,7 +165,15 @@ def _first_target(
     )
     if not matches:
         raise RuntimeError(f"no {predicate} {object_type} exists after reset")
-    return matches[0]
+    return matches
+
+
+def _first_target(
+    metadata: Mapping[str, Any], *, object_type: str, predicate: str
+) -> Mapping[str, Any]:
+    return _sorted_targets(
+        metadata, object_type=object_type, predicate=predicate
+    )[0]
 
 
 def _reset(env: ThorEnv, scene: str) -> Mapping[str, Any]:
@@ -199,6 +207,73 @@ def _query_poses(
     if not poses:
         raise RuntimeError("no standing interactable pose was returned")
     return poses
+
+
+def _select_first_standing_interactable_cup(
+    env: ThorEnv, *, scene: str
+) -> tuple[Mapping[str, Any] | None, list[dict[str, Any]], list[dict[str, Any]]]:
+    """Check sorted Cup instances on independent resets, before task outcomes."""
+
+    initial = _reset(env, scene)
+    cups = _sorted_targets(
+        initial, object_type="Cup", predicate="pickupable"
+    )
+    audit: list[dict[str, Any]] = []
+    for cup_order, initial_cup in enumerate(cups, start=1):
+        object_id = str(initial_cup["objectId"])
+        metadata = _reset(env, scene)
+        reset_cup = _object(metadata, object_id)
+        row: dict[str, Any] = {
+            "cup_order": cup_order,
+            "object_id": object_id,
+            "fresh_reset_before_query": True,
+            "same_object_exists_after_reset": reset_cup is not None,
+            "pickupable_after_reset": bool(
+                reset_cup and reset_cup.get("pickupable") is True
+            ),
+            "query_run": False,
+            "query_success": False,
+            "query_error": "",
+            "raw_pose_count": 0,
+            "normalized_pose_count": 0,
+            "standing_pose_count": 0,
+            "selected": False,
+        }
+        if reset_cup is None or reset_cup.get("pickupable") is not True:
+            row["query_error"] = "cup_identity_or_pickupability_changed_after_reset"
+            audit.append(row)
+            continue
+        event = env.step(
+            {"action": "GetInteractablePoses", "objectId": object_id}
+        )
+        row["query_run"] = True
+        row["query_success"] = event.metadata.get("lastActionSuccess") is True
+        row["query_error"] = str(event.metadata.get("errorMessage", ""))
+        if not row["query_success"]:
+            audit.append(row)
+            raise RuntimeError(
+                f"GetInteractablePoses failed for Cup order {cup_order}: "
+                + row["query_error"]
+            )
+        raw = event.metadata.get("actionReturn") or []
+        raw_poses = [item for item in raw if isinstance(item, Mapping)]
+        normalized = [
+            pose
+            for pose in (normalize_interactable_pose(item) for item in raw_poses)
+            if pose is not None
+        ]
+        standing = sorted(
+            (pose for pose in normalized if pose["standing"] is True),
+            key=pose_sort_key,
+        )
+        row["raw_pose_count"] = len(raw_poses)
+        row["normalized_pose_count"] = len(normalized)
+        row["standing_pose_count"] = len(standing)
+        row["selected"] = bool(standing)
+        audit.append(row)
+        if standing:
+            return reset_cup, standing, audit
+    return None, [], audit
 
 
 def _reachable(env: ThorEnv, *, scene: str) -> list[dict[str, Any]]:
@@ -564,6 +639,7 @@ def _public_summary(
     git_state: Mapping[str, Any],
     output_dir: Path,
     candidate_count: int,
+    cup_selection_audit: Sequence[Mapping[str, Any]],
     trial_records: Sequence[Mapping[str, Any]],
     selected: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
@@ -580,6 +656,19 @@ def _public_summary(
         "candidate_pair_limit": MAX_CANDIDATE_PAIRS,
         "candidate_pair_count": candidate_count,
         "candidate_trials_run": len(trial_records),
+        "cup_selection_policy": (
+            "first standing-interactable pickupable Cup in sorted objectId order; "
+            "fresh reset per query"
+        ),
+        "cup_instances_checked": len(cup_selection_audit),
+        "selected_cup_order": next(
+            (
+                int(row["cup_order"])
+                for row in cup_selection_audit
+                if row.get("selected") is True
+            ),
+            None,
+        ),
         "passed": selected is not None,
         "selected_candidate_order": (
             int(selected["candidate_order"]) if selected is not None else None
@@ -675,18 +764,40 @@ def main(argv: list[str] | None = None) -> int:
     trials: list[dict[str, Any]] = []
     selected_private: dict[str, Any] | None = None
     selected_public: dict[str, Any] | None = None
+    cup_selection_audit: list[dict[str, Any]] = []
     fatal_error = ""
     try:
         metadata = _reset(env, args.scene)
-        cup = _first_target(metadata, object_type="Cup", predicate="pickupable")
         machine = _first_target(
             metadata, object_type="CoffeeMachine", predicate="toggleable"
         )
+        cup, cup_poses, cup_selection_audit = (
+            _select_first_standing_interactable_cup(env, scene=args.scene)
+        )
+        _write_json(
+            output_dir / "evaluator_only_cup_selection.json",
+            {
+                "qualification_version": R2_QUALIFICATION_VERSION,
+                "script_version": SCRIPT_VERSION,
+                "boundary": BOUNDARY,
+                "selection_rule": (
+                    "first pickupable Cup in sorted objectId order with at least "
+                    "one standing interactable pose; one fresh reset per Cup query"
+                ),
+                "selection_uses_route_or_task_outcomes": False,
+                "selected": cup is not None,
+                "audit": cup_selection_audit,
+                **git_state,
+            },
+        )
+        if cup is None:
+            raise RuntimeError(
+                "no pickupable Cup has a standing interactable pose"
+            )
         cup_id = str(cup["objectId"])
         machine_id = str(machine["objectId"])
         if machine.get("isToggled") is True:
             raise RuntimeError("deterministically selected CoffeeMachine starts toggled")
-        cup_poses = _query_poses(env, scene=args.scene, object_id=cup_id)
         machine_poses = _query_poses(env, scene=args.scene, object_id=machine_id)
         reachable = _reachable(env, scene=args.scene)
         pairs = _candidate_pairs(cup_poses, machine_poses)
@@ -750,6 +861,17 @@ def main(argv: list[str] | None = None) -> int:
             "selection_rule": "first fully qualified pair in precommitted order",
             "scene": args.scene,
             "cup_object_id": cup_id,
+            "cup_selection_rule": (
+                "first-standing-interactable in sorted objectId order; "
+                "fresh reset per Cup query"
+            ),
+            "cup_selection_audit": cup_selection_audit,
+            "cup_instance_count": len(cup_selection_audit),
+            "selected_cup_order": next(
+                row["cup_order"]
+                for row in cup_selection_audit
+                if row["selected"]
+            ),
             "coffee_machine_object_id": machine_id,
             "cup_interactable_pose_count": len(cup_poses),
             "coffee_machine_interactable_pose_count": len(machine_poses),
@@ -900,6 +1022,7 @@ def main(argv: list[str] | None = None) -> int:
         "script_version": SCRIPT_VERSION,
         "boundary": BOUNDARY,
         "candidate_plan_digest": candidate_plan.get("candidate_plan_digest"),
+        "cup_selection_audit": cup_selection_audit,
         "trials": trials,
         "selected_configuration": selected_private,
         "fatal_error": fatal_error,
@@ -913,6 +1036,7 @@ def main(argv: list[str] | None = None) -> int:
         git_state=git_state,
         output_dir=output_dir,
         candidate_count=len(candidate_plan.get("candidate_pairs", [])),
+        cup_selection_audit=cup_selection_audit,
         trial_records=trials,
         selected=(
             {
