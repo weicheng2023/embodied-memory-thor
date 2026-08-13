@@ -1391,6 +1391,25 @@ passes.
 Focused route-v4.1 tests passed 34/34 and the complete offline regression
 passed 190/190. The real FloorPlan303 route-only rerun has not started.
 
+### FloorPlan303 route-v4.1 pass
+
+The clean `acf6420` route-only rerun succeeded. The observed
+`60.00001525878906` horizon normalized to 60 within the frozen 0.001-degree
+tolerance. Two LookUp actions aligned to the 0-degree scan horizon, two
+LookDown actions restored the start, and the complete route used 100 of 240
+allowed actions. Its digest is
+`5d4de455b78ab05f17038cb7b5cf4dbc63c736d4b0c0fdf40e733545319c4254`.
+
+No target or anchor input, support query, placement, memory agent, or image was
+used. Public evidence is
+`docs/evidence/phase5_floorplan303_absolute_route_v4_1_precommit.json`; the
+coordinate-free binding is
+`configs/phase5_r1_anchor_candidates_absolute_v4_1_floorplan303.json`. Native
+qualification v7 remains blocked until the new contract passes offline tests
+and is committed and pushed.
+Route-contract tests passed 35/35 and the complete offline regression passed
+191/191.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

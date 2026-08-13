@@ -1050,6 +1050,69 @@ class Phase5AnchorTests(unittest.TestCase):
             absolute_302["coverage_route_digest"],
             "8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a",
         )
+        absolute_303 = module._load_candidate_contract(
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_absolute_v4_1_floorplan303.json",
+            "FloorPlan303",
+        )
+        self.assertEqual(absolute_303["coverage_route_action_count"], 100)
+        self.assertEqual(absolute_303["absolute_scan_horizon_degrees"], 0.0)
+        self.assertEqual(
+            absolute_303["coverage_route_version"],
+            "phase5-target-independent-absolute-horizon-v4.1",
+        )
+        self.assertEqual(
+            absolute_303["coverage_route_digest"],
+            "5d4de455b78ab05f17038cb7b5cf4dbc63c736d4b0c0fdf40e733545319c4254",
+        )
+
+    def test_floorplan303_route_v4_1_public_pass_is_bounded_and_private_safe(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan303_absolute_route_v4_1_precommit.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(evidence["passed"])
+        self.assertEqual(
+            evidence["route_version"],
+            "phase5-target-independent-absolute-horizon-v4.1",
+        )
+        self.assertEqual(
+            evidence["horizon_policy_version"],
+            ABSOLUTE_HORIZON_POLICY_VERSION,
+        )
+        self.assertEqual(evidence["route_action_count"], 100)
+        self.assertLessEqual(evidence["route_action_count"], 240)
+        self.assertEqual(evidence["observed_start_horizon_degrees"], 60.00001525878906)
+        self.assertEqual(evidence["normalized_start_horizon_degrees"], 60.0)
+        self.assertTrue(evidence["horizon_normalization_applied"])
+        self.assertEqual(evidence["horizon_alignment_action_count"], 2)
+        self.assertEqual(evidence["horizon_restoration_action_count"], 2)
+        for key in (
+            "target_or_anchor_input_used",
+            "support_queries_run",
+            "placement_actions_run",
+            "memory_agents_run",
+            "images_saved",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+        ):
+            self.assertNotIn(forbidden, serialized)
 
     def test_floorplan302_route_v4_public_precommit_is_read_only_and_private_safe(self) -> None:
         root = Path(__file__).resolve().parents[1]

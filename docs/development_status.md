@@ -443,3 +443,14 @@ target/anchor/support/coordinate boundary are unchanged. FloorPlan303 native
 qualification remains prohibited until its clean route-only rerun passes.
 Focused route-v4.1 tests pass 34/34 and the complete offline regression passes
 190/190. The real FloorPlan303 route-only rerun has not started.
+
+The clean `acf6420` FloorPlan303 route-only rerun passed under v4.1. The real
+60.000015-degree start normalized to 60, used two LookUp alignment and two
+LookDown restoration actions, and produced a 100/240-action route with digest
+`5d4de455b78ab05f17038cb7b5cf4dbc63c736d4b0c0fdf40e733545319c4254`.
+The route remained target/anchor independent; no support query, placement,
+memory, or image ran. A coordinate-free scene contract is prepared. Native
+qualification remains blocked until this result passes offline tests and is
+committed and pushed.
+Route-contract tests pass 35/35 and the complete offline regression passes
+191/191.
