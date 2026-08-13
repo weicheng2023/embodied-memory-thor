@@ -615,6 +615,45 @@ class Phase5AnchorTests(unittest.TestCase):
             ):
                 self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan306_native_v7_result_is_fifth_qualified_scene(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root / "docs" / "evidence"
+                / "phase5_floorplan306_native_qualification_v7.json"
+            ).read_text(encoding="utf-8")
+        )
+        baseline = json.loads(
+            (
+                root / "docs" / "evidence"
+                / "phase5_floorplan306_baseline_route_execution_v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(baseline["passed"])
+        self.assertTrue(evidence["passed"])
+        self.assertTrue(evidence["anchor_frozen"])
+        self.assertEqual(evidence["candidate_trial_count"], 1)
+        self.assertEqual(evidence["selected_support_type"], "Bed")
+        self.assertGreaterEqual(evidence["target_move_distance_xz_meters"], 0.5)
+        self.assertTrue(evidence["old_view_invisible"])
+        self.assertTrue(evidence["three_sample_stability_passed"])
+        self.assertTrue(evidence["expected_support_relation_passed"])
+        self.assertEqual(evidence["post_placement_non_support_overlap_count"], 0)
+        self.assertTrue(evidence["common_fallback_passed"])
+        self.assertEqual(evidence["fallback_discovery_step"], 94)
+        self.assertEqual(evidence["fallback_pickup_step"], 95)
+        self.assertEqual(evidence["fallback_failed_action_count"], 0)
+        self.assertTrue(evidence["fresh_reset_replay_passed"])
+        self.assertTrue(evidence["reset_restoration_passed"])
+        self.assertEqual(evidence["qualified_r1_scene_count_after_run"], 5)
+        self.assertEqual(evidence["coverage_route_digest"], baseline["route_digest"])
+        for key in (
+            "query_state_reused", "force_action_used", "book_rotation_action_used",
+            "memory_agents_run", "images_saved", "later_scenes_started",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+
     def test_support_policy_v3_is_predeclared_semantic_and_not_census_selected(self) -> None:
         root = Path(__file__).resolve().parents[1]
         policy = json.loads(

@@ -1614,6 +1614,18 @@ machine-gated FloorPlan306 native contract are prepared; native remains blocked
 until offline tests, commit, and push.
 Gate/result tests passed 49/49 and the complete offline regression passed 205/205.
 
+### FloorPlan306 native qualification-v7 pass
+
+After the baseline-gated contract was pushed as `d475fee`, candidate 1 (Bed)
+fully qualified. Book movement was 3.492891 m; invisibility, stability, expected
+support, and zero-overlap gates passed. Fallback rediscovered at action 94 and
+picked up at 95 with no failed action. Replay and reset restoration passed and
+the opaque anchor was frozen. No memory, image, or later scene ran. R1 is 5/6;
+FloorPlan307 is next under construction plus baseline execution gates. Public
+evidence is `docs/evidence/phase5_floorplan306_native_qualification_v7.json`.
+Result-focused tests passed 50/50 and the complete offline regression passed
+206/206.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

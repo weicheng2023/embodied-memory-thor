@@ -580,3 +580,12 @@ precondition and reset restoration passed. No support query, placement,
 planner, recovery, memory, or image ran. A baseline-gated native contract is
 prepared; test, commit, and push are required before placement.
 Gate/result tests pass 49/49 and the complete offline regression passes 205/205.
+
+After `d475fee` was pushed, FloorPlan306 native qualification passed candidate
+1 (Bed). The Book moved 3.492891 m and passed old-view invisibility, stability,
+support, and overlap gates. Fallback rediscovered at action 94 and picked up at
+95 with zero failed actions; replay and restoration passed. One anchor was
+frozen, with no memory/image/later-scene run. R1 is now 5/6; FloorPlan307 is the
+next gated scene.
+Result-focused tests pass 50/50 and the complete offline regression passes
+206/206.
