@@ -1410,6 +1410,25 @@ and is committed and pushed.
 Route-contract tests passed 35/35 and the complete offline regression passed
 191/191.
 
+### FloorPlan303 native qualification-v7 result
+
+Only after the committed route-v4.1 pass, the clean `9a79fc6` native run began.
+Its first balanced candidate, a Bed candidate, passed every gate. The same Book
+moved 1.241027 m, became invisible from the old viewpoint, stayed stable for
+three samples, established the expected support relation, and introduced no
+non-support overlap. The common target-independent fallback rediscovered the
+Book at action 68 and picked it up at action 69 with no failed action.
+
+Fresh-reset placement replay and reset restoration passed, so one opaque
+FloorPlan303 anchor was frozen. No memory agent, image, force action, Book
+rotation, formal episode, or FloorPlan304 run occurred. R1 therefore has three
+qualified scenes: FloorPlan202, FloorPlan302, and FloorPlan303; FloorPlan301
+remains a retained clean failure. This is anchor/fallback evidence, not memory
+improvement evidence. Public evidence is
+`docs/evidence/phase5_floorplan303_native_qualification_v7.json`.
+Result-focused tests passed 36/36 and the complete offline regression passed
+192/192.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

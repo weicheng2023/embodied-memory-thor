@@ -454,3 +454,14 @@ qualification remains blocked until this result passes offline tests and is
 committed and pushed.
 Route-contract tests pass 35/35 and the complete offline regression passes
 191/191.
+
+FloorPlan303 qualification v7 then fully passed on clean `9a79fc6` at the
+first balanced Bed candidate. The same Book moved 1.241027 m, became invisible
+from the old view, stayed stable for three samples, retained the expected
+support relation, and had zero non-support overlaps. Common fallback rediscovered
+at step 68 and picked up at step 69 with zero failed actions. Fresh-reset replay
+and reset restoration passed, freezing one opaque anchor. No memory agent,
+image, force action, Book rotation, formal episode, or later scene ran. R1 now
+has three qualified scenes: FloorPlan202, FloorPlan302, and FloorPlan303.
+Result-focused tests pass 36/36 and the complete offline regression passes
+192/192.
