@@ -1,0 +1,26 @@
+{
+  "contract_version": "phase5-r1-anchor-candidates-absolute-v4-floorplan306-v1",
+  "selection_rule": "FloorPlan306 is the next declared retained scene after the audited FloorPlan305 qualification pass",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "horizon_policy_version": "phase5-absolute-horizon-tolerance-v4.1",
+  "route_action_limit": 240,
+  "absolute_scan_horizon_degrees": 0.0,
+  "candidates": [
+    {
+      "candidate_order": 7,
+      "scene": "FloorPlan306",
+      "configuration_id": "FloorPlan306_R1_fixed_start_001",
+      "anchor_id": "FloorPlan306_R1_stale_Book_anchor_001",
+      "start_pose_digest": "3efde29325dbe38c6e4710cf8fff57ef36baccf3b6da99b3bb6e17f3a0ec5b72",
+      "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+      "horizon_policy_version": "phase5-absolute-horizon-tolerance-v4.1",
+      "coverage_scan_horizon_degrees": 0.0,
+      "absolute_scan_horizon_degrees": 0.0,
+      "coverage_route_digest": "31b9037b881994ab80dc97f732e6b37ae95a330629d112831f78781fd5d3207f",
+      "coverage_route_action_count": 150,
+      "baseline_route_execution_required": true,
+      "baseline_route_execution_evidence": "docs/evidence/phase5_floorplan306_baseline_route_execution_v1.json"
+    }
+  ],
+  "privacy": "only pose/route digests, counts, and coordinate-free execution outcomes are public; exact poses, object IDs, reachable positions, and anchor coordinates remain evaluator-only"
+}

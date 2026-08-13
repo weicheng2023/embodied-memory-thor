@@ -571,3 +571,12 @@ later scene ran. R1 now has 4/6 qualified scenes; FloorPlan306 is next under the
 route-construction/baseline-execution gate.
 Result-focused tests pass 48/48 and the complete offline regression passes
 204/204.
+
+On clean `344e70a`, FloorPlan306 passed route construction at 150/240 actions
+with digest
+`31b9037b881994ab80dc97f732e6b37ae95a330629d112831f78781fd5d3207f`,
+then executed all 150/150 baseline actions after four Pass controls. The
+precondition and reset restoration passed. No support query, placement,
+planner, recovery, memory, or image ran. A baseline-gated native contract is
+prepared; test, commit, and push are required before placement.
+Gate/result tests pass 49/49 and the complete offline regression passes 205/205.

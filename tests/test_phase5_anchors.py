@@ -576,6 +576,45 @@ class Phase5AnchorTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan306_route_and_baseline_pass_gate_native_contract(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        module = self._qualifier_module()
+        contract = module._load_candidate_contract(
+            root
+            / "configs"
+            / "phase5_r1_anchor_candidates_absolute_v4_floorplan306.json",
+            "FloorPlan306",
+        )
+        route = json.loads(
+            (
+                root / "docs" / "evidence"
+                / "phase5_floorplan306_absolute_route_v4_precommit.json"
+            ).read_text(encoding="utf-8")
+        )
+        baseline = json.loads(
+            (
+                root / "docs" / "evidence"
+                / "phase5_floorplan306_baseline_route_execution_v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(route["passed"])
+        self.assertTrue(baseline["passed"])
+        self.assertEqual(route["route_action_count"], 150)
+        self.assertEqual(baseline["route_actions_attempted"], 150)
+        self.assertTrue(baseline["route_completed"])
+        self.assertTrue(baseline["reset_restoration_passed"])
+        self.assertEqual(contract["coverage_route_digest"], route["route_digest"])
+        self.assertEqual(contract["coverage_route_digest"], baseline["route_digest"])
+        self.assertEqual(contract["coverage_route_action_count"], 150)
+        module._validate_baseline_execution_gate(contract, scene="FloorPlan306")
+        for evidence in (route, baseline):
+            serialized = json.dumps(evidence, sort_keys=True)
+            for forbidden in (
+                "objectId", "support_id", "selected_pose", "target_point",
+                '"x"', '"y"', '"z"',
+            ):
+                self.assertNotIn(forbidden, serialized)
+
     def test_support_policy_v3_is_predeclared_semantic_and_not_census_selected(self) -> None:
         root = Path(__file__).resolve().parents[1]
         policy = json.loads(

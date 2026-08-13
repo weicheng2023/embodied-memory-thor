@@ -1602,6 +1602,18 @@ pass construction plus baseline execution before native work.
 Result-focused tests passed 48/48 and the complete offline regression passed
 204/204.
 
+### FloorPlan306 route construction and baseline execution pass
+
+On clean `344e70a`, the absolute-horizon route constructed at 150/240 actions
+with digest
+`31b9037b881994ab80dc97f732e6b37ae95a330629d112831f78781fd5d3207f`.
+The fresh-reset baseline then passed its four controls, executed all 150 route
+actions, and passed reset restoration. It used no support query, placement,
+planner, recovery, memory, or image. Public route/baseline evidence and the
+machine-gated FloorPlan306 native contract are prepared; native remains blocked
+until offline tests, commit, and push.
+Gate/result tests passed 49/49 and the complete offline regression passed 205/205.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
