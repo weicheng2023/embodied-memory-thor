@@ -1,6 +1,8 @@
 """Phase 5 comparison and qualification infrastructure."""
 
 from .anchors import (
+    ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES,
+    ABSOLUTE_HORIZON_POLICY_VERSION,
     ANCHOR_GEOMETRY_VERSION,
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
@@ -11,6 +13,7 @@ from .anchors import (
     SUPPORT_POLICY_VERSION,
     build_geometry_candidate_plan,
     build_native_first_candidate_plan,
+    normalize_absolute_horizon_degrees,
     build_type_balanced_native_candidate_plan,
     build_target_independent_coverage_route,
     public_anchor_reference,
@@ -40,6 +43,8 @@ from .target_lock import (
 )
 
 __all__ = [
+    "ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES",
+    "ABSOLUTE_HORIZON_POLICY_VERSION",
     "ANCHOR_GEOMETRY_VERSION",
     "ANCHOR_QUALIFICATION_VERSION",
     "ANCHOR_REGISTRY_VERSION",
@@ -63,6 +68,7 @@ __all__ = [
     "SUPPORT_POLICY_VERSION",
     "build_geometry_candidate_plan",
     "build_native_first_candidate_plan",
+    "normalize_absolute_horizon_degrees",
     "build_type_balanced_native_candidate_plan",
     "build_target_independent_coverage_route",
     "build_formal_manifest",

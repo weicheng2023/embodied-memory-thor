@@ -432,3 +432,14 @@ precommitted bounded normalization/tolerance fix and offline test of the
 observed value; FloorPlan303 route-only must then restart from the beginning.
 Stop-evidence tests pass 31/31 and the complete offline regression passes
 187/187.
+
+Route-v4.1 horizon tolerance is now precommitted but not yet real-run. A value
+is normalized to the nearest 30-degree action grid only within 0.001 degrees;
+the observed `60.00001525878906` becomes 60, while 60.5 and 61 remain invalid.
+Exact-grid inputs preserve the v4 serialized route and therefore the established
+FloorPlan202 and FloorPlan302 digests. A route that actually needs normalization
+is marked v4.1 and records the bounded policy. Planner input schema and the
+target/anchor/support/coordinate boundary are unchanged. FloorPlan303 native
+qualification remains prohibited until its clean route-only rerun passes.
+Focused route-v4.1 tests pass 34/34 and the complete offline regression passes
+190/190. The real FloorPlan303 route-only rerun has not started.

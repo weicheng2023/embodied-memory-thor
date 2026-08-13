@@ -5,13 +5,17 @@ from __future__ import annotations
 import unittest
 import json
 import importlib.util
+import inspect
 import tempfile
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping
 from unittest.mock import Mock, patch
 
+from embodied_memory_thor.phase4.contracts import PlannerRequest, audit_planner_request
 from embodied_memory_thor.phase5.anchors import (
+    ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES,
+    ABSOLUTE_HORIZON_POLICY_VERSION,
     ANCHOR_GEOMETRY_VERSION,
     ANCHOR_QUALIFICATION_VERSION,
     ANCHOR_REGISTRY_VERSION,
@@ -25,6 +29,7 @@ from embodied_memory_thor.phase5.anchors import (
     build_native_first_candidate_plan,
     build_type_balanced_native_candidate_plan,
     build_target_independent_coverage_route,
+    normalize_absolute_horizon_degrees,
     public_anchor_reference,
     stable_digest,
 )
@@ -792,6 +797,179 @@ class Phase5AnchorTests(unittest.TestCase):
                 scan_horizon_degrees=0.0,
             )
 
+    def test_route_v4_1_normalizes_real_thor_boundary_drift_only(self) -> None:
+        observed = 60.00001525878906
+        self.assertEqual(
+            normalize_absolute_horizon_degrees(observed),
+            60.0,
+        )
+        self.assertEqual(
+            ABSOLUTE_HORIZON_POLICY_VERSION,
+            "phase5-absolute-horizon-tolerance-v4.1",
+        )
+        self.assertEqual(ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES, 0.001)
+        setup, restore = build_absolute_horizon_alignment_actions(
+            start_horizon_degrees=observed,
+            scan_horizon_degrees=0.0,
+        )
+        self.assertEqual(setup, ["LookUp", "LookUp"])
+        self.assertEqual(restore, ["LookDown", "LookDown"])
+        for invalid in (60.5, 61.0):
+            with self.subTest(invalid=invalid):
+                with self.assertRaisesRegex(ValueError, "supported range"):
+                    normalize_absolute_horizon_degrees(invalid)
+
+    def test_route_v4_1_preserves_exact_grid_digests_and_private_input_boundary(self) -> None:
+        reachable = [
+            {"x": 0.0, "y": 0.9, "z": 0.0},
+            {"x": 0.25, "y": 0.9, "z": 0.0},
+            {"x": 0.0, "y": 0.9, "z": 0.25},
+            {"x": 0.25, "y": 0.9, "z": 0.25},
+        ]
+        expected = {
+            -30.0: "46ec17fb52f6b4ae1f507659de5cc6e69725784b9d364b9fa7da3caa133d6baa",
+            0.0: "678a308131abc031977f12490776d784bcfb73ac34220f095fc0d17ae2d491b9",
+        }
+        for horizon, expected_digest in expected.items():
+            with self.subTest(horizon=horizon):
+                route = build_target_independent_coverage_route(
+                    reachable_positions=reachable,
+                    start_position=reachable[0],
+                    start_yaw=90,
+                    scan_spacing_steps=1,
+                    start_camera_horizon_degrees=horizon,
+                    absolute_scan_horizon_degrees=0.0,
+                )
+                self.assertEqual(
+                    route["route_version"],
+                    "phase5-target-independent-absolute-horizon-v4",
+                )
+                self.assertEqual(stable_digest(route), expected_digest)
+                self.assertFalse(route["target_or_anchor_input_used"])
+                self.assertNotIn("horizon_normalization_applied", route)
+
+        normalized = build_target_independent_coverage_route(
+            reachable_positions=reachable,
+            start_position=reachable[0],
+            start_yaw=90,
+            scan_spacing_steps=1,
+            start_camera_horizon_degrees=60.00001525878906,
+            absolute_scan_horizon_degrees=0.0,
+        )
+        self.assertEqual(
+            normalized["route_version"],
+            "phase5-target-independent-absolute-horizon-v4.1",
+        )
+        self.assertEqual(normalized["initial_camera_horizon_degrees"], 60.0)
+        self.assertTrue(normalized["horizon_normalization_applied"])
+        self.assertFalse(normalized["target_or_anchor_input_used"])
+
+        parameter_names = set(
+            inspect.signature(build_target_independent_coverage_route).parameters
+        )
+        self.assertTrue(
+            {"target", "anchor", "support", "candidate", "target_point"}.isdisjoint(
+                parameter_names
+            )
+        )
+
+        root = Path(__file__).resolve().parents[1]
+        public_digests = {
+            "FloorPlan202": "cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae",
+            "FloorPlan302": "8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a",
+        }
+        for scene, expected_digest in public_digests.items():
+            evidence_path = (
+                root
+                / "docs"
+                / "evidence"
+                / (
+                    "phase5_floorplan202_absolute_route_v4_anchor_qualification.json"
+                    if scene == "FloorPlan202"
+                    else "phase5_floorplan302_absolute_route_v4_precommit.json"
+                )
+            )
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+            digest_key = (
+                "coverage_route_digest" if scene == "FloorPlan202" else "route_digest"
+            )
+            self.assertEqual(evidence[digest_key], expected_digest)
+
+        request = PlannerRequest(
+            task_name="thor_book_reacquire_k2",
+            instruction="Reacquire and pick up the Book.",
+            task_stage="reacquire_book",
+            step=1,
+            max_steps=240,
+            observation={
+                "scene_name": "FloorPlanFixture",
+                "agent": {
+                    "position": {"x": 0.0, "y": 0.9, "z": 0.0},
+                    "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
+                    "cameraHorizon": 60.0,
+                },
+                "objects": [],
+                "inventory": [],
+                "last_action": "",
+                "last_action_success": True,
+                "last_action_error": "",
+            },
+            allowed_actions=("LookUp", "LookDown", "RotateRight"),
+            shared_search={
+                "action": {"action": "LookUp"},
+                "action_index": 0,
+                "action_sequence_digest": "a" * 64,
+                "phase": "coverage",
+                "policy": "frozen_target_independent_route",
+                "route_id": "route-v4-1-fixture",
+            },
+        )
+        audit = audit_planner_request(request)
+        self.assertTrue(audit.passed, audit.violations)
+
+        def keys(value: Any) -> set[str]:
+            if isinstance(value, Mapping):
+                return set(map(str, value)) | set().union(
+                    *(keys(item) for item in value.values())
+                )
+            if isinstance(value, (list, tuple)):
+                return set().union(*(keys(item) for item in value))
+            return set()
+
+        planner_keys = keys(request.snapshot(include_digest=False))
+        self.assertTrue(
+            {
+                "target_point",
+                "target_position",
+                "anchor_id",
+                "support_id",
+                "candidate_point",
+                "reachable_positions",
+                "route_coordinates",
+            }.isdisjoint(planner_keys)
+        )
+
+    def test_route_v4_1_protocol_freezes_tolerance_and_compatibility_claims(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        protocol = json.loads(
+            (
+                root / "configs" / "phase5_route_v4_1_horizon_tolerance.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            protocol["policy_version"], ABSOLUTE_HORIZON_POLICY_VERSION
+        )
+        self.assertEqual(
+            protocol["tolerance_degrees"],
+            ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES,
+        )
+        self.assertEqual(protocol["accepted_observed_value_degrees"], 60.00001525878906)
+        self.assertEqual(protocol["normalized_value_degrees"], 60.0)
+        self.assertEqual(protocol["must_reject_values_degrees"], [60.5, 61.0])
+        self.assertTrue(protocol["exact_grid_route_serialization_unchanged"])
+        self.assertFalse(protocol["planner_input_schema_changed"])
+        self.assertFalse(protocol["target_anchor_support_or_coordinate_input_added"])
+        self.assertFalse(protocol["native_qualification_allowed_before_route_pass"])
     @staticmethod
     def _qualifier_module():
         root = Path(__file__).resolve().parents[1]

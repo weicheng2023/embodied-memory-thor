@@ -1364,6 +1364,33 @@ evidence is
 Stop-evidence tests passed 31/31 and the complete offline regression passed
 187/187.
 
+### Route-v4.1 bounded horizon-tolerance precommit
+
+The fix is restricted to numerical normalization at the absolute-horizon route
+builder boundary. A reported horizon may snap to its nearest 30-degree ordinary
+action grid point only when the absolute deviation is at most 0.001 degrees.
+The real FloorPlan303 value `60.00001525878906` therefore normalizes to 60.
+Values 60.5 and 61 remain beyond tolerance/range and must fail. Supported range
+and the bounded LookUp/LookDown action count do not change.
+
+For exact-grid starts, route serialization remains byte-for-byte compatible:
+FloorPlan202 retains digest
+`cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae`
+and FloorPlan302 retains
+`8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a`.
+Only a route that actually applies normalization is labeled absolute-horizon
+v4.1 and records the policy/tolerance. Route inputs remain reachable positions,
+start pose, and fixed scan settings; planner requests receive only the existing
+opaque action directive and never target, anchor, support, or coordinate data.
+
+The executable policy is
+`configs/phase5_route_v4_1_horizon_tolerance.json`. It requires focused tests,
+full regression, clean commit, and push before restarting FloorPlan303
+route-only. Native qualification remains blocked until that route-only gate
+passes.
+Focused route-v4.1 tests passed 34/34 and the complete offline regression
+passed 190/190. The real FloorPlan303 route-only rerun has not started.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

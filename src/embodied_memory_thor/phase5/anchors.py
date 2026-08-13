@@ -17,6 +17,8 @@ NATIVE_FIRST_CANDIDATE_POLICY_VERSION = "phase5-native-first-advisory-ranking-v1
 NATIVE_CANDIDATE_POLICY_VERSION = (
     "phase5-native-first-type-balanced-ranking-v2"
 )
+ABSOLUTE_HORIZON_POLICY_VERSION = "phase5-absolute-horizon-tolerance-v4.1"
+ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES = 0.001
 BOOK_SUPPORT_TYPE_ORDER = (
     "Bed",
     "CoffeeTable",
@@ -445,12 +447,25 @@ def build_target_independent_coverage_route(
         raise ValueError("absolute and relative horizon policies are mutually exclusive")
     horizon_setup: list[str] = []
     horizon_restore: list[str] = []
+    normalized_start_horizon: float | None = None
+    normalized_scan_horizon: float | None = None
+    horizon_normalization_applied = False
     if absolute_scan_horizon_degrees is not None:
         if start_camera_horizon_degrees is None:
             raise ValueError("absolute horizon policy requires the initial horizon")
+        normalized_start_horizon = normalize_absolute_horizon_degrees(
+            start_camera_horizon_degrees
+        )
+        normalized_scan_horizon = normalize_absolute_horizon_degrees(
+            absolute_scan_horizon_degrees
+        )
+        horizon_normalization_applied = (
+            normalized_start_horizon != float(start_camera_horizon_degrees)
+            or normalized_scan_horizon != float(absolute_scan_horizon_degrees)
+        )
         horizon_setup, horizon_restore = build_absolute_horizon_alignment_actions(
-            start_horizon_degrees=start_camera_horizon_degrees,
-            scan_horizon_degrees=absolute_scan_horizon_degrees,
+            start_horizon_degrees=normalized_start_horizon,
+            scan_horizon_degrees=normalized_scan_horizon,
         )
     nodes: dict[tuple[int, int], dict[str, float]] = {}
     for raw in reachable_positions:
@@ -623,7 +638,10 @@ def build_target_independent_coverage_route(
         )
     route = {
         "route_version": (
-            "phase5-target-independent-absolute-horizon-v4"
+            "phase5-target-independent-absolute-horizon-v4.1"
+            if absolute_scan_horizon_degrees is not None
+            and horizon_normalization_applied
+            else "phase5-target-independent-absolute-horizon-v4"
             if absolute_scan_horizon_degrees is not None
             else "phase5-target-independent-downward-scan-v3"
             if scan_horizon_degrees == 30.0
@@ -649,15 +667,20 @@ def build_target_independent_coverage_route(
         "actions": actions,
     }
     if absolute_scan_horizon_degrees is not None:
-        route["initial_camera_horizon_degrees"] = float(
-            start_camera_horizon_degrees
-        )
-        route["absolute_scan_horizon_degrees"] = float(
-            absolute_scan_horizon_degrees
-        )
+        route["initial_camera_horizon_degrees"] = normalized_start_horizon
+        route["absolute_scan_horizon_degrees"] = normalized_scan_horizon
         route["horizon_alignment_action_count"] = len(horizon_setup)
         route["horizon_restoration_action_count"] = len(horizon_restore)
         route["camera_horizon_restored_at_route_end"] = True
+        if horizon_normalization_applied:
+            route["horizon_policy_version"] = ABSOLUTE_HORIZON_POLICY_VERSION
+            route["horizon_float_tolerance_degrees"] = (
+                ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES
+            )
+            route["initial_camera_horizon_observed_degrees"] = float(
+                start_camera_horizon_degrees
+            )
+            route["horizon_normalization_applied"] = True
     elif scan_horizon_degrees == 30.0:
         route["scan_horizon_degrees"] = 30.0
         route["camera_horizon_restored_at_route_end"] = True
@@ -672,16 +695,15 @@ def build_absolute_horizon_alignment_actions(
 ) -> tuple[list[str], list[str]]:
     """Return bounded ordinary actions to reach and restore one absolute horizon."""
 
-    values = (start_horizon_degrees, scan_horizon_degrees, step_degrees)
-    if not all(math.isfinite(float(value)) for value in values):
-        raise ValueError("camera horizons must be finite")
     if step_degrees <= 0:
         raise ValueError("camera horizon step must be positive")
-    if start_horizon_degrees < -30.0 or start_horizon_degrees > 60.0:
-        raise ValueError("initial camera horizon is outside the supported range")
-    if scan_horizon_degrees < -30.0 or scan_horizon_degrees > 60.0:
-        raise ValueError("absolute scan horizon is outside the supported range")
-    raw_steps = (scan_horizon_degrees - start_horizon_degrees) / step_degrees
+    start_horizon = normalize_absolute_horizon_degrees(
+        start_horizon_degrees, step_degrees=step_degrees, label="initial camera"
+    )
+    scan_horizon = normalize_absolute_horizon_degrees(
+        scan_horizon_degrees, step_degrees=step_degrees, label="absolute scan"
+    )
+    raw_steps = (scan_horizon - start_horizon) / step_degrees
     rounded_steps = round(raw_steps)
     if not math.isclose(raw_steps, rounded_steps, abs_tol=1e-9):
         raise ValueError("camera horizon difference must match the action step")
@@ -694,6 +716,36 @@ def build_absolute_horizon_alignment_actions(
     inverse = {"LookDown": "LookUp", "LookUp": "LookDown"}
     restore = [inverse[action] for action in reversed(setup)]
     return setup, restore
+
+
+def normalize_absolute_horizon_degrees(
+    value: float,
+    *,
+    step_degrees: float = 30.0,
+    tolerance_degrees: float = ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES,
+    label: str = "camera",
+) -> float:
+    """Normalize tiny simulator drift to the declared bounded action grid."""
+
+    numeric = float(value)
+    if not math.isfinite(numeric):
+        raise ValueError("camera horizons must be finite")
+    if (
+        not math.isfinite(float(step_degrees))
+        or not math.isfinite(float(tolerance_degrees))
+        or step_degrees <= 0
+        or tolerance_degrees < 0
+    ):
+        raise ValueError("invalid camera horizon normalization parameters")
+    nearest = round(numeric / step_degrees) * step_degrees
+    if abs(numeric - nearest) <= tolerance_degrees:
+        numeric = float(nearest)
+    if numeric < -30.0 or numeric > 60.0:
+        raise ValueError(f"{label} horizon is outside the supported range")
+    raw_steps = numeric / step_degrees
+    if not math.isclose(raw_steps, round(raw_steps), abs_tol=1e-9):
+        raise ValueError("camera horizon difference must match the action step")
+    return numeric
 
 
 def public_anchor_reference(
