@@ -427,6 +427,7 @@ def _fallback_pickup(
     *,
     route: Mapping[str, Any],
     cup_id: str,
+    max_fallback_actions: int = MAX_FALLBACK_ACTIONS,
 ) -> dict[str, Any]:
     route_actions = _actions(route)
     route_cursor = 0
@@ -436,7 +437,9 @@ def _fallback_pickup(
     target_lock_action_count = 0
     discovery_step: int | None = None
     planner = ThorBookReacquirePlanner()
-    while len(action_log) < MAX_FALLBACK_ACTIONS + MAX_TARGET_LOCK_ACTIONS:
+    if max_fallback_actions <= 0:
+        raise ValueError("fallback action limit must be positive")
+    while len(action_log) < max_fallback_actions + MAX_TARGET_LOCK_ACTIONS:
         observation = build_planner_observation(env.get_observation())
         directive = target_lock.next_directive(
             observation,
@@ -458,7 +461,7 @@ def _fallback_pickup(
                 instruction="After the CoffeeMachine subgoal, reacquire and pick up Cup.",
                 task_stage="pickup_cup",
                 step=len(action_log) + 1,
-                max_steps=MAX_FALLBACK_ACTIONS + MAX_TARGET_LOCK_ACTIONS,
+                max_steps=max_fallback_actions + MAX_TARGET_LOCK_ACTIONS,
                 observation=observation,
                 allowed_actions=THOR_CUP_COFFEE_ACTIONS,
                 retrieved_memory=(),
@@ -561,6 +564,7 @@ def _trial(
     start_pose: Mapping[str, Any],
     subgoal_route: Mapping[str, Any],
     fallback_route: Mapping[str, Any],
+    max_fallback_actions: int = MAX_FALLBACK_ACTIONS,
 ) -> dict[str, Any]:
     _reset(env, scene)
     teleport = env.step({"action": "TeleportFull", **dict(start_pose)})
@@ -631,7 +635,12 @@ def _trial(
             "subgoal_postconditions": subgoal_postconditions,
             "toggle": toggle_record,
         }
-    fallback = _fallback_pickup(env, route=fallback_route, cup_id=cup_id)
+    fallback = _fallback_pickup(
+        env,
+        route=fallback_route,
+        cup_id=cup_id,
+        max_fallback_actions=max_fallback_actions,
+    )
     return {
         "passed": bool(fallback["passed"]),
         "reason": "" if fallback["passed"] else fallback["reason"],

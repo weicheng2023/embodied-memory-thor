@@ -2048,3 +2048,39 @@ capable baseline's spatial/visual coverage generally; it cannot use Cup
 coordinates or a FloorPlan5-specific route. FloorPlan6 and all memory variants
 remain blocked. Public evidence is
 `docs/evidence/phase5_floorplan5_r2_paired_horizon_diagnostic_v1.json`.
+
+#### R2 exhaustive visual fallback v1 precommit
+
+FloorPlan5 is now frozen as `visual_coverage_failure`. The prior route's
+geometric radius claim is not reused as a visual-coverage claim. Its action
+sequence and the qualified FloorPlan3/FloorPlan4 evidence remain immutable.
+
+The successor `phase5-target-independent-exhaustive-visual-v1` is a separate
+general fallback. It is built only from a fresh reachable-position graph and
+the post-subgoal agent pose. It takes no Cup ID or coordinates, anchor/support
+information, task outcome, memory record, memory provider, or variant label.
+A deterministic depth-first traversal visits every reachable grid node and
+returns over the same tree edges. On the first visit to every node it performs
+one four-cardinal scan at absolute 0 degrees and one at absolute +30 degrees,
+then restores the entry camera horizon at route end. Route construction is
+fail-closed for a disconnected graph or if its conservative worst-case bound
+exceeds the pre-registered 2048-action fallback limit.
+
+When admitted to production, the route is built/frozen once per configuration
+and supplied unchanged to no-memory, K=2, and object-memory. The existing
+memory providers are not modified. A memory-capable agent may still reacquire
+earlier, but reaching shared fallback exposes the same action sequence and
+target-lock policy to every variant. Visible Cup observations may trigger the
+existing common target lock; evaluator IDs remain limited to setup and success
+checking and are never route-construction inputs.
+
+Before any real execution, offline gates verify the target-free function
+signature and serialized route, all-variant sharing contract, 2048-action cap,
+unchanged memory-provider hashes, and unchanged FloorPlan3/FloorPlan4 evidence
+hashes. The first real gate is exactly one excluded diagnostic using frozen
+FloorPlan5 candidate 2, without memory variants, images, or later scenes. A
+fresh reset isolates `GetReachablePositions` route construction from the task
+trial. Only clean target rediscovery and pickup plus reset restoration permits
+a separately versioned FloorPlan5 qualification retry. Route-action failure,
+exhaustion without rediscovery, privacy failure, or frozen-hash failure stops
+the protocol without qualification or FloorPlan6.

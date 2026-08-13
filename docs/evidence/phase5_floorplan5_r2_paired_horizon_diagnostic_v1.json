@@ -57,6 +57,8 @@
     "coffee_machine_off_after_reset": true
   },
   "memory_agents_run": false,
+  "failure_classification": "visual_coverage_failure",
+  "failure_classification_frozen": true,
   "coordinates_exposed": false,
   "object_ids_exposed": false,
   "images_saved": false,

@@ -24,11 +24,14 @@ from embodied_memory_thor.phase5.anchors import (
     NATIVE_FIRST_CANDIDATE_POLICY_VERSION,
     NATIVE_CANDIDATE_POLICY_VERSION,
     SUPPORT_POLICY_VERSION,
+    VISUAL_FALLBACK_ACTION_LIMIT,
+    VISUAL_FALLBACK_POLICY_VERSION,
     build_absolute_horizon_alignment_actions,
     build_geometry_candidate_plan,
     build_native_first_candidate_plan,
     build_type_balanced_native_candidate_plan,
     build_target_independent_coverage_route,
+    build_target_independent_visual_fallback_route,
     normalize_absolute_horizon_degrees,
     public_anchor_reference,
     stable_digest,
@@ -2462,6 +2465,74 @@ class Phase5AnchorTests(unittest.TestCase):
                 start_position=reachable[0],
                 start_yaw=90,
                 scan_horizon_degrees=15.0,
+            )
+
+    def test_visual_fallback_visits_and_scans_every_node_without_target_input(self) -> None:
+        reachable = [
+            {"x": 0.0, "y": 0.9, "z": 0.0},
+            {"x": 0.25, "y": 0.9, "z": 0.0},
+            {"x": 0.0, "y": 0.9, "z": 0.25},
+            {"x": 0.25, "y": 0.9, "z": 0.25},
+        ]
+        route = build_target_independent_visual_fallback_route(
+            reachable_positions=reachable,
+            start_position=reachable[0],
+            start_yaw=90.0,
+            start_camera_horizon_degrees=30.0,
+        )
+        self.assertEqual(route["route_version"], VISUAL_FALLBACK_POLICY_VERSION)
+        self.assertEqual(route["action_limit"], VISUAL_FALLBACK_ACTION_LIMIT)
+        self.assertEqual(route["reachable_node_count"], 4)
+        self.assertEqual(route["visited_node_count"], 4)
+        self.assertEqual(route["scan_node_count"], 4)
+        self.assertEqual(route["scan_horizons_degrees"], [0.0, 30.0])
+        self.assertTrue(route["every_reachable_node_visited"])
+        self.assertTrue(route["every_reachable_node_scanned_at_both_horizons"])
+        self.assertLessEqual(len(route["actions"]), route["worst_case_action_bound"])
+        self.assertLessEqual(route["worst_case_action_bound"], route["action_limit"])
+        for key in (
+            "target_or_anchor_input_used",
+            "qualification_goal_input_used",
+            "memory_variant_input_used",
+        ):
+            self.assertFalse(route[key])
+        serialized = json.dumps(route, sort_keys=True)
+        for forbidden in ("Cup", "objectId", "target_position", '"x"', '"y"', '"z"'):
+            self.assertNotIn(forbidden, serialized)
+
+    def test_visual_fallback_signature_and_action_cap_are_fail_closed(self) -> None:
+        parameters = inspect.signature(
+            build_target_independent_visual_fallback_route
+        ).parameters
+        for forbidden in (
+            "cup", "cup_id", "target", "target_position", "object_id",
+            "anchor", "support", "memory", "variant",
+        ):
+            self.assertNotIn(forbidden, parameters)
+        reachable = [
+            {"x": 0.0, "y": 0.9, "z": 0.0},
+            {"x": 0.25, "y": 0.9, "z": 0.0},
+        ]
+        with self.assertRaisesRegex(ValueError, "action bound exceeds limit"):
+            build_target_independent_visual_fallback_route(
+                reachable_positions=reachable,
+                start_position=reachable[0],
+                start_yaw=0.0,
+                start_camera_horizon_degrees=0.0,
+                action_limit=1,
+            )
+
+    def test_visual_fallback_rejects_disconnected_graph(self) -> None:
+        reachable = [
+            {"x": 0.0, "y": 0.9, "z": 0.0},
+            {"x": 2.0, "y": 0.9, "z": 2.0},
+        ]
+        with self.assertRaisesRegex(ValueError, "disconnected"):
+            build_target_independent_visual_fallback_route(
+                reachable_positions=reachable,
+                start_position=reachable[0],
+                start_yaw=0.0,
+                start_camera_horizon_degrees=0.0,
             )
 
     def test_absolute_horizon_routes_share_zero_scan_view_with_bounded_overhead(self) -> None:

@@ -19,6 +19,8 @@ NATIVE_CANDIDATE_POLICY_VERSION = (
 )
 ABSOLUTE_HORIZON_POLICY_VERSION = "phase5-absolute-horizon-tolerance-v4.1"
 ABSOLUTE_HORIZON_FLOAT_TOLERANCE_DEGREES = 0.001
+VISUAL_FALLBACK_POLICY_VERSION = "phase5-target-independent-exhaustive-visual-v1"
+VISUAL_FALLBACK_ACTION_LIMIT = 2048
 BOOK_SUPPORT_TYPE_ORDER = (
     "Bed",
     "CoffeeTable",
@@ -684,6 +686,187 @@ def build_target_independent_coverage_route(
     elif scan_horizon_degrees == 30.0:
         route["scan_horizon_degrees"] = 30.0
         route["camera_horizon_restored_at_route_end"] = True
+    return route
+
+
+def build_target_independent_visual_fallback_route(
+    *,
+    reachable_positions: Sequence[Mapping[str, Any]],
+    start_position: Mapping[str, Any],
+    start_yaw: float,
+    start_camera_horizon_degrees: float,
+    grid_size: float = 0.25,
+    action_limit: int = VISUAL_FALLBACK_ACTION_LIMIT,
+) -> dict[str, Any]:
+    """Visit and scan every reachable node at 0 and +30 degrees.
+
+    The signature intentionally has no target ID, target position, memory, or
+    task-outcome input. A deterministic depth-first traversal visits every node
+    in the reachable graph. Each first visit performs a full cardinal scan at
+    both absolute horizons before traversal continues.
+    """
+
+    if grid_size <= 0 or action_limit <= 0 or not reachable_positions:
+        raise ValueError("visual fallback requires positions and positive limits")
+    nodes: dict[tuple[int, int], dict[str, float]] = {}
+    for raw in reachable_positions:
+        point = _xyz(raw)
+        if point is None:
+            continue
+        key = (round(point["x"] / grid_size), round(point["z"] / grid_size))
+        nodes.setdefault(key, point)
+    start = _xyz(start_position)
+    if start is None or not nodes:
+        raise ValueError("visual fallback has no valid start or nodes")
+    start_key = min(nodes, key=lambda key: _xz_distance(start, nodes[key]))
+    direction_order = (
+        ((0, 1), 0.0, "north"),
+        ((1, 0), 90.0, "east"),
+        ((0, -1), 180.0, "south"),
+        ((-1, 0), 270.0, "west"),
+    )
+
+    def neighbors(node: tuple[int, int]) -> list[tuple[tuple[int, int], float, str]]:
+        return [
+            ((node[0] + delta[0], node[1] + delta[1]), yaw, name)
+            for delta, yaw, name in direction_order
+            if (node[0] + delta[0], node[1] + delta[1]) in nodes
+        ]
+
+    actions: list[dict[str, Any]] = []
+    yaw = float(start_yaw) % 360.0
+    normalized_start_horizon = normalize_absolute_horizon_degrees(
+        start_camera_horizon_degrees
+    )
+    horizon_setup, horizon_restore = build_absolute_horizon_alignment_actions(
+        start_horizon_degrees=normalized_start_horizon,
+        scan_horizon_degrees=0.0,
+    )
+    worst_case_action_bound = (
+        10 * len(nodes)
+        + 6 * max(0, len(nodes) - 1)
+        + len(horizon_setup)
+        + len(horizon_restore)
+    )
+    if worst_case_action_bound > action_limit:
+        raise ValueError(
+            "visual fallback worst-case action bound exceeds limit: "
+            f"{worst_case_action_bound}>{action_limit}"
+        )
+    actions.extend(
+        {
+            "action": {"action": action_name},
+            "phase": "visual_fallback_initial_horizon_alignment",
+        }
+        for action_name in horizon_setup
+    )
+
+    def rotate_to(target_yaw: float, *, phase: str) -> None:
+        nonlocal yaw
+        delta_steps = round(((target_yaw - yaw) % 360.0) / 90.0) % 4
+        if delta_steps == 3:
+            actions.append({"action": {"action": "RotateLeft"}, "phase": phase})
+            yaw = (yaw - 90.0) % 360.0
+        else:
+            for _ in range(delta_steps):
+                actions.append({"action": {"action": "RotateRight"}, "phase": phase})
+                yaw = (yaw + 90.0) % 360.0
+
+    def scan_node(node: tuple[int, int], visit_index: int) -> None:
+        nonlocal yaw
+        for horizon, phase in (
+            (0.0, "visual_fallback_scan_zero"),
+            (30.0, "visual_fallback_scan_downward"),
+        ):
+            if horizon == 30.0:
+                actions.append(
+                    {
+                        "action": {"action": "LookDown"},
+                        "phase": "visual_fallback_horizon_down",
+                        "visit_index": visit_index,
+                    }
+                )
+            for _ in range(4):
+                actions.append(
+                    {
+                        "action": {"action": "RotateRight"},
+                        "phase": phase,
+                        "visit_index": visit_index,
+                        "scan_horizon_degrees": horizon,
+                    }
+                )
+                yaw = (yaw + 90.0) % 360.0
+            if horizon == 30.0:
+                actions.append(
+                    {
+                        "action": {"action": "LookUp"},
+                        "phase": "visual_fallback_horizon_zero",
+                        "visit_index": visit_index,
+                    }
+                )
+
+    visited: set[tuple[int, int]] = set()
+    visit_order: list[tuple[int, int]] = []
+
+    def traverse(node: tuple[int, int]) -> None:
+        visited.add(node)
+        visit_order.append(node)
+        scan_node(node, len(visit_order))
+        for neighbor, outward_yaw, direction in neighbors(node):
+            if neighbor in visited:
+                continue
+            rotate_to(outward_yaw, phase="visual_fallback_traverse_orient")
+            actions.append(
+                {
+                    "action": {"action": "MoveAhead"},
+                    "phase": "visual_fallback_traverse_move",
+                    "direction": direction,
+                }
+            )
+            traverse(neighbor)
+            return_yaw = (outward_yaw + 180.0) % 360.0
+            rotate_to(return_yaw, phase="visual_fallback_return_orient")
+            actions.append(
+                {
+                    "action": {"action": "MoveAhead"},
+                    "phase": "visual_fallback_return_move",
+                }
+            )
+
+    traverse(start_key)
+    if visited != set(nodes):
+        raise ValueError("visual fallback reachable-position graph is disconnected")
+    actions.extend(
+        {
+            "action": {"action": action_name},
+            "phase": "visual_fallback_initial_horizon_restore",
+        }
+        for action_name in horizon_restore
+    )
+    if len(actions) > action_limit:
+        raise ValueError(
+            f"visual fallback action limit exceeded: {len(actions)}>{action_limit}"
+        )
+    route = {
+        "route_version": VISUAL_FALLBACK_POLICY_VERSION,
+        "target_or_anchor_input_used": False,
+        "qualification_goal_input_used": False,
+        "memory_variant_input_used": False,
+        "grid_size": grid_size,
+        "action_limit": action_limit,
+        "worst_case_action_bound": worst_case_action_bound,
+        "reachable_node_count": len(nodes),
+        "visited_node_count": len(visited),
+        "scan_node_count": len(visit_order),
+        "scan_horizons_degrees": [0.0, 30.0],
+        "full_cardinal_scans_per_node": 2,
+        "initial_camera_horizon_degrees": normalized_start_horizon,
+        "camera_horizon_restored_at_route_end": True,
+        "every_reachable_node_visited": True,
+        "every_reachable_node_scanned_at_both_horizons": True,
+        "actions": actions,
+    }
+    route["route_digest"] = stable_digest(route)
     return route
 
 
