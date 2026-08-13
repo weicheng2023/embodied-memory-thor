@@ -722,3 +722,10 @@ tested, committed, and pushed. Public evidence is
 
 Classification/range tests pass 8/8 and the full regression passes 225/225.
 FloorPlan2 has not run yet.
+
+On clean pushed `9ba7a0d`, FloorPlan2 also had one pickupable Cup whose
+successful isolated pose query returned zero poses. It is classified
+`scene_start_ineligible_no_standing_cup`, skip allowed, with candidate
+pairs/trials 0/0. No route/task/memory/image/FloorPlan3 action ran. Public
+evidence is `docs/evidence/phase5_floorplan2_r2_v2_scene_start_ineligible.json`.
+FloorPlan3 is next only after this evidence is committed and pushed.

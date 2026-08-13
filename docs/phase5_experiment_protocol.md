@@ -1848,3 +1848,15 @@ candidate exhaustion also requires review rather than automatic skipping.
 
 Classification/range tests pass 8/8 and the complete offline regression passes
 225/225. FloorPlan2 has not run at this checkpoint.
+
+After pushed `9ba7a0d`, exactly FloorPlan2 ran. Its complete pickupable-Cup set
+again contained one object; the isolated pose query succeeded and returned zero
+poses. The result is the same scene-specific classification,
+`scene_start_ineligible_no_standing_cup`, with `scene_skip_allowed=true`.
+Candidate pairs/trials remained 0/0. No route, CoffeeMachine interaction,
+fallback, target lock, memory variant, image, or FloorPlan3 ran. Public evidence
+is `docs/evidence/phase5_floorplan2_r2_v2_scene_start_ineligible.json`.
+
+The one-scene stopping rule therefore halts here. FloorPlan3 is the next
+eligible scene in order, but it may run only after the FloorPlan2 result is
+committed and pushed; this result does not authorize batching later scenes.
