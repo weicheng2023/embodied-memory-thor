@@ -770,6 +770,83 @@ class Phase5AnchorTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, serialized)
 
+    def test_floorplan304_native_v7_result_stops_on_fallback_route_failure(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan304_native_qualification_v7.json"
+            ).read_text(encoding="utf-8")
+        )
+        route_evidence = json.loads(
+            (
+                root
+                / "docs"
+                / "evidence"
+                / "phase5_floorplan304_absolute_route_v4_1_precommit.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(route_evidence["passed"])
+        self.assertFalse(evidence["passed"])
+        self.assertEqual(evidence["fatal_error"], "")
+        self.assertTrue(evidence["batch_process_completed"])
+        self.assertFalse(evidence["scene_skip_as_clean_exhaustion_allowed"])
+        self.assertEqual(
+            evidence["classification"],
+            "native_batch_completed_without_anchor_with_fallback_route_execution_failure",
+        )
+        self.assertEqual(
+            evidence["coverage_route_digest"], route_evidence["route_digest"]
+        )
+        self.assertEqual(
+            evidence["coverage_route_action_count"],
+            route_evidence["route_action_count"],
+        )
+        self.assertEqual(evidence["candidate_trial_count"], 12)
+        self.assertEqual(
+            evidence["candidate_support_type_summary"],
+            [
+                {"support_type": "Bed", "candidate_trial_count": 6},
+                {"support_type": "Shelf", "candidate_trial_count": 6},
+            ],
+        )
+        self.assertEqual(evidence["native_placement_success_count"], 6)
+        self.assertEqual(evidence["physical_qa_pass_count"], 6)
+        self.assertEqual(evidence["common_fallback_run_count"], 6)
+        self.assertEqual(evidence["common_fallback_pass_count"], 0)
+        self.assertEqual(
+            evidence["common_fallback_failure_summary"][0]["failed_route_step"],
+            109,
+        )
+        self.assertEqual(evidence["fresh_reset_replay_run_count"], 0)
+        self.assertEqual(evidence["reset_restoration_pass_count"], 12)
+        self.assertEqual(evidence["reset_restoration_failure_count"], 0)
+        self.assertEqual(evidence["qualified_r1_scene_count_after_run"], 3)
+        for key in (
+            "force_action_used",
+            "book_rotation_action_used",
+            "memory_agents_run",
+            "images_saved",
+            "anchor_frozen",
+            "later_scenes_started",
+            "coordinates_exposed",
+        ):
+            self.assertFalse(evidence[key])
+        serialized = json.dumps(evidence, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "support_id",
+            "selected_pose",
+            "target_point",
+            '"x"',
+            '"y"',
+            '"z"',
+            '"private_registry":',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
     def test_candidate_queries_are_fresh_reset_isolated_before_clean_planning(self) -> None:
         module = self._qualifier_module()
         env = _FreshSupportQueryEnv()

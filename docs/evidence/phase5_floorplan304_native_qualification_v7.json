@@ -1,0 +1,90 @@
+{
+  "record_version": "phase5-floorplan304-native-qualification-v7-result-v1",
+  "code_revision": "59b9f029a9dd3c1151f71187627c9102cbf5af3d",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan304",
+  "support_policy_version": "phase5-r1-support-policy-v3",
+  "qualification_version": "phase5-anchor-qualification-v7",
+  "private_registry_version": "phase5-private-anchor-registry-v7",
+  "candidate_policy_version": "phase5-native-first-type-balanced-ranking-v2",
+  "geometry_diagnostic_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "route_version": "phase5-target-independent-absolute-horizon-v4.1",
+  "horizon_policy_version": "phase5-absolute-horizon-tolerance-v4.1",
+  "passed": false,
+  "classification": "native_batch_completed_without_anchor_with_fallback_route_execution_failure",
+  "fatal_error": "",
+  "batch_process_completed": true,
+  "scene_skip_as_clean_exhaustion_allowed": false,
+  "support_query_count": 2,
+  "support_queries_fresh_reset_isolated": true,
+  "query_state_reused": false,
+  "total_candidate_count": 1064,
+  "geometry_rejection_count": 259,
+  "present_support_types": [
+    "Bed",
+    "Shelf"
+  ],
+  "candidate_trial_count": 12,
+  "candidate_support_type_summary": [
+    {
+      "support_type": "Bed",
+      "candidate_trial_count": 6
+    },
+    {
+      "support_type": "Shelf",
+      "candidate_trial_count": 6
+    }
+  ],
+  "native_placement_attempt_count": 12,
+  "native_placement_success_count": 6,
+  "physical_qa_pass_count": 6,
+  "physical_qa_pass_move_distance_xz_min_meters": 2.312996,
+  "physical_qa_pass_move_distance_xz_max_meters": 2.898285,
+  "physical_qa_pass_old_view_invisible_count": 6,
+  "physical_qa_pass_three_sample_stability_count": 6,
+  "physical_qa_pass_expected_support_relation_count": 6,
+  "physical_qa_pass_zero_non_support_overlap_count": 6,
+  "placement_failure_summary": [
+    {
+      "support_type": "Shelf",
+      "category": "spawn_area_blocked_by_existing_object",
+      "count": 6
+    }
+  ],
+  "common_fallback_run_count": 6,
+  "common_fallback_pass_count": 0,
+  "common_fallback_failure_summary": [
+    {
+      "category": "coverage_move_blocked_by_scene_object",
+      "scene_object_type": "LaundryHamper",
+      "failed_route_step": 109,
+      "count": 6
+    }
+  ],
+  "fallback_target_visible_event_count": 0,
+  "fallback_target_lock_entered_count": 0,
+  "fallback_pickup_attempt_count": 0,
+  "fresh_reset_replay_run_count": 0,
+  "reset_restoration_pass_count": 12,
+  "reset_restoration_failure_count": 0,
+  "force_action_used": false,
+  "book_rotation_action_used": false,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "anchor_frozen": false,
+  "later_scenes_started": false,
+  "coordinates_exposed": false,
+  "candidate_plan_digest": "daf31b4ec960abc0cd733a6ad040bf8e9be60e2a0b796bc19d160c40aaf7a3b5",
+  "coverage_route_digest": "6892b381c8957171367a3513d278ddbb5300b039dae50ed998a684bed0a3679b",
+  "coverage_route_action_count": 127,
+  "private_registry_digest": "2bd9e3cecb2256870c80396603efdffa8d5367057168b796787d277cd36adb35",
+  "qualified_r1_scene_count_after_run": 3,
+  "qualified_r1_scenes_after_run": [
+    "FloorPlan202",
+    "FloorPlan302",
+    "FloorPlan303"
+  ],
+  "claim_boundary": "real AI2-THOR relocation-anchor qualification failure analysis only; not a memory-agent comparison or formal episode",
+  "interpretation": "six Bed placements passed physical QA, but the unchanged shared fallback route was blocked at the same movement step; six interleaved Shelf placements were rejected by occupied spawn areas",
+  "next_gate": "stop this scope; do not advance to FloorPlan305 or rerun FloorPlan304 until the shared fallback route execution failure has a separately preregistered diagnosis and protocol decision"
+}

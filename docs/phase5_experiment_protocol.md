@@ -1467,6 +1467,30 @@ Exactly one native qualification-v7 batch remains blocked until this contract
 is committed and pushed. FloorPlan305 is not allowed. Route-contract tests
 passed 38/38 and the complete offline regression passed 194/194.
 
+### FloorPlan304 native qualification-v7 stop
+
+Only after `59b9f02` was pushed, the one authorized native batch ran its full
+12-candidate balanced prefix: six Bed and six Shelf trials. The process
+completed with no fatal exception and reset restoration passed 12/12. The six
+Bed placements all passed physical QA, including 2.313--2.898 m movement,
+old-view invisibility, three-sample stability, expected support, and zero
+non-support overlap. Yet their shared fallback executions all failed at route
+action 109 because a LaundryHamper blocked the coverage move. The six Shelf
+placements were rejected because an existing object occupied the spawn area.
+No replay ran because every trial had already failed either physical placement
+or fallback.
+
+Consequently, FloorPlan304 cannot be labeled a cleanly exhausted infeasible
+scene: route execution failure is explicitly outside the predecessor-skip
+condition. No anchor was frozen, the R1 count remains 3/6, and FloorPlan305 is
+still blocked. No memory agent, image, force action, Book rotation, or later
+scene ran. Before any rerun or successor scene, the repeated fallback route
+failure requires a separately preregistered diagnosis and protocol decision.
+Public coordinate-free evidence is
+`docs/evidence/phase5_floorplan304_native_qualification_v7.json`.
+Result-focused tests passed 39/39 and the complete offline regression passed
+195/195.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

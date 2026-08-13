@@ -487,3 +487,21 @@ The route used no target/anchor input and ran no support query, placement,
 memory agent, or image. Route-contract tests pass 38/38 and the complete offline
 regression passes 194/194. Its public coordinate-free contract is prepared;
 native qualification remains blocked until commit and push.
+
+After the route contract was pushed as `59b9f02`, the single authorized
+FloorPlan304 qualification-v7 batch completed all 12 balanced trials without a
+fatal process error, but no anchor qualified. The split was six Bed and six
+Shelf candidates. All six Bed placements passed native placement and physical
+QA, moving the Book 2.313--2.898 m, hiding it from the old view, remaining
+stable, retaining the support relation, and adding no overlap. However, each
+common fallback stopped at route action 109 when a LaundryHamper blocked a
+coverage move. All six Shelf placements failed because an existing object
+blocked the spawn area. Reset restoration passed 12/12; replay did not run.
+
+This is not a clean scene-infeasibility exhaustion: the repeated fallback route
+execution failure prevents the existing skip rule from admitting FloorPlan305.
+No anchor, memory agent, image, force action, Book rotation, or later scene ran;
+the qualified count remains 3/6. The next gate is a separately preregistered
+diagnosis/protocol decision for shared fallback route execution. This scope
+stops here. Result-focused tests pass 39/39 and the complete offline regression
+passes 195/195.
