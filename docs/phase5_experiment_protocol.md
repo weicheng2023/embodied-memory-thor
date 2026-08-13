@@ -1781,3 +1781,23 @@ and pushed revision and stops before FloorPlan2 regardless of pass/fail. Offline
 dual-route, planner-boundary, ordered-task, and route-builder tests pass 23/23,
 and the complete offline regression passes 220/220;
 no real R2 qualification has run at this precommit checkpoint.
+
+#### FloorPlan1 start-pose stop
+
+The first clean real launch on pushed `aa6e08d` stopped before candidate-plan
+construction. The first pickupable Cup selected by sorted object ID had no
+standing pose in the successful `GetInteractablePoses` result. Therefore zero
+of 12 possible pose pairs were frozen and zero candidate trials ran. No route,
+CoffeeMachine toggle, fallback, target lock, memory variant, image, or later
+scene ran.
+
+This is a start-selection protocol failure, not a negative result about memory
+or the ordered task. The kitchen presence census proves only that at least one
+pickupable Cup exists, not that the first object-ID Cup has a standing
+interactable pose. A retry is prohibited until one of these materially
+different rules is pre-registered: scan sorted Cup instances and select the
+first with a standing interactable pose, or admit and validate non-standing
+starts. The conservative recommended revision is the first rule because it
+preserves standing navigation and changes target selection only by an
+evaluator-side feasibility predicate. Public stop evidence is
+`docs/evidence/phase5_floorplan1_r2_start_pose_stop.json`.

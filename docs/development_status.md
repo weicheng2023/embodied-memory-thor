@@ -686,3 +686,13 @@ diagnostics. Focused contract/route tests pass 23/23 and the complete offline
 regression passes 220/220. The first real FloorPlan1
 qualification remains blocked until this precommit is committed and pushed;
 FloorPlan2 and later scenes are not authorized by this gate.
+
+The clean pushed `aa6e08d` FloorPlan1 launch then stopped before any candidate
+or task action: the first pickupable Cup in sorted object-ID order had no
+standing interactable pose. Candidate pairs/trials were 0/0. No route, toggle,
+fallback, target lock, memory variant, image, or FloorPlan2 run occurred. This
+invalidates the too-strong target-selection assumption; it does not reject the
+scene or establish an R2 result. The protocol must pre-register either
+first-standing-interactable Cup selection across sorted Cup instances
+(recommended) or non-standing start support before a new real launch. Public
+stop evidence is `docs/evidence/phase5_floorplan1_r2_start_pose_stop.json`.
