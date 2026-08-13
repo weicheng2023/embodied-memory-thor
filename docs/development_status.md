@@ -589,3 +589,12 @@ frozen, with no memory/image/later-scene run. R1 is now 5/6; FloorPlan307 is the
 next gated scene.
 Result-focused tests pass 50/50 and the complete offline regression passes
 206/206.
+
+On clean `ff72e77`, FloorPlan307 passed route construction at 113/240 actions
+with digest
+`ce1cdda7f8fbf30eaf8f37efce4a52a9a6b48a47c93111023b433ecddf6845eb`,
+then passed all 113/113 baseline actions plus reset restoration. No horizon
+alignment was needed. No query, placement, planner, recovery, memory, or image
+ran. Its baseline-gated native contract is prepared; tests and push precede any
+placement.
+Gate/result tests pass 51/51 and the complete offline regression passes 207/207.

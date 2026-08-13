@@ -1626,6 +1626,16 @@ evidence is `docs/evidence/phase5_floorplan306_native_qualification_v7.json`.
 Result-focused tests passed 50/50 and the complete offline regression passed
 206/206.
 
+### FloorPlan307 route construction and baseline execution pass
+
+On clean `ff72e77`, FloorPlan307 constructed a 113/240-action route with digest
+`ce1cdda7f8fbf30eaf8f37efce4a52a9a6b48a47c93111023b433ecddf6845eb`.
+The start horizon already matched the scan horizon. The fresh-reset baseline
+passed four controls, all 113 route actions, and reset restoration. It ran no
+query, placement, planner, recovery, memory, or image. Public evidence and a
+machine-gated native contract are prepared; test/commit/push precede native.
+Gate/result tests passed 51/51 and the complete offline regression passed 207/207.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
