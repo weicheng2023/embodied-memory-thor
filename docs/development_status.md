@@ -655,3 +655,13 @@ adds explicit per-episode `included_in_formal_aggregate=false`,
 pushed revision and rerun the complete triplet; no selective episode reuse.
 V2 label-focused tests pass 18/18 and the full offline regression remains
 215/215; the clean-revision v2 rerun has not started.
+
+The clean `1b97aab` v2 rerun passed all three variants with zero audit errors.
+Each episode and the enclosing probe explicitly exclude formal aggregation and
+use `evidence_status=excluded_engineering_probe`. Results match v1: 31 steps
+for every variant; no/K=2 share one entry alignment plus 26 coverage actions;
+object memory uses one stale record, records one old-viewpoint miss, runs the
+same 26 coverage actions, corrects at step 30, and picks up at step 31. Public
+coordinate-free evidence is
+`docs/evidence/phase5_r1_production_integration_probe_v2.json`. R2 six-scene
+qualification remains the next hard gate.

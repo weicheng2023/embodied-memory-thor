@@ -1714,6 +1714,16 @@ whole triplet must be rerun; individual v1 episodes cannot be reused.
 The v2 label gate passes 18/18 focused tests and 215/215 full regression tests;
 the real rerun still requires a clean committed and pushed revision.
 
+The clean `1b97aab` v2 rerun passed 3/3 with zero metric, privacy, route, or
+evidence-label errors. All three finished in 31 steps. No memory and K=2 shared
+the same one entry-alignment plus 26 route actions. Object memory used one stale
+record, detected one old-viewpoint miss, executed the same 26-action fallback,
+and refreshed the record at step 30 before pickup at step 31. The equality is
+reported as-is; this stale negative probe does not support a memory-speed claim.
+The accepted public record is
+`docs/evidence/phase5_r1_production_integration_probe_v2.json`. It remains
+excluded from formal aggregation and does not satisfy the R2 requirement.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:
