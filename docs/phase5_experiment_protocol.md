@@ -1565,6 +1565,24 @@ executable policy is `configs/phase5_r1_route_execution_gate_v1.json`.
 Gate-focused tests passed 46/46 and the complete offline regression passed
 202/202. No FloorPlan305 environment has been started.
 
+### FloorPlan305 route construction and baseline execution pass
+
+On clean `00fd480`, the construction gate produced a 115/240-action compatible
+absolute-horizon-v4 route with digest
+`ee28505764f148e0e5b209810333e40cf84cd12d3259c5bc1113918da00dca09`.
+The separately reset baseline satisfied its visible-Book/stability precondition,
+ran four Pass controls, executed all 115 route actions successfully, and passed
+reset restoration. Thus FloorPlan305 is route-execution-eligible.
+
+Neither gate ran a support query, placement, planner, recovery, memory agent,
+or image. Public evidence is
+`docs/evidence/phase5_floorplan305_absolute_route_v4_precommit.json` and
+`docs/evidence/phase5_floorplan305_baseline_route_execution_v1.json`. The native
+contract `configs/phase5_r1_anchor_candidates_absolute_v4_floorplan305.json`
+machine-requires the baseline pass. Native qualification remains blocked until
+these files are committed and pushed. Gate/result tests passed 47/47 and the
+complete offline regression passed 203/203.
+
 ## Gate before formal comparisons
 
 Formal Phase 5 results require:

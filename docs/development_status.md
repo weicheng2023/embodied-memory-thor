@@ -549,3 +549,14 @@ machine-gated on matching public baseline-pass evidence. Memory, images, and
 obstacle recovery remain disabled. Offline acceptance is pending.
 Gate-focused tests pass 46/46 and the complete offline regression passes
 202/202. FloorPlan305 has not started.
+
+On clean `00fd480`, FloorPlan305 passed both pre-native gates. Route
+construction produced a compatible absolute-horizon-v4 route with 115/240
+actions and digest
+`ee28505764f148e0e5b209810333e40cf84cd12d3259c5bc1113918da00dca09`.
+The fresh-reset baseline then executed all 115/115 actions after four Pass
+controls; precondition and reset restoration passed. No support query,
+placement, planner, recovery, memory, or image ran. The native candidate
+contract now binds both route and baseline evidence; offline acceptance and a
+clean push are required before FloorPlan305 placement. Gate/result tests pass
+47/47 and the complete offline regression passes 203/203.
