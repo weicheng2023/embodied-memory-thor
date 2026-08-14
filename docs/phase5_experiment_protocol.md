@@ -2944,3 +2944,17 @@ search/formal sources. Offline tests pass 22/22; the full repository regression
 passes 405 tests plus 70 subtests. The next action is one no-THOR readiness-only
 run on a clean pushed commit, which must reconstruct 54 public cells, 72 metrics
 and 12 private joins without serializing private state.
+
+#### Formal-v5 readiness-only result
+
+Clean pushed revision `ec5ac30` passed no-THOR readiness. The public manifest
+contains all 54 ordered cells and 72 required metrics; 12/12 private runtimes
+joined locally. Its digest is `cafda0e8...905d`. No start pose, target/anchor,
+object identity or evaluator-native action was serialized. Execution remained
+disabled, THOR did not start and no statistic was computed.
+
+Public evidence is `docs/evidence/phase5_real_formal_readiness_v5.json`. A
+separate hash-bound v5 authorization layer is now required. It may only flip
+the execution flag for this immutable base and readiness evidence; it may not
+override matrix/order/runtime/metric/output contracts. The authorized run must
+start fresh at cell 1 and cannot resume or reuse any old row.
