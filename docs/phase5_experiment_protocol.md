@@ -2805,3 +2805,19 @@ hash-binds the public candidate and ignored evaluator-only start, uses max 2048
 with no images/GUI, and requires task success, information-boundary pass, zero
 subgoal/fallback route failures and zero route-action recovery. Focused tests
 pass 12/12; the full repository regression passes 381 tests plus 70 subtests.
+
+#### FloorPlan17 production-equivalent replacement gate
+
+Clean pushed revision `ba8f4d9` passed the single excluded FloorPlan17
+no-memory Runner gate in nine actions. Task success and the information
+boundary passed; invalid actions, subgoal/fallback route failures, shared route
+recovery attempts/actions/terminal failures and target-lock interaction
+recovery were all zero. This closes the qualification-versus-production gap
+that invalidated FloorPlan10 without changing the routes or 2048 ceiling.
+
+Public evidence is
+`docs/evidence/phase5_r2_floorplan17_production_gate_v1.json`. It contains no
+coordinates or object identity. The result authorizes FloorPlan17 to replace
+FloorPlan10 in a new R2 runtime-v3 containing FloorPlan3, 4, 6, 7, 12 and 17.
+It is an excluded engineering gate, not a memory comparison or formal result;
+runtime-v2 and all prior formal artifacts remain immutable.
