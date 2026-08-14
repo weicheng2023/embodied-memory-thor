@@ -890,3 +890,10 @@ budgeted fallback passed the native trial, independent fresh-reset replay and
 restoration. No memory variant or image ran. R2 is now 4/6; FloorPlan7 is next
 after result evidence tests and a clean push.
 FloorPlan6 v6 evidence gates pass 7/7 and the full regression passes 282/282.
+
+FloorPlan7 then qualified candidate 1 from clean pushed `97ba881`: 187/192
+selected starts were stable, 12 pairs froze before outcomes, and the 11-action
+subgoal plus 685-action/47-viewpoint budgeted fallback passed native trial,
+fresh replay and restoration. R2 is 5/6. No memory/image/formal run occurred;
+FloorPlan8 follows only after result evidence and a clean push.
+FloorPlan7 evidence gates pass 8/8 and the full regression passes 283/283.

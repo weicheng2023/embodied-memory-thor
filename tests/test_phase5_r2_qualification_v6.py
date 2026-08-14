@@ -18,6 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "configs" / "phase5_r2_qualification_v6.json"
 FLOORPLAN6_CONFIG = ROOT / "configs" / "phase5_r2_floorplan6_qualified_configuration_v1.json"
 FLOORPLAN6_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan6_r2_qualification_v6.json"
+FLOORPLAN7_CONFIG = ROOT / "configs" / "phase5_r2_floorplan7_qualified_configuration_v1.json"
+FLOORPLAN7_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan7_r2_qualification_v6.json"
 
 
 def _module() -> object:
@@ -181,6 +183,27 @@ def test_floorplan6_v6_qualified_evidence_and_configuration_are_safe() -> None:
     ]
     assert configuration["fallback_route"]["action_count"] == 403
     assert len(configuration["fallback_route"]["action_codes"]) == 403
+    serialized = json.dumps({"evidence": evidence, "configuration": configuration})
+    for forbidden in ('"x"', '"y"', '"z"', "Cup|", "CoffeeMachine|", "objectId"):
+        assert forbidden not in serialized
+
+
+def test_floorplan7_v6_qualified_evidence_and_configuration_are_safe() -> None:
+    evidence = json.loads(FLOORPLAN7_EVIDENCE.read_text(encoding="utf-8"))
+    configuration = json.loads(FLOORPLAN7_CONFIG.read_text(encoding="utf-8"))
+    assert evidence["passed"] is True
+    assert evidence["qualified_r2_count_after_scene"] == 5
+    assert evidence["candidate_trials_executed"] == 1
+    assert evidence["fresh_reset_replay_passed"] is True
+    assert evidence["reset_restoration_passed"] is True
+    assert evidence["fallback_route_action_count"] == 685 <= 2048
+    assert evidence["fallback_viewpoint_count"] == 47
+    assert configuration["configuration_id"] == evidence["configuration_id"]
+    assert configuration["source_qualification_digest"] == evidence[
+        "source_qualification_digest"
+    ]
+    assert configuration["fallback_route"]["action_count"] == 685
+    assert len(configuration["fallback_route"]["action_codes"]) == 685
     serialized = json.dumps({"evidence": evidence, "configuration": configuration})
     for forbidden in ('"x"', '"y"', '"z"', "Cup|", "CoffeeMachine|", "objectId"):
         assert forbidden not in serialized
