@@ -2771,3 +2771,23 @@ the episode remains excluded. Automatic execution stops here. Before formal-v5,
 the protocol must choose and pre-register either conservative scene exclusion
 plus a replacement qualified R2 route, or a shared persistent-blocked-action
 successor. The existing `Pass` policy is not sufficient evidence for a rerun.
+
+#### R2 conservative replacement protocol v1
+
+FloorPlan10 is excluded rather than allowing a blocked route action to be
+skipped. The retained R2 order is FloorPlan3, 4, 6, 7 and 12. Replacement
+qualification resumes in untouched ascending kitchen-scene order at
+FloorPlan17 and may continue through FloorPlan30, stopping after the first
+qualified replacement. It reuses the v6 stable-start, first-12 frozen candidate
+and target-independent budgeted visual fallback rules. No memory variant,
+image, GUI or formal statistic runs during qualification.
+
+A native qualification pass is no longer sufficient for replacement freeze.
+The candidate must then pass a separately frozen production-equivalent
+no-memory Runner gate at max 2048 with task success, information-boundary pass,
+zero subgoal/fallback route failures and zero shared route-action recovery
+attempts/actions. This extra gate directly addresses the FloorPlan10 gap between
+qualification replay and production execution. The replacement may enter a new
+six-configuration runtime set only after both gates pass; prior runtime-v2 and
+formal-v4 artifacts remain immutable. Offline focused tests pass 16/16 and the
+full repository regression passes 375 tests plus 70 subtests.
