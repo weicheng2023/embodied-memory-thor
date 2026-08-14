@@ -2754,3 +2754,6 @@ be reused. The next pre-registered real gate is one excluded FloorPlan10 R2
 no-memory replay, max 2048 and no images/GUI, requiring coverage index 200 to
 produce `MoveAhead(false) -> Pass(true) -> MoveAhead(true)`, task success and
 zero terminal recovery failures. It is not a formal result or memory comparison.
+The first launcher invocation was rejected before THOR reset because the runner
+config omitted the already-frozen subgoal route ID; no episode or environment
+action ran. The launcher now declares both frozen R2 route IDs before retry.

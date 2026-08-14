@@ -35,7 +35,7 @@
   "run_purpose": "phase5_r2_floorplan10_route_action_recovery_gate_v1",
   "claim_boundary": "excluded single-cell shared execution-recovery gate only; not a memory comparison, task benchmark or formal result",
   "historical_artifacts_frozen": {
-    "scripts/run_phase5_r2_floorplan10_route_action_recovery_gate_v1.py": "9ef8d18fb3a1536066074b34511670a38165594eb9c95b1cab144b4c850aa72a",
+    "scripts/run_phase5_r2_floorplan10_route_action_recovery_gate_v1.py": "17c5aad83b0f7433cd7b5022a7e624c14c14d6ae41b9228a59543b9be9273d34",
     "docs/evidence/phase5_real_formal_pilot_v4_invalidated_stop.json": "8ca2ae769a6142a319dfe90051ef1d807ff6066507dd06b37a1d1d17f97f6fd1",
     "configs/phase5_shared_route_action_recovery_v1.json": "c3d6b7034c363dba3aac0651220052857a1f926f95af38c9afa2dd9d4c775148",
     "src/embodied_memory_thor/phase5/search.py": "5b574cb9c1f80a308aca9b15b7bad1f0eb9f9d4768667c4ef4478ea10ccbb201",

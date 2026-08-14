@@ -267,6 +267,7 @@ def run_gate(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
             planner="deterministic",
             memory="no_memory",
             search_route_id=runtime.fallback_route.route_id,
+            subgoal_route_id=runtime.subgoal_route.route_id,
             condition="stable",
             mode="formal",
             max_steps=int(config["max_steps"]),
