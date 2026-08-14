@@ -2564,3 +2564,27 @@ R1/R2 runtimes. Its public manifest must contain no start/target/anchor/support
 coordinates, object identities or native evaluator actions. A clean pushed
 no-THOR readiness must reconstruct all 54 public cells and join all 12 private
 runtimes before a separately tracked v3 authorization overlay is allowed.
+
+#### Formal v3 readiness and execution authorization
+
+Clean pushed revision `ca31582` passed the no-THOR v3 readiness gate. It
+reconstructed all 54 cells, joined all 12 private runtimes and verified all 18
+action-only routes. The public manifest digest is `2fc10000...17af`; private
+runtime material was not serialized, formal execution remained disabled and no
+AI2-THOR or memory episode started. Public evidence is
+`docs/evidence/phase5_real_formal_readiness_v3.json`.
+
+`phase5-real-thor-formal-execution-authorization-v3` is a separately versioned
+minimal overlay. It hash-binds the immutable readiness-only v3 base, the public
+readiness evidence/revision/digest and a thin authorization launcher. The
+launcher validates that binding, changes only `formal_execution_authorized` in
+memory, repeats the v3 precommit and 12-runtime readiness on the current clean
+pushed revision, and then invokes the already readiness-frozen executor. It
+cannot override panels, configurations, variants, task policies, routes,
+controller settings, the 2048 limit, metrics, output policy or stop rules.
+
+The authorized run must use a new output directory and start at cell 1. Resume,
+selective reuse, images, GUI and evaluator-debug output remain prohibited. An
+integrity failure stops and invalidates the partial matrix; an integrity-valid
+task failure remains an experimental outcome and does not authorize selective
+rerunning.

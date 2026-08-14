@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import tempfile
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -22,6 +23,10 @@ from embodied_memory_thor.phase5.formal_v2 import (
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "phase5_real_formal_pilot_v3.json"
+AUTHORIZATION = ROOT / "configs" / "phase5_real_formal_execution_v3.json"
+READINESS_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_real_formal_readiness_v3.json"
+)
 COVERAGE_EVIDENCE = (
     ROOT / "docs" / "evidence" / "phase5_r1_distraction_coverage_gate_v1.json"
 )
@@ -44,6 +49,15 @@ def _manifest() -> dict:
 def _executor() -> object:
     path = ROOT / "scripts" / "run_phase5_real_formal_pilot_v2.py"
     spec = importlib.util.spec_from_file_location("phase5_formal_v3_shared", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _authorization_executor() -> object:
+    path = ROOT / "scripts" / "run_phase5_real_formal_execution_v3.py"
+    spec = importlib.util.spec_from_file_location("phase5_formal_v3_authorized", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -162,3 +176,63 @@ def test_v3_wrapper_defaults_to_v3_readiness_config() -> None:
     assert "phase5_real_formal_pilot_v3.json" in source
     assert "--readiness-only" in source
     assert "--execute" in source
+
+
+def test_v3_authorization_only_flips_execution_and_preserves_matrix() -> None:
+    executor = _authorization_executor()
+    base = _config()
+    effective = executor.load_authorized_config(AUTHORIZATION)
+    assert base["formal_execution_authorized"] is False
+    assert effective["formal_execution_authorized"] is True
+    for key in (
+        "manifest_schema_version",
+        "protocol_version",
+        "metric_schema_version",
+        "episode_count",
+        "configuration_count_per_panel",
+        "variants",
+        "max_steps_per_episode",
+        "book_distraction_policy",
+        "controller_settings",
+        "output_policy",
+        "panels",
+        "historical_artifacts_frozen",
+    ):
+        assert effective[key] == base[key]
+    assert effective["authorization"]["matrix_contract_override_allowed"] is False
+    validate_precommit(effective, root=ROOT)
+
+
+def test_v3_authorization_rejects_tampered_readiness_binding() -> None:
+    executor = _authorization_executor()
+    raw = json.loads(AUTHORIZATION.read_text(encoding="utf-8"))
+    tampered = deepcopy(raw)
+    tampered["readiness_manifest_digest"] = "0" * 64
+    with tempfile.TemporaryDirectory() as temporary_dir:
+        path = Path(temporary_dir) / "tampered.json"
+        path.write_text(json.dumps(tampered), encoding="utf-8")
+        with pytest.raises(ValueError, match="does not authorize"):
+            executor.load_authorized_config(path)
+
+
+def test_v3_readiness_evidence_is_public_and_execution_disabled() -> None:
+    evidence = json.loads(READINESS_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["readiness_passed"] is True
+    assert evidence["episode_count"] == REAL_EPISODE_COUNT
+    assert evidence["unique_runtime_count"] == 12
+    assert evidence["private_runtime_join_passed"] is True
+    assert evidence["private_runtime_material_serialized"] is False
+    assert evidence["formal_execution_authorized_during_readiness"] is False
+    text = READINESS_EVIDENCE.read_text(encoding="utf-8")
+    for forbidden in (
+        '"start_pose"',
+        '"target_point"',
+        '"anchor_id"',
+        '"objectId"',
+        "Book|",
+        "Cup|",
+        "CoffeeMachine|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in text
