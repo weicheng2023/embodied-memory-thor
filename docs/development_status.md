@@ -978,3 +978,13 @@ privacy-preserving 54-cell manifest plus executor and audits are precommitted,
 offline-tested, committed and pushed.
 Probe-v4 result-evidence gates pass 6/6 and the full repository regression
 passes 303/303.
+
+Formal-manifest v2 is now precommitted as a separate successor; historical v1
+code is hash-frozen. The public matrix is exactly 54 action-only cells with
+matched R1 stable/stale sets and the six R2 runtime-v2 configurations. It uses a
+common 2048-step ceiling, metric schema v3, local ignored private joins, and a
+fail-closed executor that keeps task outcome separate from integrity validity.
+Its initial authorization is readiness-only: `--execute` must fail before
+creating output. Offline gates currently pass 7/7; full regression and a clean
+push are required before the 12-runtime readiness join may run. Full regression
+passes 310/310. No formal episode has run.

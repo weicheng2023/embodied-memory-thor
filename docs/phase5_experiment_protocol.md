@@ -2353,3 +2353,40 @@ configuration IDs, frozen public digests and ignored evaluator-only registries,
 include the entry-recovery metrics in its required schema, fix one clean code
 revision and fail closed on any incomplete 3-variant cell. No formal run is
 authorized until that offline successor and its executor pass full regression.
+
+### Privacy-preserving real formal manifest v2 precommit
+
+`phase5-real-thor-manifest-v2` supersedes the old builder for real execution
+without modifying historical manifest v1. Its public cells contain only panel,
+task/condition, opaque configuration ID, scene label, memory variant, fixed
+controller/output policy and action-only route IDs/digests. It explicitly
+forbids raw start poses, target/support/anchor fields, object identities,
+reachable graphs and native evaluator actions. Private setup, target identity
+and relocation destination are joined locally through the ignored frozen R1/R2
+registries and are never copied into the public manifest.
+
+The matrix order is fixed as R1 stable, R2 stable, R1 stale; inside each panel,
+declared configuration order then no-memory, K=2, object-memory. R1 stable and
+stale use the same six FloorPlan202/302/303/305/306/307 configurations. R2 uses
+FloorPlan3/4/6/7/10/12. This yields exactly 54 cells and 18 matched
+three-variant configuration groups. Every episode uses the same 2048 evaluated-
+action ceiling. This bound covers every frozen route, including the 1367-action
+FloorPlan12 route, without changing the planner or stopping successful episodes
+later than before.
+
+Metric schema `phase5-real-thor-metrics-v3` retains the v2 outcomes and adds
+setup/intervention validity plus the full shared-search entry-recovery contract.
+The executor distinguishes an experimental task failure from an integrity
+failure. A valid task failure stays in the fixed aggregate; leakage, missing
+metrics, setup/intervention failure, route/digest/entry contract failure,
+invalid planner action, private material in ordinary logs, dirty/unpushed code,
+or incomplete runtime join invalidates and stops the matrix. Partial output is
+retained and may never be resumed or selectively reused.
+
+The first precommit sets `formal_execution_authorized=false` and permits only a
+readiness run. Readiness must build the public 54-cell manifest from a clean
+pushed revision, load all 12 private runtimes, verify every public/private
+configuration and route join, and serialize no private material. Only a later
+tracked authorization after successful readiness evidence may enable the
+complete 54-episode command. Formal images, GUI, evaluator debug and desktop
+screenshots remain disabled.
