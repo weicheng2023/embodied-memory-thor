@@ -2791,3 +2791,17 @@ qualification replay and production execution. The replacement may enter a new
 six-configuration runtime set only after both gates pass; prior runtime-v2 and
 formal-v4 artifacts remain immutable. Offline focused tests pass 16/16 and the
 full repository regression passes 375 tests plus 70 subtests.
+
+FloorPlan17 was the first scene attempted under this order and candidate 1
+passed native qualification plus fresh-reset replay. The public action-only
+contract has a four-action subgoal route and 212-action/13-viewpoint fallback;
+47 of 50 audited starts were stable and reset restoration passed. It remains a
+candidate, not a frozen replacement: `production_equivalent_gate_passed` and
+`replacement_freeze_allowed` are false. Public evidence is
+`docs/evidence/phase5_floorplan17_r2_replacement_qualification_v7.json`.
+
+The next gate is exactly one excluded FloorPlan17 no-memory Runner episode. It
+hash-binds the public candidate and ignored evaluator-only start, uses max 2048
+with no images/GUI, and requires task success, information-boundary pass, zero
+subgoal/fallback route failures and zero route-action recovery. Focused tests
+pass 12/12; the full repository regression passes 381 tests plus 70 subtests.

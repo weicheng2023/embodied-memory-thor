@@ -1,0 +1,41 @@
+{
+  "configuration_id": "FloorPlan17_R2_fixed_start_001",
+  "fallback_route": {
+    "action_codes": "RRRRDRRRRULFRFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRURFFRRRRDRRRRURFFLFRFRRRRDRRRRURRFRFFFRRRRDRRRRURRFFFFRFFFFFRFRRRRDRRRRURRFFFRRRRDRRRRURFLFFFRRRRDRRRRURRFFRFFFFFFFFFFFFFRFRRRRDRRRRU",
+    "action_count": 212,
+    "action_sequence_digest": "ac1570573adc8277c9f39df10970893189133b9cbd413da313debd1477210fa8",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": false,
+    "route_id": "FloorPlan17_R2_fixed_start_001_fallback_budgeted_visual_v1",
+    "route_role": "target_independent_fallback",
+    "scene": "FloorPlan17",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "4ff3f2ddc50f33a96b9638c8910b257d55e897a3a3d45c17b980c90d42d8f422",
+    "target_or_anchor_input_used": false,
+    "task": "thor_cup_after_coffee_subgoal"
+  },
+  "formal_use_allowed": false,
+  "planner_visible_coordinates": false,
+  "production_equivalent_gate_passed": false,
+  "qualification_version": "phase5-r2-replacement-native-qualification-v7",
+  "replacement_freeze_allowed": false,
+  "scene": "FloorPlan17",
+  "source_qualification_digest": "4ff3f2ddc50f33a96b9638c8910b257d55e897a3a3d45c17b980c90d42d8f422",
+  "start_pose_digest": "183485efbacc1e31f926c5c36fc300d064d560e770a5b64a4310a0a3afffedf9",
+  "subgoal_route": {
+    "action_codes": "LFFF",
+    "action_count": 4,
+    "action_sequence_digest": "24c0b4be69b2895d473c7f6774164d3023e89a8b243c3d72ac04502586e6a1e2",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": true,
+    "route_id": "FloorPlan17_R2_fixed_start_001_subgoal_v1",
+    "route_role": "task_subgoal_navigation",
+    "scene": "FloorPlan17",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "4ff3f2ddc50f33a96b9638c8910b257d55e897a3a3d45c17b980c90d42d8f422",
+    "target_or_anchor_input_used": true,
+    "task": "thor_cup_after_coffee_subgoal"
+  }
+}
