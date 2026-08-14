@@ -897,3 +897,11 @@ subgoal plus 685-action/47-viewpoint budgeted fallback passed native trial,
 fresh replay and restoration. R2 is 5/6. No memory/image/formal run occurred;
 FloorPlan8 follows only after result evidence and a clean push.
 FloorPlan7 evidence gates pass 8/8 and the full regression passes 283/283.
+
+FloorPlan8 on clean `42236d4` was a registered scene skip. It had 40/78 stable
+starts and froze 12 pairs, with all budgeted routes constructed at 430--437
+actions and 30 viewpoints. All 12 native trials failed the task-subgoal
+postcondition before fallback execution; restoration passed. This is not
+evidence against budgeted visual coverage. R2 remains 5/6 and FloorPlan10 is
+next after the negative evidence is tested and pushed.
+FloorPlan8 evidence gates pass 9/9 and the full regression passes 284/284.

@@ -20,6 +20,7 @@ FLOORPLAN6_CONFIG = ROOT / "configs" / "phase5_r2_floorplan6_qualified_configura
 FLOORPLAN6_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan6_r2_qualification_v6.json"
 FLOORPLAN7_CONFIG = ROOT / "configs" / "phase5_r2_floorplan7_qualified_configuration_v1.json"
 FLOORPLAN7_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan7_r2_qualification_v6.json"
+FLOORPLAN8_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan8_r2_qualification_v6.json"
 
 
 def _module() -> object:
@@ -205,5 +206,22 @@ def test_floorplan7_v6_qualified_evidence_and_configuration_are_safe() -> None:
     assert configuration["fallback_route"]["action_count"] == 685
     assert len(configuration["fallback_route"]["action_codes"]) == 685
     serialized = json.dumps({"evidence": evidence, "configuration": configuration})
+    for forbidden in ('"x"', '"y"', '"z"', "Cup|", "CoffeeMachine|", "objectId"):
+        assert forbidden not in serialized
+
+
+def test_floorplan8_v6_registered_subgoal_skip_is_safe_and_not_fallback_failure() -> None:
+    evidence = json.loads(FLOORPLAN8_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["passed"] is False
+    assert evidence["scene_skip_allowed"] is True
+    assert evidence["classification"] == (
+        "native_batch_completed_without_qualified_configuration"
+    )
+    assert evidence["candidate_trials_executed"] == 12
+    assert evidence["candidate_subgoal_postcondition_failure_count"] == 12
+    assert evidence["fallback_routes_executed"] is False
+    assert evidence["fallback_route_action_count_max"] <= 2048
+    assert evidence["reset_restoration_passed"] is True
+    serialized = json.dumps(evidence)
     for forbidden in ('"x"', '"y"', '"z"', "Cup|", "CoffeeMachine|", "objectId"):
         assert forbidden not in serialized
