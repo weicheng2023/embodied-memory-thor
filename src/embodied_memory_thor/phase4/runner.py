@@ -74,6 +74,9 @@ from embodied_memory_thor.phase5.search import (
 )
 from embodied_memory_thor.phase5.target_lock import (
     TARGET_LOCK_APPROACH_ACTION_BUDGET,
+    TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES,
+    TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT,
+    TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT,
     TARGET_LOCK_POLICY_VERSION,
     TARGET_LOCK_RECOVERY_ACTION_BUDGET,
     SharedTargetLockPolicy,
@@ -463,6 +466,16 @@ class ThorEpisodeRunner:
                 "planner_safe_observation_only": True,
                 "recovery_action_budget": TARGET_LOCK_RECOVERY_ACTION_BUDGET,
                 "approach_action_budget": TARGET_LOCK_APPROACH_ACTION_BUDGET,
+                "interaction_recovery_action_limit": (
+                    TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT
+                ),
+                "interaction_recovery_retry_limit": (
+                    TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT
+                ),
+                "canonical_pickup_horizon_degrees": (
+                    TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES
+                ),
+                "terminal_failure_handoff": "stop_episode_without_planner_fallthrough",
                 "evaluator_coordinates_consumed": False,
             }
             manifest["memory_navigation_policy"] = {
@@ -731,6 +744,15 @@ class ThorEpisodeRunner:
                         current_observation,
                         allowed_actions=runtime_spec.allowed_actions,
                     )
+                    if (
+                        target_lock is None
+                        and target_lock_policy.metrics.target_lock_failed_reason
+                    ):
+                        failure_reason = (
+                            "target_lock_failed:"
+                            + target_lock_policy.metrics.target_lock_failed_reason
+                        )
+                        break
                 if (
                     target_lock is None
                     and subgoal_route_state is not None
@@ -1318,6 +1340,9 @@ class ThorEpisodeRunner:
                     "target_reacquired_after_loss_count": 0,
                     "picked_after_target_lock": False,
                     "target_lock_failed_reason": "",
+                    "target_lock_interaction_recovery_action_count": 0,
+                    "target_lock_interaction_recovery_attempt_count": 0,
+                    "target_lock_terminal_failure_count": 0,
                 }
             ),
             "setup_completed": setup_completed,

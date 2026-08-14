@@ -20,7 +20,13 @@ from embodied_memory_thor.phase4.planners import (
     validate_planner_decision,
 )
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
-from embodied_memory_thor.phase5.target_lock import SharedTargetLockPolicy
+from embodied_memory_thor.phase5.target_lock import (
+    TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES,
+    TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT,
+    TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT,
+    TARGET_LOCK_POLICY_VERSION,
+    SharedTargetLockPolicy,
+)
 from tests.test_phase4_single_case import _SingleCaseThorEnv
 
 
@@ -52,8 +58,53 @@ class _TransientLossThorEnv(_SingleCaseThorEnv):
         return super().step(action_dict)
 
 
+class _CollisionThenSuccessThorEnv(_SingleCaseThorEnv):
+    """Expose the native collision category once, then allow pickup."""
+
+    def __init__(self) -> None:
+        self.collision_count = 0
+        super().__init__()
+
+    def reset(self, scene: str) -> Any:
+        self.collision_count = 0
+        return super().reset(scene)
+
+    def step(self, action_dict: dict[str, Any]) -> Any:
+        action = str(action_dict.get("action", ""))
+        if action == "PickupObject" and self.collision_count == 0:
+            self.collision_count += 1
+            self.last_event = self._event(
+                last_action=action,
+                success=False,
+                error=(
+                    "Picking up object would cause it to collide and clip into "
+                    "something!\nmanualInteract internal stack frame"
+                ),
+            )
+            return self.last_event
+        return super().step(action_dict)
+
+
+class _AlwaysCollisionThorEnv(_SingleCaseThorEnv):
+    """Keep the target visible while every native pickup collides."""
+
+    def step(self, action_dict: dict[str, Any]) -> Any:
+        action = str(action_dict.get("action", ""))
+        if action == "PickupObject":
+            self.last_event = self._event(
+                last_action=action,
+                success=False,
+                error=(
+                    "Picking up object would cause it to collide and clip into "
+                    "something!\nmanualInteract internal stack frame"
+                ),
+            )
+            return self.last_event
+        return super().step(action_dict)
+
+
 def _observation(
-    *, visible: bool, picked: bool = False, z: float = 0.0
+    *, visible: bool, picked: bool = False, z: float = 0.0, horizon: float = 0.0
 ) -> dict[str, Any]:
     objects = []
     if visible and not picked:
@@ -71,7 +122,7 @@ def _observation(
         "agent": {
             "position": {"x": 0.0, "y": 0.9, "z": z},
             "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
-            "cameraHorizon": 0.0,
+            "cameraHorizon": horizon,
             "isStanding": True,
         },
         "objects": objects,
@@ -100,6 +151,33 @@ def _request(observation: dict[str, Any], directive: dict[str, Any]) -> PlannerR
 
 
 class Phase5TargetLockTests(unittest.TestCase):
+    def test_v2_precommit_matches_implementation_and_remains_execution_disabled(
+        self,
+    ) -> None:
+        root = Path(__file__).resolve().parents[1]
+        config = json.loads(
+            (root / "configs" / "phase5_target_lock_interaction_recovery_v2.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(config["protocol_version"], TARGET_LOCK_POLICY_VERSION)
+        self.assertEqual(
+            config["canonical_pickup_horizon_degrees"],
+            TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES,
+        )
+        self.assertEqual(
+            config["interaction_recovery_action_limit"],
+            TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT,
+        )
+        self.assertEqual(
+            config["interaction_recovery_retry_limit"],
+            TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT,
+        )
+        self.assertEqual(
+            config["applies_to_memory_variants"],
+            ["no_memory", "short_memory_k2", "object_memory"],
+        )
+        self.assertFalse(config["formal_execution_authorized"])
+
     def test_visible_target_prioritizes_pickup_before_fallback(self) -> None:
         policy = SharedTargetLockPolicy(target_type="Book")
         observation = _observation(visible=True)
@@ -152,6 +230,127 @@ class Phase5TargetLockTests(unittest.TestCase):
         metrics = policy.snapshot()
         self.assertEqual(metrics["target_lock_pickup_attempt_count"], 2)
         self.assertTrue(metrics["picked_after_target_lock"])
+
+    def test_collision_stack_trace_uses_fixed_horizon_recovery_then_pickup(self) -> None:
+        policy = SharedTargetLockPolicy(target_type="Book")
+        visible_zero = _observation(visible=True, horizon=0.000015)
+        pickup = policy.next_directive(
+            visible_zero, allowed_actions=THOR_BOOK_ACTIONS
+        )
+        policy.record_result(
+            pickup,
+            success=False,
+            error_message=(
+                "Picking up object would cause it to collide and clip into something!\n"
+                "manualInteract internal stack frame"
+            ),
+            observation_after=visible_zero,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        recovery = policy.next_directive(
+            visible_zero, allowed_actions=THOR_BOOK_ACTIONS
+        )
+        self.assertEqual(recovery["phase"], "interaction_recovery")
+        self.assertEqual(recovery["action"], {"action": "LookUp"})
+        self.assertNotIn("objectId", recovery["action"])
+        visible_canonical = _observation(visible=True, horizon=-30.0)
+        policy.record_result(
+            recovery,
+            success=True,
+            error_message="",
+            observation_after=visible_canonical,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        retry = policy.next_directive(
+            visible_canonical, allowed_actions=THOR_BOOK_ACTIONS
+        )
+        self.assertEqual(retry["action"]["action"], "PickupObject")
+        policy.record_result(
+            retry,
+            success=True,
+            error_message="",
+            observation_after=_observation(
+                visible=False, picked=True, horizon=-30.0
+            ),
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        metrics = policy.snapshot()
+        self.assertEqual(metrics["target_lock_pickup_attempt_count"], 2)
+        self.assertEqual(
+            metrics["target_lock_interaction_recovery_action_count"], 1
+        )
+        self.assertEqual(
+            metrics["target_lock_interaction_recovery_attempt_count"], 1
+        )
+        self.assertEqual(metrics["target_lock_terminal_failure_count"], 0)
+        self.assertTrue(metrics["picked_after_target_lock"])
+
+    def test_collision_horizon_alignment_is_deterministic_and_bounded(self) -> None:
+        expected = {
+            0.0: ["LookUp"],
+            30.0: ["LookUp", "LookUp"],
+            60.0: ["LookUp", "LookUp", "LookUp"],
+            -60.0: ["LookDown"],
+        }
+        for horizon, actions in expected.items():
+            policy = SharedTargetLockPolicy(target_type="Book")
+            actual = policy._build_interaction_recovery_actions(
+                _observation(visible=True, horizon=horizon),
+                allowed_actions=THOR_BOOK_ACTIONS,
+            )
+            self.assertEqual(actual, actions)
+            self.assertLessEqual(len(actual), 4)
+        policy = SharedTargetLockPolicy(target_type="Book")
+        self.assertEqual(
+            policy._build_interaction_recovery_actions(
+                _observation(visible=True, horizon=0.5),
+                allowed_actions=THOR_BOOK_ACTIONS,
+            ),
+            [],
+        )
+
+    def test_second_collision_terminates_without_ordinary_planner_fallthrough(self) -> None:
+        policy = SharedTargetLockPolicy(target_type="Book")
+        visible_zero = _observation(visible=True, horizon=0.0)
+        first_pickup = policy.next_directive(
+            visible_zero, allowed_actions=THOR_BOOK_ACTIONS
+        )
+        collision = "pickup would collide and clip into something"
+        policy.record_result(
+            first_pickup,
+            success=False,
+            error_message=collision,
+            observation_after=visible_zero,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        recovery = policy.next_directive(
+            visible_zero, allowed_actions=THOR_BOOK_ACTIONS
+        )
+        canonical = _observation(visible=True, horizon=-30.0)
+        policy.record_result(
+            recovery,
+            success=True,
+            error_message="",
+            observation_after=canonical,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        retry = policy.next_directive(canonical, allowed_actions=THOR_BOOK_ACTIONS)
+        policy.record_result(
+            retry,
+            success=False,
+            error_message=collision,
+            observation_after=canonical,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        self.assertIsNone(
+            policy.next_directive(canonical, allowed_actions=THOR_BOOK_ACTIONS)
+        )
+        metrics = policy.snapshot()
+        self.assertEqual(
+            metrics["target_lock_failed_reason"],
+            "pickup_collision_after_interaction_recovery",
+        )
+        self.assertEqual(metrics["target_lock_terminal_failure_count"], 1)
 
     def test_moveahead_loss_uses_moveback_then_reacquires_and_picks(self) -> None:
         policy = SharedTargetLockPolicy(target_type="Book")
@@ -267,6 +466,28 @@ class Phase5TargetLockTests(unittest.TestCase):
             "pickup_failure_not_distance_or_angle_related",
         )
 
+    def test_stack_method_name_does_not_make_unrelated_failure_recoverable(self) -> None:
+        policy = SharedTargetLockPolicy(target_type="Book")
+        visible = _observation(visible=True)
+        pickup = policy.next_directive(visible, allowed_actions=THOR_BOOK_ACTIONS)
+        policy.record_result(
+            pickup,
+            success=False,
+            error_message=(
+                "inventory already contains another object\n"
+                "manualInteract internal stack frame"
+            ),
+            observation_after=visible,
+            allowed_actions=THOR_BOOK_ACTIONS,
+        )
+        self.assertIsNone(
+            policy.next_directive(visible, allowed_actions=THOR_BOOK_ACTIONS)
+        )
+        self.assertEqual(
+            policy.snapshot()["target_lock_failed_reason"],
+            "pickup_failure_not_distance_or_angle_related",
+        )
+
     def test_never_visible_leaves_old_fallback_untouched(self) -> None:
         policy = SharedTargetLockPolicy(target_type="Book")
         hidden = _observation(visible=False)
@@ -337,6 +558,74 @@ class Phase5TargetLockTests(unittest.TestCase):
             self.assertEqual(summary["target_reacquired_after_loss_count"], 1)
             self.assertTrue(summary["picked_after_target_lock"])
             self.assertTrue(summary["information_boundary_passed"])
+
+    def test_runner_uses_same_collision_recovery_for_all_variants(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            sequences = {}
+            for variant in ("no_memory", "short_memory_k2", "object_memory"):
+                output = root / variant
+                summary = ThorEpisodeRunner(
+                    ThorEpisodeConfig(
+                        task="thor_book_reacquire_k2",
+                        memory=variant,
+                        mode="formal",
+                        max_steps=20,
+                        output_dir=output,
+                        save_frames=False,
+                        trace_html=False,
+                        visualize=False,
+                    ),
+                    env=_CollisionThenSuccessThorEnv(),
+                ).run()
+                trace = [
+                    json.loads(line)
+                    for line in (output / "episode.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()
+                ]
+                sequences[variant] = [
+                    row["planner_decision"]["action"]["action"]
+                    for row in trace
+                    if row["planner_decision"]["reason_code"].startswith(
+                        "target_lock_"
+                    )
+                ]
+                self.assertTrue(summary["success"], variant)
+                self.assertEqual(
+                    summary["target_lock_interaction_recovery_action_count"], 1
+                )
+                self.assertEqual(summary["target_lock_terminal_failure_count"], 0)
+                self.assertTrue(summary["information_boundary_passed"])
+            self.assertEqual(len({tuple(row) for row in sequences.values()}), 1)
+            self.assertEqual(
+                next(iter(sequences.values())),
+                ["PickupObject", "LookUp", "PickupObject"],
+            )
+
+    def test_runner_terminal_collision_is_bounded_below_episode_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            summary = ThorEpisodeRunner(
+                ThorEpisodeConfig(
+                    task="thor_book_reacquire_k2",
+                    memory="object_memory",
+                    mode="formal",
+                    max_steps=20,
+                    output_dir=Path(temporary_dir) / "terminal",
+                    save_frames=False,
+                    trace_html=False,
+                    visualize=False,
+                ),
+                env=_AlwaysCollisionThorEnv(),
+            ).run()
+        self.assertFalse(summary["success"])
+        self.assertLess(summary["steps"], 20)
+        self.assertEqual(
+            summary["failure_reason"],
+            "target_lock_failed:pickup_collision_after_interaction_recovery",
+        )
+        self.assertEqual(summary["target_lock_pickup_attempt_count"], 2)
+        self.assertEqual(summary["target_lock_terminal_failure_count"], 1)
 
     def test_old_floorplan202_failure_evidence_remains_readable(self) -> None:
         root = Path(__file__).resolve().parents[1]

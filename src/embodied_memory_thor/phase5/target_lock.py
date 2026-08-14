@@ -8,9 +8,14 @@ from dataclasses import asdict, dataclass
 from typing import Any, Mapping, Sequence
 
 
-TARGET_LOCK_POLICY_VERSION = "phase5-shared-target-lock-v1"
+TARGET_LOCK_POLICY_VERSION = "phase5-shared-target-lock-v2"
 TARGET_LOCK_RECOVERY_ACTION_BUDGET = 12
 TARGET_LOCK_APPROACH_ACTION_BUDGET = 6
+TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT = 4
+TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT = 1
+TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES = -30.0
+TARGET_LOCK_HORIZON_STEP_DEGREES = 30.0
+TARGET_LOCK_HORIZON_TOLERANCE_DEGREES = 0.001
 
 
 @dataclass
@@ -23,6 +28,9 @@ class TargetLockMetrics:
     target_reacquired_after_loss_count: int = 0
     picked_after_target_lock: bool = False
     target_lock_failed_reason: str = ""
+    target_lock_interaction_recovery_action_count: int = 0
+    target_lock_interaction_recovery_attempt_count: int = 0
+    target_lock_terminal_failure_count: int = 0
 
     def snapshot(self) -> dict[str, Any]:
         return asdict(self)
@@ -64,6 +72,9 @@ class SharedTargetLockPolicy:
         self._last_directive: dict[str, Any] | None = None
         self._last_pre_action_visible = False
         self._suppress_until_target_hidden = False
+        self._interaction_recovery_actions: list[str] = []
+        self._interaction_recovery_cursor = 0
+        self._interaction_recovery_attempted = False
 
     def next_directive(
         self,
@@ -89,6 +100,24 @@ class SharedTargetLockPolicy:
                 self.recovering = False
                 self._recovery_actions = []
                 self._recovery_cursor = 0
+            if self._interaction_recovery_actions:
+                if self._interaction_recovery_cursor >= len(
+                    self._interaction_recovery_actions
+                ):
+                    self._interaction_recovery_actions = []
+                    self._interaction_recovery_cursor = 0
+                else:
+                    action_name = self._interaction_recovery_actions[
+                        self._interaction_recovery_cursor
+                    ]
+                    recovery_index = self._interaction_recovery_cursor
+                    self._interaction_recovery_cursor += 1
+                    self.metrics.target_lock_interaction_recovery_action_count += 1
+                    return self._directive(
+                        {"action": action_name},
+                        phase="interaction_recovery",
+                        recovery_action_index=recovery_index,
+                    )
             if self._pickup_failed_while_visible:
                 if self._approach_action_count >= self.approach_action_budget:
                     self._fail("bounded_approach_budget_exhausted")
@@ -154,19 +183,46 @@ class SharedTargetLockPolicy:
             self.recovering = False
             self._pickup_failed_while_visible = False
             self._suppress_until_target_hidden = False
+            self._interaction_recovery_actions = []
+            self._interaction_recovery_cursor = 0
             self._last_directive = deepcopy(dict(directive))
             self._last_pre_action_visible = True
             return
 
         if action_name == "PickupObject":
             if not success and visible_after:
-                if self._recoverable_pickup_failure(error_message):
+                if self._pickup_collision_failure(error_message):
+                    if self._interaction_recovery_attempted:
+                        self._fail("pickup_collision_after_interaction_recovery")
+                        return
+                    recovery_actions = self._build_interaction_recovery_actions(
+                        observation_after,
+                        allowed_actions=allowed_actions,
+                    )
+                    if not recovery_actions:
+                        self._fail(
+                            "pickup_collision_without_available_horizon_recovery"
+                        )
+                        return
+                    self._interaction_recovery_attempted = True
+                    self.metrics.target_lock_interaction_recovery_attempt_count += 1
+                    self._interaction_recovery_actions = recovery_actions
+                    self._interaction_recovery_cursor = 0
+                    self._pickup_failed_while_visible = False
+                elif self._recoverable_pickup_failure(error_message):
                     self._pickup_failed_while_visible = True
                 else:
                     self._fail("pickup_failure_not_distance_or_angle_related")
                     return
             else:
                 self._pickup_failed_while_visible = False
+        elif directive.get("phase") == "interaction_recovery":
+            if not success:
+                self._fail("interaction_recovery_action_failed")
+                return
+            if not visible_after:
+                self._fail("target_lost_during_interaction_recovery")
+                return
         elif directive.get("phase") == "bounded_approach" and visible_after:
             self._pickup_failed_while_visible = False
 
@@ -206,6 +262,15 @@ class SharedTargetLockPolicy:
             "target_type": self.target_type,
             "recovery_action_budget": self.recovery_action_budget,
             "approach_action_budget": self.approach_action_budget,
+            "interaction_recovery_action_limit": (
+                TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT
+            ),
+            "interaction_recovery_retry_limit": (
+                TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT
+            ),
+            "canonical_pickup_horizon_degrees": (
+                TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES
+            ),
             **self.metrics.snapshot(),
         }
 
@@ -307,22 +372,70 @@ class SharedTargetLockPolicy:
             if action in allowed_actions
         ][: self.recovery_action_budget]
 
+    def _build_interaction_recovery_actions(
+        self,
+        observation: Mapping[str, Any],
+        *,
+        allowed_actions: Sequence[str],
+    ) -> list[str]:
+        """Align to one fixed pickup horizon without target or hidden state."""
+
+        agent = observation.get("agent", {})
+        if not isinstance(agent, Mapping):
+            return []
+        try:
+            horizon = float(agent["cameraHorizon"])
+        except (KeyError, TypeError, ValueError):
+            return []
+        normalized_steps = round(horizon / TARGET_LOCK_HORIZON_STEP_DEGREES)
+        normalized = normalized_steps * TARGET_LOCK_HORIZON_STEP_DEGREES
+        if (
+            not math.isfinite(horizon)
+            or abs(horizon - normalized) > TARGET_LOCK_HORIZON_TOLERANCE_DEGREES
+        ):
+            return []
+        delta = TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES - normalized
+        step_count_float = abs(delta) / TARGET_LOCK_HORIZON_STEP_DEGREES
+        step_count = int(round(step_count_float))
+        if (
+            abs(step_count_float - step_count)
+            > TARGET_LOCK_HORIZON_TOLERANCE_DEGREES
+            or step_count < 1
+            or step_count > TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT
+        ):
+            return []
+        action_name = "LookDown" if delta > 0 else "LookUp"
+        if action_name not in allowed_actions:
+            return []
+        return [action_name] * step_count
+
     @staticmethod
     def _recoverable_pickup_failure(error_message: str) -> bool:
-        normalized = error_message.casefold()
+        normalized = SharedTargetLockPolicy._primary_error(error_message)
         return any(
             marker in normalized
             for marker in (
                 "angle",
-                "close enough",
+                "not close enough",
                 "distance",
-                "far",
-                "interact",
-                "reach",
+                "too far",
+                "out of reach",
+                "must be closer",
             )
         )
 
+    @staticmethod
+    def _pickup_collision_failure(error_message: str) -> bool:
+        normalized = SharedTargetLockPolicy._primary_error(error_message)
+        return "collide" in normalized or "clip into" in normalized
+
+    @staticmethod
+    def _primary_error(error_message: str) -> str:
+        return (error_message.splitlines() or [""])[0].strip().casefold()
+
     def _fail(self, reason: str) -> None:
+        if not self.metrics.target_lock_failed_reason:
+            self.metrics.target_lock_terminal_failure_count += 1
         self.metrics.target_lock_failed_reason = reason
         self.active = False
         self.recovering = False
@@ -330,3 +443,5 @@ class SharedTargetLockPolicy:
         self._suppress_until_target_hidden = True
         self._recovery_actions = []
         self._recovery_cursor = 0
+        self._interaction_recovery_actions = []
+        self._interaction_recovery_cursor = 0

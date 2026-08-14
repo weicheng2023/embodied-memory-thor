@@ -89,6 +89,7 @@ def test_probe_v4_freezes_runtime_predecessor_and_remediation_sources() -> None:
             changed.append(relative)
     assert changed == [
         "src/embodied_memory_thor/phase5/search.py",
+        "src/embodied_memory_thor/phase4/contracts.py",
         "src/embodied_memory_thor/phase4/planners.py",
         "src/embodied_memory_thor/phase4/runner.py",
     ]

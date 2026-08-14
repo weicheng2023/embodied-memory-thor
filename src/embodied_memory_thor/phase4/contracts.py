@@ -305,11 +305,12 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             violations.extend(
                 f"target_lock_unknown_key:{key}" for key in unknown_keys
             )
-        if directive.get("policy") != "phase5-shared-target-lock-v1":
+        if directive.get("policy") != "phase5-shared-target-lock-v2":
             violations.append("target_lock_policy")
         if directive.get("phase") not in {
             "pickup_attempt",
             "bounded_approach",
+            "interaction_recovery",
             "local_recovery",
         }:
             violations.append("target_lock_phase")

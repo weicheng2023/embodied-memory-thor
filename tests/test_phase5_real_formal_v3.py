@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import tempfile
 from copy import deepcopy
@@ -67,9 +68,9 @@ def _authorization_executor() -> object:
     return module
 
 
-def test_v3_precommit_is_readiness_only_and_hash_binds_successor() -> None:
+def test_v3_precommit_contract_is_readiness_only_and_historical_hash_is_frozen() -> None:
     config = _config()
-    validate_precommit(config, root=ROOT)
+    validate_precommit(config, root=ROOT, check_hashes=False)
     assert config["manifest_schema_version"] == REAL_MANIFEST_SCHEMA_VERSION_V3
     assert config["protocol_version"] == REAL_PROTOCOL_VERSION_V3
     assert config["metric_schema_version"] == REAL_METRIC_SCHEMA_VERSION_V4
@@ -79,6 +80,12 @@ def test_v3_precommit_is_readiness_only_and_hash_binds_successor() -> None:
     assert "docs/evidence/phase5_r1_distraction_coverage_gate_v1.json" in config[
         "historical_artifacts_frozen"
     ]
+    changed = [
+        relative
+        for relative, expected in config["historical_artifacts_frozen"].items()
+        if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != expected
+    ]
+    assert changed == ["src/embodied_memory_thor/phase4/runner.py"]
 
 
 def test_v3_manifest_keeps_54_cells_and_binds_task_policies() -> None:
@@ -139,11 +146,11 @@ def test_v3_readiness_joins_twelve_private_runtimes_without_serializing_them() -
         assert forbidden not in serialized
 
 
-def test_v3_execute_remains_blocked_before_output_creation() -> None:
+def test_v3_execute_remains_blocked_after_invalidated_successor_change() -> None:
     executor = _executor()
     with tempfile.TemporaryDirectory() as temporary_dir:
         output = Path(temporary_dir) / "formal-v3"
-        with pytest.raises(ValueError, match="not authorized"):
+        with pytest.raises(ValueError, match="historical_artifact"):
             executor.prepare_run(  # type: ignore[attr-defined]
                 config_path=CONFIG,
                 output_dir=output,
@@ -181,29 +188,10 @@ def test_v3_wrapper_defaults_to_v3_readiness_config() -> None:
     assert "--execute" in source
 
 
-def test_v3_authorization_only_flips_execution_and_preserves_matrix() -> None:
+def test_v3_authorization_is_not_reusable_after_successor_source_change() -> None:
     executor = _authorization_executor()
-    base = _config()
-    effective = executor.load_authorized_config(AUTHORIZATION)
-    assert base["formal_execution_authorized"] is False
-    assert effective["formal_execution_authorized"] is True
-    for key in (
-        "manifest_schema_version",
-        "protocol_version",
-        "metric_schema_version",
-        "episode_count",
-        "configuration_count_per_panel",
-        "variants",
-        "max_steps_per_episode",
-        "book_distraction_policy",
-        "controller_settings",
-        "output_policy",
-        "panels",
-        "historical_artifacts_frozen",
-    ):
-        assert effective[key] == base[key]
-    assert effective["authorization"]["matrix_contract_override_allowed"] is False
-    validate_precommit(effective, root=ROOT)
+    with pytest.raises(ValueError, match="historical_artifact"):
+        executor.load_authorized_config(AUTHORIZATION)
 
 
 def test_v3_authorization_rejects_tampered_readiness_binding() -> None:

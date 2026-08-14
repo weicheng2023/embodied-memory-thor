@@ -2618,3 +2618,26 @@ terminate with an explicit task failure rather than falling through to an
 unbounded ordinary-planner loop. Offline contract/privacy/budget tests and one
 excluded FloorPlan306 object-memory isolation probe are required before a new
 readiness protocol is allowed.
+
+`phase5-shared-target-lock-v2` implements that successor. Collision recognition
+uses only the first line of the ordinary simulator error and therefore cannot
+match method names in the native stack trace. On `collide`/`clip into`, it
+normalizes the planner-visible current camera horizon with 0.001-degree
+tolerance, deterministically emits 30-degree LookUp/LookDown actions toward the
+fixed -30-degree pickup horizon, caps that sequence at four actions, and permits
+one pickup retry. Recovery actions contain only an action name. They do not
+consume memory/variant, target coordinates or identity, anchor/support,
+candidate outcome, reachable graph or evaluator state. A second collision,
+off-grid/unavailable horizon recovery, recovery-action failure or target loss
+sets a terminal target-lock reason; the runner stops the episode before any
+ordinary-planner fallthrough.
+
+The pre-registered real gate runs exactly the formerly failing FloorPlan306
+R1-stable object-memory cell, excluded from aggregation, with a 64-step ceiling
+and no image/GUI/debug output. It must exercise the exact target-lock subsequence
+`PickupObject(fail) -> LookUp(success) -> PickupObject(success)`, with horizons
+`0 -> 0 -> -30`, exactly one failed interaction/invalid native action, exactly
+one recovery action/attempt, zero terminal failures, task success and a passing
+information boundary. It freezes the v3 stop evidence, v2 policy/config,
+runner/contracts and unchanged R1 runtime/route. This isolation gate is a
+mechanism-repair check only, not a memory comparison or formal result.
