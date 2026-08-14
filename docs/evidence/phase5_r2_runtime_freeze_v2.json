@@ -1,0 +1,29 @@
+{
+  "evidence_version": "phase5-r2-runtime-freeze-v2",
+  "runtime_set_version": "phase5-r2-frozen-runtime-set-v2",
+  "claim_boundary": "deterministic six-configuration runtime freeze; no simulator, planner, memory variant, image, or formal result",
+  "configuration_count": 6,
+  "configuration_order": [
+    "FloorPlan3_R2_fixed_start_001",
+    "FloorPlan4_R2_fixed_start_001",
+    "FloorPlan6_R2_fixed_start_001",
+    "FloorPlan7_R2_fixed_start_001",
+    "FloorPlan10_R2_fixed_start_001",
+    "FloorPlan12_R2_fixed_start_001"
+  ],
+  "route_count": 12,
+  "public_runtime_registry": "configs/phase5_r2_frozen_runtime_v2.json",
+  "public_runtime_registry_sha256": "96dbfcf4af09314ba25ecd463870bff6573c4e102d985ed290af43f2e3e70027",
+  "public_route_registry": "configs/phase5_r2_search_routes_v2.json",
+  "public_route_registry_sha256": "985ac054f091a0f02cf772ebf20721df01efaf356b5bb79575d5fdc86f0e6f3e",
+  "private_configuration_set_digest": "38686730158f305a84f866a78b06354f02cd2a4ccb59fb19aeaf0b8494d7457f",
+  "private_registry_git_ignored": true,
+  "all_six_runtime_loads_passed": true,
+  "v1_runtime_unchanged": true,
+  "coordinates_exposed": false,
+  "object_ids_exposed": false,
+  "planner_visible": false,
+  "memory_variants_run": false,
+  "formal_use_allowed": false,
+  "next_gate": "pre-register one excluded six-runtime integration triplet before any formal comparison"
+}

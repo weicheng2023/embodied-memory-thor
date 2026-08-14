@@ -929,3 +929,10 @@ expanded the shared FloorPlan3/4 private draft twice and correctly rejected
 duplicate configuration matches. Source-path deduplication is now an explicit
 tested gate; registry generation must wait for its clean pushed fix.
 The deduplication fix passes 5/5 focused and 290/290 full tests.
+
+Clean freeze from `92cc917` generated runtime set v2 successfully: six public
+configurations, 12 coordinate-free routes, and ignored private digest
+`386867...457f`. All six loader joins pass with route counts
+6/110, 11/110, 13/403, 11/685, 12/512 and 9/1367. Public leakage audit and v1
+preservation pass. No THOR or memory variant ran.
+Generated-runtime gates pass 11/11 and full regression passes 291/291.

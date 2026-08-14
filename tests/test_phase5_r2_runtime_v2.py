@@ -11,6 +11,7 @@ from embodied_memory_thor.phase5.frozen_r2 import PRIVATE_BOUNDARY
 
 ROOT = Path(__file__).resolve().parents[1]
 FREEZE_CONFIG = ROOT / "configs" / "phase5_r2_runtime_freeze_v2.json"
+FREEZE_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_r2_runtime_freeze_v2.json"
 
 
 def _module() -> object:
@@ -108,3 +109,37 @@ def test_shared_private_source_is_expanded_only_once() -> None:
     sources = [row["private_source"] for row in config["configurations"]]
     assert len(sources) == 6
     assert len(set(sources)) == 5
+
+
+def test_generated_v2_runtime_loads_all_six_and_public_evidence_is_safe() -> None:
+    from embodied_memory_thor.phase5.frozen_r2_v2 import load_frozen_r2_runtime_v2
+
+    evidence = json.loads(FREEZE_EVIDENCE.read_text(encoding="utf-8"))
+    public_path = ROOT / evidence["public_runtime_registry"]
+    routes_path = ROOT / evidence["public_route_registry"]
+    assert hashlib.sha256(public_path.read_bytes()).hexdigest() == evidence[
+        "public_runtime_registry_sha256"
+    ]
+    assert hashlib.sha256(routes_path.read_bytes()).hexdigest() == evidence[
+        "public_route_registry_sha256"
+    ]
+    action_counts = {}
+    for configuration_id in evidence["configuration_order"]:
+        runtime = load_frozen_r2_runtime_v2(configuration_id)
+        action_counts[configuration_id] = (
+            runtime.subgoal_route.action_count,
+            runtime.fallback_route.action_count,
+        )
+    assert action_counts == {
+        "FloorPlan3_R2_fixed_start_001": (6, 110),
+        "FloorPlan4_R2_fixed_start_001": (11, 110),
+        "FloorPlan6_R2_fixed_start_001": (13, 403),
+        "FloorPlan7_R2_fixed_start_001": (11, 685),
+        "FloorPlan10_R2_fixed_start_001": (12, 512),
+        "FloorPlan12_R2_fixed_start_001": (9, 1367),
+    }
+    serialized = public_path.read_text(encoding="utf-8") + routes_path.read_text(
+        encoding="utf-8"
+    ) + json.dumps(evidence)
+    for forbidden in ('"x"', '"y"', '"z"', "Cup|", "CoffeeMachine|", "objectId", "TeleportFull"):
+        assert forbidden not in serialized
