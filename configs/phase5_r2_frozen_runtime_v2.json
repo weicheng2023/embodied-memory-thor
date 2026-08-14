@@ -1,0 +1,78 @@
+{
+  "claim_boundary": "six qualified R2 runtime contracts; no memory-agent comparison or formal result",
+  "configuration_count": 6,
+  "configurations": [
+    {
+      "configuration_id": "FloorPlan3_R2_fixed_start_001",
+      "fallback_route_action_sequence_digest": "8c88b189fcbd11938ee94700f6abfef37b2a386893f38d6ae48c9c9372f92e67",
+      "fallback_route_id": "FloorPlan3_R2_fixed_start_001_fallback_absolute_v4",
+      "public_evidence": "docs/evidence/phase5_floorplan3_r2_v2_qualification.json",
+      "scene": "FloorPlan3",
+      "source_qualification_digest": "32d54bb1600098be2afebff810cf47a2c399475614e1506b594500d5f12993f9",
+      "start_pose_digest": "4f8aca6dcf970a4de00b89c83bc7b26321b21663a32171f1a8a4ded47b3adbaf",
+      "subgoal_route_action_sequence_digest": "1250f83c234dbefdd4dd0c62f979818e179152f4ad2ed89b331c79e13290f4e0",
+      "subgoal_route_id": "FloorPlan3_R2_fixed_start_001_subgoal_v1"
+    },
+    {
+      "configuration_id": "FloorPlan4_R2_fixed_start_001",
+      "fallback_route_action_sequence_digest": "c8c43b410ad3a095741d2c0fd6afd04bdca3a21debee003f678efee37151e2de",
+      "fallback_route_id": "FloorPlan4_R2_fixed_start_001_fallback_absolute_v4",
+      "public_evidence": "docs/evidence/phase5_floorplan4_r2_v2_qualification.json",
+      "scene": "FloorPlan4",
+      "source_qualification_digest": "ae4f07ab61a3e73a86dd1a9e076f76ba32c6120431e0ccc44f5254f684e0b66e",
+      "start_pose_digest": "4da658b93b309471f70619820544c43cca34734569468531155198e086b57286",
+      "subgoal_route_action_sequence_digest": "f268687f8c012e2392965eba502dc28425e017fa172cd0f0993fec1a968c0066",
+      "subgoal_route_id": "FloorPlan4_R2_fixed_start_001_subgoal_v1"
+    },
+    {
+      "configuration_id": "FloorPlan6_R2_fixed_start_001",
+      "fallback_route_action_sequence_digest": "23a37ebe6f357a2c1310b9338ce668d4e030dee1f271558efed2b60b78c55358",
+      "fallback_route_id": "FloorPlan6_R2_fixed_start_001_fallback_budgeted_visual_v1",
+      "public_evidence": "docs/evidence/phase5_floorplan6_r2_qualification_v6.json",
+      "scene": "FloorPlan6",
+      "source_qualification_digest": "2bc3fa3c20f380f26cd2c7a4e174ec804f875ad9e23921f3e1c59abf5b3e7b6f",
+      "start_pose_digest": "517fab01f2bca1113770a725a6fb8d5b0f8fad8822f667192bb20bdee883e4ab",
+      "subgoal_route_action_sequence_digest": "595df275e66e70b590a13c81e16e92bd10736b484deb964e0aaefb5f7141f592",
+      "subgoal_route_id": "FloorPlan6_R2_fixed_start_001_subgoal_v1"
+    },
+    {
+      "configuration_id": "FloorPlan7_R2_fixed_start_001",
+      "fallback_route_action_sequence_digest": "c88d898b73f85b71b74087f801788fc278eccf975cb0ef418b9beba3d78508b8",
+      "fallback_route_id": "FloorPlan7_R2_fixed_start_001_fallback_budgeted_visual_v1",
+      "public_evidence": "docs/evidence/phase5_floorplan7_r2_qualification_v6.json",
+      "scene": "FloorPlan7",
+      "source_qualification_digest": "5983c66ae38c791d31a346b6f485c33546ae334f5029d5be4f7acea3efd38d71",
+      "start_pose_digest": "e734774c49ee6bfcae7a3fc8cb5d9a03070b563b7755236a1ed6a88790ab3269",
+      "subgoal_route_action_sequence_digest": "a8742b547ce4d687b23fcca1d7325e30a91629aef53a756e8fa66bb20f47289b",
+      "subgoal_route_id": "FloorPlan7_R2_fixed_start_001_subgoal_v1"
+    },
+    {
+      "configuration_id": "FloorPlan10_R2_fixed_start_001",
+      "fallback_route_action_sequence_digest": "813e674ba41fa16c9b604fede496bbd2ba795da23553dbc9e872bc51cd0172f2",
+      "fallback_route_id": "FloorPlan10_R2_fixed_start_001_fallback_budgeted_visual_v1",
+      "public_evidence": "docs/evidence/phase5_floorplan10_r2_qualification_v6.json",
+      "scene": "FloorPlan10",
+      "source_qualification_digest": "f2f6f112630b16c4d4b31a8c89a1aba21b93aa884b43524872efc819b79e2db2",
+      "start_pose_digest": "0ec88fe9ebb271180cd2170d5557284e372368bece4338501f0c835770494671",
+      "subgoal_route_action_sequence_digest": "543464c56595804e1a5eb97e531cfd891ce668a168f2bc5c1090117fb0639b28",
+      "subgoal_route_id": "FloorPlan10_R2_fixed_start_001_subgoal_v1"
+    },
+    {
+      "configuration_id": "FloorPlan12_R2_fixed_start_001",
+      "fallback_route_action_sequence_digest": "a32fca2e03bf2293803eb4eeb101d9341c28eebc7fb8a1d2e35312ec4cad63e7",
+      "fallback_route_id": "FloorPlan12_R2_fixed_start_001_fallback_visual_v1",
+      "public_evidence": "docs/evidence/phase5_floorplan12_r2_qualification_v4.json",
+      "scene": "FloorPlan12",
+      "source_qualification_digest": "270a1016ec834f2951a23486e0a6da253f815e56966c33110c9c285ee10d0af6",
+      "start_pose_digest": "44f25dbe771e448f989f6a2f1e38cc667013ec5d3f3da1e8a65d93cd7217d30f",
+      "subgoal_route_action_sequence_digest": "69400946c1023d17c8538cd8759f1eb37748c9e58dfeae0d438ccdaa32c64c5a",
+      "subgoal_route_id": "FloorPlan12_R2_fixed_start_001_subgoal_v1"
+    }
+  ],
+  "coordinates_public": false,
+  "formal_use_allowed": false,
+  "memory_agents_run": false,
+  "planner_visible": false,
+  "private_configuration_set_digest": "38686730158f305a84f866a78b06354f02cd2a4ccb59fb19aeaf0b8494d7457f",
+  "runtime_set_version": "phase5-r2-frozen-runtime-set-v2"
+}

@@ -1,0 +1,55 @@
+{
+  "diagnostic_version": "phase5-r2-floorplan5-visual-fallback-v1",
+  "scene": "FloorPlan5",
+  "candidate_order": 2,
+  "source_revision": "c26402ba365ba7af6fcfdbf5174181cc1c638c76",
+  "source_candidate_plan": "outputs/phase5_r2_qualification_v3/floorplan5_c26402b/evaluator_only_candidate_plan.json",
+  "source_qualification": "outputs/phase5_r2_qualification_v3/floorplan5_c26402b/evaluator_only_qualification.json",
+  "source_candidate_plan_digest": "9d003961b107ec8f516ad11087f6e8bed77983a8028dd4e752fab0d30ea035a4",
+  "start_pose_digest": "26b1f1572fee1afb863f2eb2f441f51a09ff90424f5a9f0cd09dc5ce9ac6ef84",
+  "destination_pose_digest": "6e13e9dca385b1a2aa1606b68f2f3f7f0a2f929674d9e632269d8b0bf0c393ec",
+  "subgoal_route_digest": "21e42b48599862986b8f5b4227eaea73e0df793d727c84d48537e1416606ac6a",
+  "subgoal_action_count": 6,
+  "failed_fallback_route_digest": "00e3a4ebb2b48a1eed763e15ad05cc7eb63f7879373354a7cc6f180fd1397b50",
+  "failed_fallback_action_count": 162,
+  "frozen_failure_classification": "visual_coverage_failure",
+  "visual_fallback_policy_version": "phase5-target-independent-exhaustive-visual-v1",
+  "route_construction": {
+    "graph_source": "fresh-reset GetReachablePositions evaluator query isolated from the subsequent task trial",
+    "traversal": "deterministic depth-first traversal of every reachable grid node with explicit return edges",
+    "scan_at_first_visit": "four cardinal rotations at absolute 0 degrees, then four cardinal rotations at absolute +30 degrees",
+    "target_or_anchor_input_used": false,
+    "qualification_goal_input_used": false,
+    "memory_variant_input_used": false,
+    "route_built_once_and_shared_by_all_variants": true,
+    "fallback_action_limit": 2048
+  },
+  "shared_variant_contract": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "memory_provider_files_frozen": {
+    "src/embodied_memory_thor/phase4/spatial_memory.py": "0fedc2fd64fc6de77a2617e15422ee338a90a336c0bf42fe5901cd09c88241ac",
+    "src/embodied_memory_thor/memory/providers.py": "85f6bb218ebecf9748a520dcda5cadb1e35c57777d1e35b18b5c7c5b9ee8acf1"
+  },
+  "prior_evidence_files_frozen": {
+    "docs/evidence/phase5_floorplan3_r2_v2_qualification.json": "980ec6738ab80f20bf4aa617fd91ce89b43c7f6ec7ea2c489035f5a906a49a93",
+    "docs/evidence/phase5_floorplan3_r2_production_probe_v2.json": "01bf91d68e35574ee5d4856f644f5d6f3bffb497c6c99a086044e715455df525",
+    "docs/evidence/phase5_floorplan4_r2_v2_qualification.json": "5373cbea07bab8ae99cb80893b2afe037fffb7a502fbc70c779cac3e671bb2ec"
+  },
+  "real_run_scope": {
+    "exactly_one_candidate": true,
+    "candidate_order": 2,
+    "memory_agents_run": false,
+    "images_saved": false,
+    "formal_use_allowed": false,
+    "later_scenes_run": false
+  },
+  "decision_rule": {
+    "rediscovery_and_pickup_pass": "permit a separately versioned FloorPlan5 qualification retry using the same general visual fallback",
+    "route_action_failure": "stop and classify an execution/collision defect; do not rerun qualification",
+    "route_exhausted_without_rediscovery": "stop; visual fallback is still incapable; do not rerun qualification",
+    "privacy_or_frozen_hash_failure": "stop without real execution"
+  }
+}

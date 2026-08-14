@@ -1,0 +1,43 @@
+{
+  "gate_version": "phase5-r2-floorplan17-production-equivalent-gate-v1",
+  "configuration_id": "FloorPlan17_R2_fixed_start_001",
+  "source_qualification_evidence": "docs/evidence/phase5_floorplan17_r2_replacement_qualification_v7.json",
+  "scene": "FloorPlan17",
+  "task": "thor_cup_after_coffee_subgoal",
+  "condition": "stable",
+  "memory": "no_memory",
+  "fallback_route_id": "FloorPlan17_R2_fixed_start_001_fallback_budgeted_visual_v1",
+  "fallback_route_action_sequence_digest": "ac1570573adc8277c9f39df10970893189133b9cbd413da313debd1477210fa8",
+  "subgoal_route_id": "FloorPlan17_R2_fixed_start_001_subgoal_v1",
+  "subgoal_route_action_sequence_digest": "24c0b4be69b2895d473c7f6774164d3023e89a8b243c3d72ac04502586e6a1e2",
+  "max_steps": 2048,
+  "mode": "formal",
+  "save_frames": false,
+  "trace_html": false,
+  "visualize": false,
+  "save_evaluator_debug": false,
+  "included_in_formal_aggregate": false,
+  "claim_boundary": "one excluded production-equivalent no-memory replacement gate; not a memory comparison, benchmark or formal result",
+  "private_candidate_sha256": "bd5d1269bcb1a33c861e3d10d1ec8990a0a8fe6fcb8cd9fbf35537b29497ba70",
+  "required_outcomes": {
+    "task_success": true,
+    "information_boundary_passed": true,
+    "shared_search_action_failure_count": 0,
+    "shared_subgoal_action_failure_count": 0,
+    "shared_route_action_recovery_attempt_count": 0,
+    "shared_route_action_recovery_action_count": 0,
+    "shared_route_action_recovery_terminal_failure_count": 0
+  },
+  "historical_artifacts_frozen": {
+    "scripts/run_phase5_r2_floorplan17_production_gate_v1.py": "2782ccb7d6882538563685cd555b33e4381cc3aeed858602ac9d646398c1bc10",
+    "configs/phase5_r2_floorplan17_replacement_candidate_v1.json": "fd8bb5fff23b422ddca779c69faa8f2ebf7dfc00c16a2cb5eae01422662094e5",
+    "docs/evidence/phase5_floorplan17_r2_replacement_qualification_v7.json": "9538322d5369d48aaf986e8a18162de0bcebfe9b4362a1d76c1158e7a02dd7f5",
+    "configs/phase5_r2_replacement_qualification_v7.json": "5ee3ffa35bd86c1d8ec1ce14cd1535278af824b1059e5271213ac056cc77597e",
+    "scripts/qualify_phase5_r2_replacement_v7.py": "c2aecc0a3cf2f4208418bda04c6c0aa15a905d2302cd412bccd0a2d9f26e0480",
+    "src/embodied_memory_thor/phase4/runner.py": "e7a0c54bef8efa429755c20e2f24b110e4ae58fe49712915e0be804217c4c5fa",
+    "src/embodied_memory_thor/phase5/search.py": "5b574cb9c1f80a308aca9b15b7bad1f0eb9f9d4768667c4ef4478ea10ccbb201",
+    "src/embodied_memory_thor/phase5/frozen_r2.py": "e2f62f04a7ddf6a9861a6e9b706e07d5560d254a3a9f004c3b64ce4e351c5e92"
+  },
+  "formal_execution_authorized": false,
+  "next_gate": "commit and push, then run exactly one excluded FloorPlan17 no-memory production-equivalent episode; no memory variants or later scenes"
+}

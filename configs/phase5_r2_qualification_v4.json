@@ -1,0 +1,39 @@
+{
+  "qualification_version": "phase5-r2-native-qualification-v4",
+  "start_stability_policy_version": "phase5-r2-start-visibility-stability-v1",
+  "start_stability_trials_per_pose": 3,
+  "stable_start_rule": "retain only standing Cup poses passing all seven preconditions on 3/3 fresh-reset trials",
+  "candidate_policy": "deterministic rank-balanced first-12 over stable Cup poses by CoffeeMachine standing poses",
+  "candidate_pair_limit": 12,
+  "candidate_freeze_before_task_outcomes": true,
+  "subgoal_route_action_limit": 240,
+  "fallback_policy_version": "phase5-target-independent-exhaustive-visual-v1",
+  "fallback_action_limit": 2048,
+  "fallback_scan_horizons_degrees": [0.0, 30.0],
+  "fallback_every_reachable_node_visited": true,
+  "fallback_target_or_anchor_input_used": false,
+  "fallback_memory_variant_input_used": false,
+  "scene_skip_classifications": [
+    "scene_start_ineligible_no_standing_cup",
+    "scene_start_visibility_unstable_no_stable_pose",
+    "scene_start_ineligible_no_joint_feasible_start",
+    "subgoal_route_construction_ineligible",
+    "subgoal_route_execution_ineligible",
+    "visual_fallback_route_construction_ineligible",
+    "visual_fallback_route_execution_ineligible",
+    "native_batch_completed_without_qualified_configuration",
+    "target_reacquisition_not_achieved_by_registered_visual_fallback",
+    "candidate_batch_exhausted_without_route_or_replay_pass",
+    "reset_restoration_passed_but_scene_ineligible"
+  ],
+  "historical_artifacts_frozen": {
+    "configs/phase5_r2_frozen_runtime_v1.json": "8b42b77126a551f1c5cd63a00c8f54b718ebe23a3df1ac7af34a897f03bbc0ba",
+    "configs/phase5_search_routes.json": "69b80d5fe93060466c2841157e40793c1992821569a915cceb694d7717e9d384",
+    "docs/evidence/phase5_floorplan3_r2_v2_qualification.json": "980ec6738ab80f20bf4aa617fd91ce89b43c7f6ec7ea2c489035f5a906a49a93",
+    "docs/evidence/phase5_floorplan4_r2_v2_qualification.json": "5373cbea07bab8ae99cb80893b2afe037fffb7a502fbc70c779cac3e671bb2ec"
+  },
+  "memory_agents_run": false,
+  "images_saved": false,
+  "gui_enabled": false,
+  "formal_use_allowed": false
+}
