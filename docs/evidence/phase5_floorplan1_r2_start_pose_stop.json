@@ -1,0 +1,23 @@
+{
+  "evidence_version": "phase5-floorplan1-r2-start-pose-stop-v1",
+  "claim_boundary": "real AI2-THOR start-qualification stop; no candidate route, interaction, fallback, memory variant, or formal result",
+  "scene": "FloorPlan1",
+  "code_revision": "aa6e08dd87b1bac68b5a9e2a413046cc2e9c18ac",
+  "working_tree_dirty": false,
+  "qualification_version": "phase5-r2-native-qualification-v1",
+  "candidate_pair_limit": 12,
+  "candidate_pair_count": 0,
+  "candidate_trials_run": 0,
+  "passed": false,
+  "classification": "selected_cup_has_no_standing_interactable_pose",
+  "failure_reason": "GetInteractablePoses returned no standing pose for the first pickupable Cup selected by sorted object ID",
+  "route_actions_run": false,
+  "coffee_machine_toggle_run": false,
+  "fallback_run": false,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "later_scenes_run": false,
+  "formal_use_allowed": false,
+  "source_output": "outputs/phase5_r2_qualification/20260813T082154Z",
+  "required_protocol_decision": "pre-register whether to search Cup instances for the first standing-interactable target or admit non-standing starts; do not retry or enter FloorPlan2 before that decision"
+}

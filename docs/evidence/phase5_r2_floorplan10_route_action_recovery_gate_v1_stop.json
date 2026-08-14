@@ -1,0 +1,55 @@
+{
+  "audit_errors": [
+    "summary:success",
+    "summary:failure_reason",
+    "summary:shared_route_action_recovered_failure_count",
+    "summary:shared_route_action_recovery_terminal_failure_count",
+    "summary:shared_search_action_failure_count",
+    "summary:invalid_action_count",
+    "summary:ordered_subgoal_passed",
+    "route_action_recovery_results"
+  ],
+  "claim_boundary": "excluded single-cell shared execution-recovery mechanism gate only; not a memory comparison, task benchmark or formal result",
+  "classification": "persistent_route_obstacle_not_transient_settling",
+  "code_revision": "1553b667f701343ddaab9ded9ec059eb3b4d3ceb",
+  "configuration_id": "FloorPlan10_R2_fixed_start_001",
+  "failed_action_index": 200,
+  "gate_version": "phase5-r2-floorplan10-route-action-recovery-gate-v1",
+  "included_in_formal_aggregate": false,
+  "information_boundary_passed": true,
+  "invalid_action_count": 2,
+  "memory": "no_memory",
+  "output_artifact_sha256": {
+    "episode_trace": "ad49ce0f402e73e5e8abddf71cde44e8e22c4f95b2be4316fb72583215a62510",
+    "gate_summary": "fe43ab79056b8f90d0983d95ab7f854987ff258a86d8815b5c7b51c9e18aa1c3",
+    "run_manifest": "cfbfcf3d0a8f1e88a7c89ebbd2b34ece4f22659a8a7fb4b597ddd986909fdbec",
+    "summary": "0f9938d3f117b48bab4535c92d3709b3c5f33141645ae6bdb68ec43af0b2a319"
+  },
+  "passed": false,
+  "recovered_failure_count": 0,
+  "recovery_action_count": 2,
+  "recovery_action_successes": [
+    false,
+    true,
+    false
+  ],
+  "recovery_actions": [
+    "MoveAhead",
+    "Pass",
+    "MoveAhead"
+  ],
+  "recovery_attempt_count": 1,
+  "recovery_phases": [
+    "coverage",
+    "route_action_stabilization",
+    "route_action_retry"
+  ],
+  "route_action_recovery_policy": "phase5-shared-route-action-recovery-v1",
+  "setup_completed": true,
+  "shared_search_action_failure_count": 1,
+  "steps": 217,
+  "success": false,
+  "terminal_failure_count": 1,
+  "working_tree_dirty": false,
+  "next_gate": "stop automatic execution; choose and pre-register either fail-closed scene exclusion/replacement-route qualification or a common persistent-blocked-action successor before any formal-v5 readiness"
+}

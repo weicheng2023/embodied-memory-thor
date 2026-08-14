@@ -1,0 +1,30 @@
+{
+  "action_count": 404,
+  "action_limit": 2048,
+  "claim_boundary": "route construction only; no route execution, qualification, memory variant, image, or formal result",
+  "classification": "budgeted_visual_fallback_construction_passed",
+  "code_revision": "cef5b7888a36fb0f2482ec21c17d294e6f1f361e",
+  "coordinates_exposed": false,
+  "coverage_summary": {
+    "all_occupied_bins_represented": true,
+    "line_of_sight_coverage_claimed": false,
+    "maximum_within_bin_grid_chebyshev_distance": 2,
+    "occupied_bin_count": 26,
+    "occupied_bins_with_viewpoint_count": 26
+  },
+  "diagnostic_version": "phase5-r2-budgeted-visual-fallback-construction-v1",
+  "formal_use_allowed": false,
+  "head_pushed": true,
+  "images_saved": false,
+  "memory_variants_run": false,
+  "object_ids_exposed": false,
+  "policy_version": "phase5-r2-budgeted-visual-fallback-v1",
+  "qualification_run": false,
+  "reachable_graph_exposed": false,
+  "reset_restoration_passed": true,
+  "route_actions_executed": false,
+  "route_digest": "aa40a6e0f5aed9c899de48cbaa4f79520f6a7b0f687fb8154ab833afd338b5af",
+  "scene": "FloorPlan6",
+  "viewpoint_count": 26,
+  "working_tree_dirty": false
+}

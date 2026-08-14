@@ -1,0 +1,75 @@
+{
+  "claim_boundary": "one excluded six-configuration R2 runtime-v3 dry run; descriptive engineering evidence only, not a formal comparison, benchmark or memory-superiority result",
+  "code_revision": "6cd45e1750450a8b030ece0190c2eb5d4c411092",
+  "completed_cell_count": 18,
+  "configuration_count": 6,
+  "configuration_order": [
+    "FloorPlan3_R2_fixed_start_001",
+    "FloorPlan4_R2_fixed_start_001",
+    "FloorPlan6_R2_fixed_start_001",
+    "FloorPlan7_R2_fixed_start_001",
+    "FloorPlan12_R2_fixed_start_001",
+    "FloorPlan17_R2_fixed_start_001"
+  ],
+  "descriptive_only": {
+    "all_variants_success_count": {
+      "no_memory": 6,
+      "object_memory": 6,
+      "short_memory_k2": 6
+    },
+    "mean_steps": {
+      "no_memory": 28.5,
+      "object_memory": 32.0,
+      "short_memory_k2": 28.5
+    },
+    "object_memory_step_comparison_to_no_memory": {
+      "equal_configuration_count": 1,
+      "fewer_steps_configuration_count": 1,
+      "more_steps_configuration_count": 4
+    },
+    "step_rows": [
+      {"configuration_id": "FloorPlan3_R2_fixed_start_001", "no_memory": 13, "short_memory_k2": 13, "object_memory": 20},
+      {"configuration_id": "FloorPlan4_R2_fixed_start_001", "no_memory": 46, "short_memory_k2": 46, "object_memory": 25},
+      {"configuration_id": "FloorPlan6_R2_fixed_start_001", "no_memory": 60, "short_memory_k2": 60, "object_memory": 88},
+      {"configuration_id": "FloorPlan7_R2_fixed_start_001", "no_memory": 29, "short_memory_k2": 29, "object_memory": 32},
+      {"configuration_id": "FloorPlan12_R2_fixed_start_001", "no_memory": 14, "short_memory_k2": 14, "object_memory": 18},
+      {"configuration_id": "FloorPlan17_R2_fixed_start_001", "no_memory": 9, "short_memory_k2": 9, "object_memory": 9}
+    ]
+  },
+  "dry_run_summary_sha256": "b5a9e63aee36d4b029ac96a7134d82dba884317e1a39101603ddb646ea99f9ef",
+  "dry_run_version": "phase5-r2-runtime-v3-six-configuration-dry-run-v1",
+  "formal_use_allowed": false,
+  "included_in_formal_aggregate": false,
+  "information_boundary_passed_cell_count": 18,
+  "integrity_audit_error_count": 0,
+  "invalid_action_count_total": 1,
+  "k2_eviction_observed_configuration_count": 6,
+  "object_memory_guidance_observed_configuration_count": 6,
+  "passed": true,
+  "per_cell_summary_sha256": {
+    "FloorPlan3_R2_fixed_start_001__no_memory": "0d166438c5e8e4fa4c64f4a3491c53027e9aaa48103208f6e6590e7303a63d17",
+    "FloorPlan3_R2_fixed_start_001__short_memory_k2": "b0d4265fe4e5d760cfd57460af6a6b5d96c40f8043901d5cb40569470abaaea1",
+    "FloorPlan3_R2_fixed_start_001__object_memory": "ef919f7e3e78a448a1a4dc39d44dfd5a37bfbcae4b57083db5213f35c88d001f",
+    "FloorPlan4_R2_fixed_start_001__no_memory": "1a8211d9a5e46c19ebfe961b3f56d858a43a45b710c6c999dda730b1f45c1466",
+    "FloorPlan4_R2_fixed_start_001__short_memory_k2": "0a0d6df5b3488802c0338907b10492ede74ed3f00a88000d099659d78694e566",
+    "FloorPlan4_R2_fixed_start_001__object_memory": "7aa8ea8d036ede69046a9404d77736c6b9f7899803099ebb6b4578e4d29623ee",
+    "FloorPlan6_R2_fixed_start_001__no_memory": "684e83b9ceb6c9295dfc304636b2667031a354cd3da6ee120780c38c615f7a20",
+    "FloorPlan6_R2_fixed_start_001__short_memory_k2": "22db5fa2b0ae4d51c4bc8bc47732b75042430df39c3c8774a3bfe4aef38e4137",
+    "FloorPlan6_R2_fixed_start_001__object_memory": "f0d4c1b2f2506abc678a300a24547603191d1849dd05641ca10f47979671d47c",
+    "FloorPlan7_R2_fixed_start_001__no_memory": "ed189547117c72ff492bd7c1689da666d5a1dd8cc0acb1bf580b284200b64491",
+    "FloorPlan7_R2_fixed_start_001__short_memory_k2": "20d00c9a4dba8240af4dd87dc690c42a2f7a31c1aab2778a1eb75d4be4dc0c25",
+    "FloorPlan7_R2_fixed_start_001__object_memory": "164b6ec92646396ac3567bf55d5e3cb1f9a6755d0445859dd855c146b7d920cf",
+    "FloorPlan12_R2_fixed_start_001__no_memory": "9c42c2b385bf43e1a1eac5b10d38bf94d9ed0d6c257513e429ce699d24edf2d0",
+    "FloorPlan12_R2_fixed_start_001__short_memory_k2": "666b0725c90ea5a8a8fdd8ca9ba1fd4896d0b3665799dcba132c56fd90df29ec",
+    "FloorPlan12_R2_fixed_start_001__object_memory": "323c677db1bed4aa0ef466ca4c8087b430a65edea8ca7ac56c44c78eb17c6454",
+    "FloorPlan17_R2_fixed_start_001__no_memory": "3288d4cff0313b5811a8a7033a933321b44c97a0bbba7ba0e4478c1ae9da968e",
+    "FloorPlan17_R2_fixed_start_001__short_memory_k2": "8de1ba8be0d3f9bcc8992f0e5f43a3fab05b8044d618ddc9d63b6832a682add6",
+    "FloorPlan17_R2_fixed_start_001__object_memory": "3ebddf49acd7921ef5944ee7466ee421c0a9ff4f35028b83ca61a13806e57a64"
+  },
+  "prior_episode_reuse": false,
+  "route_action_recovery_used": false,
+  "runtime_set_version": "phase5-r2-frozen-runtime-set-v3",
+  "stopped_early": false,
+  "working_tree_dirty": false,
+  "next_gate": "design a completely fresh formal-v5 readiness manifest that replaces only the R2 runtime-v2 set with runtime-v3; do not reuse dry-run rows"
+}

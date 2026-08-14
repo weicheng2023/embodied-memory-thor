@@ -1,0 +1,60 @@
+{
+  "evidence_version": "phase5-floorplan5-r2-visual-fallback-diagnostic-v1",
+  "claim_boundary": "one excluded real AI2-THOR FloorPlan5 diagnostic; fallback route constructed but not executed; no memory variant and no formal result",
+  "diagnostic_version": "phase5-r2-floorplan5-visual-fallback-v1",
+  "scene": "FloorPlan5",
+  "candidate_order": 2,
+  "code_revision": "4df165c19f0492cd854a377681ec707397be019d",
+  "working_tree_dirty": false,
+  "source_failure_classification": "visual_coverage_failure",
+  "route_construction": {
+    "passed": true,
+    "policy_version": "phase5-target-independent-exhaustive-visual-v1",
+    "action_limit": 2048,
+    "worst_case_action_bound": 2028,
+    "planned_action_count": 1645,
+    "reachable_node_count": 127,
+    "visited_node_count": 127,
+    "scan_node_count": 127,
+    "scan_horizons_degrees": [
+      0.0,
+      30.0
+    ],
+    "every_reachable_node_visited": true,
+    "every_reachable_node_scanned_at_both_horizons": true,
+    "target_or_anchor_input_used": false,
+    "qualification_goal_input_used": false,
+    "memory_variant_input_used": false
+  },
+  "start_preconditions": {
+    "teleport_success": true,
+    "cup_exists": true,
+    "cup_visible": false,
+    "cup_pickupable": true,
+    "coffee_machine_exists": true,
+    "coffee_machine_initially_off": true,
+    "coffee_machine_initially_hidden": true
+  },
+  "failure_classification": "frozen_start_visibility_nonreproduction",
+  "failure_reason": "start_precondition_failed",
+  "fallback_actions_executed": 0,
+  "fallback_capability_interpretable": false,
+  "reset_restoration": {
+    "passed": true,
+    "teleport_success": true,
+    "cup_visible": true,
+    "coffee_machine_off": true,
+    "cup_not_in_inventory": true
+  },
+  "interpretation": "the frozen start did not reproduce Cup visibility for the diagnostic trial, while the same start was visible again after the next fresh reset; therefore the new fallback was never exercised and this run says nothing about whether it can rediscover Cup",
+  "diagnostic_passed": false,
+  "qualification_retry_allowed": false,
+  "memory_agents_run": false,
+  "coordinates_exposed": false,
+  "object_ids_exposed": false,
+  "images_saved": false,
+  "formal_use_allowed": false,
+  "later_scenes_run": false,
+  "source_output": "outputs/phase5_r2_floorplan5_visual_fallback/floorplan5_4df165c",
+  "next_gate": "stop; do not rerun FloorPlan5 qualification or enter FloorPlan6; separately precommit a matched strategy for nondeterministic frozen-start visibility before any diagnostic retry"
+}
