@@ -115,6 +115,8 @@ class PlannerRequest:
     allowed_actions: tuple[str, ...]
     retrieved_memory: tuple[dict[str, Any], ...] = ()
     recent_action_results: tuple[dict[str, Any], ...] = ()
+    shared_search: dict[str, Any] | None = None
+    target_lock: dict[str, Any] | None = None
     schema_version: str = TRACE_SCHEMA_VERSION
     rgb_consumed_by_planner: bool = False
 
@@ -154,6 +156,7 @@ class PlannerInputAudit:
     violations: tuple[str, ...] = field(default_factory=tuple)
     visible_object_ids: tuple[str, ...] = field(default_factory=tuple)
     memory_record_ids: tuple[str, ...] = field(default_factory=tuple)
+    shared_search_route_id: str | None = None
     input_digest: str = ""
 
     def snapshot(self) -> dict[str, Any]:
@@ -206,11 +209,160 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
         if record.get("observed_visible") is not True:
             violations.append(f"memory_record_not_visible_derived:{index}")
 
+    shared_route_id: str | None = None
+    if request.shared_search is not None:
+        shared = request.shared_search
+        allowed_search_keys = {
+            "action",
+            "action_index",
+            "action_sequence_digest",
+            "phase",
+            "policy",
+            "route_role",
+            "route_id",
+        }
+        unknown_keys = sorted(set(map(str, shared)) - allowed_search_keys)
+        if unknown_keys:
+            violations.extend(
+                f"shared_search_unknown_key:{key}" for key in unknown_keys
+            )
+        policy = shared.get("policy")
+        allowed_policy_roles = {
+            "frozen_target_independent_route": "target_independent_fallback",
+            "frozen_task_subgoal_route": "task_subgoal_navigation",
+        }
+        route_role = shared.get(
+            "route_role",
+            (
+                "target_independent_fallback"
+                if policy == "frozen_target_independent_route"
+                else None
+            ),
+        )
+        if policy not in allowed_policy_roles:
+            violations.append("shared_search_policy")
+        elif route_role != allowed_policy_roles[policy]:
+            violations.append("shared_search_route_role")
+        elif policy == "frozen_task_subgoal_route" and (
+            request.task_name != "thor_cup_after_coffee_subgoal"
+            or request.task_stage != "toggle_coffee_machine"
+        ):
+            violations.append("shared_search_subgoal_stage")
+        shared_route_id = str(shared.get("route_id", "")) or None
+        if shared_route_id is None:
+            violations.append("shared_search_route_id")
+        digest = str(shared.get("action_sequence_digest", ""))
+        if len(digest) != 64 or any(
+            character not in "0123456789abcdef" for character in digest
+        ):
+            violations.append("shared_search_action_sequence_digest")
+        phase = shared.get("phase")
+        action_index = shared.get("action_index")
+        if phase not in {
+            "route_entry_alignment",
+            "route_entry_recovery",
+            "route_action_stabilization",
+            "route_action_retry",
+            "coverage",
+        }:
+            violations.append("shared_search_phase")
+        elif phase == "route_entry_alignment" and action_index is not None:
+            violations.append("shared_search_alignment_index")
+        elif phase == "route_entry_recovery" and (
+            not isinstance(action_index, int) or action_index < 0
+        ):
+            violations.append("shared_search_recovery_index")
+        elif phase in {
+            "route_action_stabilization",
+            "route_action_retry",
+            "coverage",
+        } and (
+            not isinstance(action_index, int) or action_index < 0
+        ):
+            violations.append("shared_search_coverage_index")
+        action = shared.get("action")
+        if not isinstance(action, Mapping) or set(action) != {"action"}:
+            violations.append("shared_search_action_schema")
+        elif action.get("action") not in {
+            "LookDown",
+            "LookUp",
+            "MoveAhead",
+            "MoveBack",
+            "Pass",
+            "RotateLeft",
+            "RotateRight",
+        }:
+            violations.append("shared_search_action_not_navigation_only")
+        elif phase == "route_action_stabilization" and action.get("action") != "Pass":
+            violations.append("shared_search_stabilization_not_pass")
+        elif phase != "route_action_stabilization" and action.get("action") == "Pass":
+            violations.append("shared_search_pass_outside_stabilization")
+
+    if request.shared_search is not None and request.target_lock is not None:
+        violations.append("shared_search_and_target_lock_both_active")
+
+    if request.target_lock is not None:
+        directive = request.target_lock
+        allowed_lock_keys = {
+            "action",
+            "phase",
+            "policy",
+            "recovery_action_index",
+            "recovery_budget",
+            "target_object_type",
+        }
+        unknown_keys = sorted(set(map(str, directive)) - allowed_lock_keys)
+        if unknown_keys:
+            violations.extend(
+                f"target_lock_unknown_key:{key}" for key in unknown_keys
+            )
+        if directive.get("policy") != "phase5-shared-target-lock-v2":
+            violations.append("target_lock_policy")
+        if directive.get("phase") not in {
+            "pickup_attempt",
+            "bounded_approach",
+            "interaction_recovery",
+            "local_recovery",
+        }:
+            violations.append("target_lock_phase")
+        if directive.get("target_object_type") not in {"Book", "Cup"}:
+            violations.append("target_lock_target_type")
+        budget = directive.get("recovery_budget")
+        if not isinstance(budget, int) or budget < 1 or budget > 32:
+            violations.append("target_lock_recovery_budget")
+        recovery_index = directive.get("recovery_action_index")
+        if recovery_index is not None and (
+            not isinstance(recovery_index, int) or recovery_index < 0
+        ):
+            violations.append("target_lock_recovery_action_index")
+        action = directive.get("action")
+        if not isinstance(action, Mapping):
+            violations.append("target_lock_action_schema")
+        else:
+            action_name = action.get("action")
+            if action_name == "PickupObject":
+                if set(action) != {"action", "objectId"}:
+                    violations.append("target_lock_pickup_schema")
+                elif str(action.get("objectId", "")) not in set(
+                    visible_object_ids(request.observation)
+                ):
+                    violations.append("target_lock_object_not_currently_visible")
+            elif set(action) != {"action"} or action_name not in {
+                "MoveAhead",
+                "MoveBack",
+                "RotateLeft",
+                "RotateRight",
+                "LookUp",
+                "LookDown",
+            }:
+                violations.append("target_lock_navigation_action_schema")
+
     return PlannerInputAudit(
         passed=not violations,
         violations=tuple(violations),
         visible_object_ids=visible_object_ids(request.observation),
         memory_record_ids=tuple(record_ids),
+        shared_search_route_id=shared_route_id,
         input_digest=request.input_digest,
     )
 

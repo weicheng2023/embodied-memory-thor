@@ -10,3 +10,30 @@ tasks:
         field: isPickedUp
         equals: true
     max_steps: 12
+  thor_book_reacquire_k2:
+    task_name: thor_book_reacquire_k2
+    natural_language_instruction: Observe the Book, complete the frozen three-transition visual distraction, then reacquire and pick it up.
+    required_objects:
+      - Book
+    goal_conditions:
+      - type: object_state
+        object_type: Book
+        field: isPickedUp
+        equals: true
+    max_steps: 12
+  thor_cup_after_coffee_subgoal:
+    task_name: thor_cup_after_coffee_subgoal
+    natural_language_instruction: Observe the Cup, toggle the CoffeeMachine before touching the Cup, then reacquire and pick up the Cup.
+    required_objects:
+      - Cup
+      - CoffeeMachine
+    goal_conditions:
+      - type: object_state
+        object_type: CoffeeMachine
+        field: isToggled
+        equals: true
+      - type: object_state
+        object_type: Cup
+        field: isPickedUp
+        equals: true
+    max_steps: 16
