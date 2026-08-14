@@ -4,7 +4,7 @@ A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-T
 
 ## Status
 
-Phases 0–2.5 are implemented: project scaffolding, environment diagnostics, real/mock adapters, state-based evaluation, structured logging, a controlled partially observable mock harness, and a verified live AI2-THOR smoke path. Memory, LLM planners, and batch experiments are not yet claimed as complete.
+Phases 0–3 are complete. The formal `phase3-v2` controlled pilot ran 54/54 successful episodes from a clean revision, with all information-boundary and protocol checks passing. Results are descriptive E1 mock evidence, not a real AI2-THOR memory claim. LLM planners remain later work.
 
 ## Motivation and scope
 
@@ -133,12 +133,13 @@ put_apple_on_plate
 wash_apple_put_countertop
 slice_apple_put_plate
 po_slice_apple_put_plate
+po_find_book_after_distraction
 ```
 
 Each run creates a unique directory under `outputs/runs/<timestamp>/` containing:
 
-- `episode.jsonl`: one record per attempted action, including visible objects, action outcome, latency, goal state, and an empty Phase 3 memory placeholder
-- `summary.json`: success, steps, invalid-action metrics, planning/episode latency, and failure reason
+- `episode.jsonl`: one record per attempted action, including visible objects, action outcome, decision trace, before/after memory snapshots, provenance, task milestones, interventions, latency, and goal state
+- `summary.json`: success, steps, invalid-action, search/revisit, memory-hint, stale-recovery, audit, and latency metrics
 
 Task success is evaluated only from object metadata. Planner text is never treated as evidence of success.
 
@@ -158,6 +159,32 @@ python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_
 
 The mock remains an abstract state harness: `MoveToRegion` does not simulate locomotion, collision, vision pixels, or physics. Phase 2R results are preliminary E1 harness evidence, not proof of AI2-THOR performance or memory benefit. See [`docs/partial_observability.md`](docs/partial_observability.md).
 
+## Run Phase 3 memory variants
+
+The three ordinary variants share one task policy and one deterministic fallback search cycle. They differ only in historical observation access:
+
+```powershell
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner rule_based_no_memory
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner short_memory
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner object_memory
+```
+
+Run the controlled stale-memory condition:
+
+```powershell
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner object_memory --stale-intervention
+```
+
+Run the frozen 54-episode pilot from a clean Git revision:
+
+```powershell
+python scripts/run_phase3_pilot.py
+```
+
+See [`docs/phase3_memory_experiment.md`](docs/phase3_memory_experiment.md) for the information boundary, constants, output files, and interpretation limits.
+
+The accepted aggregate and per-layout results are in [`docs/phase3_results.md`](docs/phase3_results.md). Object memory reduced mean stable-task steps/moves by 0.5 in both task structures, while all stale ObjectMemory episodes exposed and recovered from an outdated last-seen record. These small deterministic results are reported without significance or broad-generalization claims.
+
 ## Repository layout
 
 ```text
@@ -168,6 +195,7 @@ scripts/check_environment.py     Environment diagnostic CLI
 scripts/smoke_ai2thor.py         Live AI2-THOR E2 integration smoke CLI
 scripts/list_scene_objects.py    Real/mock scene inspection CLI
 scripts/run_episode.py           Single-episode execution and logging CLI
+scripts/run_phase3_pilot.py      Frozen Phase 3 matrix, manifest, aggregation, and acceptance
 src/embodied_memory_thor/        Installable Python package
 tests/                           Automated tests
 ```

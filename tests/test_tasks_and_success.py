@@ -33,6 +33,7 @@ class TaskConfigurationTests(unittest.TestCase):
                 "wash_apple_put_countertop",
                 "slice_apple_put_plate",
                 "po_slice_apple_put_plate",
+                "po_find_book_after_distraction",
             },
             set(tasks),
         )

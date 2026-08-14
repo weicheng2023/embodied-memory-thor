@@ -34,6 +34,8 @@ class RuleBasedPlanner:
             return self._wash_and_place(by_type)
         if task.task_name in {"slice_apple_put_plate", "po_slice_apple_put_plate"}:
             return self._slice_and_place(by_type)
+        if task.task_name == "po_find_book_after_distraction":
+            return self._toggle_then_pick_book(by_type)
         return None
 
     @staticmethod
@@ -117,3 +119,16 @@ class RuleBasedPlanner:
         if held["objectType"] == "Apple":
             return {"action": "PutObject", "objectId": plate["objectId"]}
         return {"action": "DropHandObject"}
+
+    def _toggle_then_pick_book(
+        self, by_type: dict[str, dict[str, Any]]
+    ) -> dict[str, Any] | None:
+        book = by_type.get("Book")
+        lamp = by_type.get("DeskLamp")
+        if book is None or lamp is None:
+            return None
+        if not lamp["isToggled"]:
+            return {"action": "ToggleObjectOn", "objectId": lamp["objectId"]}
+        if book["isPickedUp"]:
+            return None
+        return {"action": "PickupObject", "objectId": book["objectId"]}
