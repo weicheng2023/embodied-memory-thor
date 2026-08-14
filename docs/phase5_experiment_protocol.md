@@ -2996,3 +2996,26 @@ The next gate is deterministic offline descriptive aggregation of the frozen
 three panels stay separate and each six-configuration matched comparison reports
 paired differences, means, medians, ranges and improvement/tie/regression counts.
 No significance test or broad-generalization claim is authorized.
+
+#### Formal-v5 descriptive-analysis precommit
+
+`phase5-real-thor-formal-descriptive-analysis-v1` hash-binds the frozen raw
+summary and the completion evidence above. It fails closed unless all 54 rows
+remain in the exact panel/configuration/variant order, every matched triplet is
+present, every task succeeded, and all information-boundary and integrity fields
+pass. It neither starts THOR nor reads evaluator-only runtime material.
+
+The six frozen primary performance outcomes are evaluated steps, target-
+reacquisition actions, translation actions/distance, search rotations and
+repeated viewpoint visits. For each panel separately, the analysis reports
+variant means, medians and ranges plus exact paired first-minus-second differences
+for object memory versus no memory, object memory versus K=2, and K=2 versus no
+memory. Since lower values mean lower cost, negative paired differences count as
+improvements, zero as ties and positive as regressions. Success, integrity and
+memory/recovery mechanism counts remain visible alongside performance.
+
+Panel pooling and significance testing are explicitly disabled. The resulting
+JSON and Markdown must be deterministic and must retain the original six-
+configuration descriptive evidence boundary. Synthetic tests, hash gates,
+privacy checks and the full repository regression must pass before the frozen
+formal summary is supplied to the aggregator.
