@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
@@ -26,7 +27,11 @@ from embodied_memory_thor.evaluation import (  # noqa: E402
     load_task,
 )
 from embodied_memory_thor.logging_utils import EpisodeLogger, create_episode_dir  # noqa: E402
-from embodied_memory_thor.planners import RuleBasedPlanner  # noqa: E402
+from embodied_memory_thor.planners import (  # noqa: E402
+    ObservationOnlyPlanner,
+    OracleDebugPlanner,
+    RuleBasedPlanner,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -38,10 +43,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--planner",
         default="rule_based",
-        choices=("rule_based",),
+        choices=("rule_based", "rule_based_no_memory", "oracle_debug"),
         help="planner implementation",
     )
     parser.add_argument("--mock", action="store_true", help="use the deterministic mock kitchen")
+    parser.add_argument(
+        "--partial-observability",
+        action="store_true",
+        help="expose only the current mock region/view to the planner",
+    )
+    parser.add_argument("--seed", type=int, default=0, help="deterministic partial mock layout seed")
     parser.add_argument("--max-steps", type=int, help="override the configured positive step limit")
     parser.add_argument("--output-dir", help="explicit episode output directory")
     parser.add_argument("--tasks-config", help="optional alternative tasks YAML file")
@@ -57,12 +68,16 @@ def _summary_template(args: argparse.Namespace, scene: str, output_dir: Path) ->
         "task": args.task,
         "scene": scene,
         "planner": args.planner,
-        "mode": "mock" if args.mock else "ai2thor",
+        "mode": "mock_partial" if args.partial_observability else ("mock" if args.mock else "ai2thor"),
+        "partial_observability": args.partial_observability,
+        "layout_seed": args.seed if args.partial_observability else None,
+        "privileged_planner": args.planner == "oracle_debug",
         "success": False,
         "steps": 0,
         "invalid_action_count": 0,
         "invalid_action_rate": 0.0,
         "llm_calls": 0,
+        "search_move_count": 0,
         "average_planning_latency_seconds": 0.0,
         "total_episode_latency_seconds": 0.0,
         "failure_reason": "",
@@ -78,6 +93,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.max_steps is not None and args.max_steps <= 0:
         print("--max-steps must be a positive integer", file=sys.stderr)
         return 2
+    if args.partial_observability and not args.mock:
+        print("--partial-observability currently requires --mock", file=sys.stderr)
+        return 2
+    if args.planner in {"rule_based_no_memory", "oracle_debug"} and not args.partial_observability:
+        print(f"--planner {args.planner} requires --mock --partial-observability", file=sys.stderr)
+        return 2
 
     try:
         task = load_task(args.task, args.tasks_config)
@@ -87,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
 
     max_steps = args.max_steps or task.max_steps
     scene = args.scene or (MockEnv.DEFAULT_SCENE if args.mock else "FloorPlan1")
-    mode = "mock" if args.mock else "ai2thor"
+    mode = "mock_partial" if args.partial_observability else ("mock" if args.mock else "ai2thor")
     output_dir = (
         Path(args.output_dir).expanduser().resolve()
         if args.output_dir
@@ -96,24 +117,36 @@ def main(argv: list[str] | None = None) -> int:
     logger = EpisodeLogger(output_dir)
     summary = _summary_template(args, scene, output_dir)
 
-    env = MockEnv() if args.mock else ThorEnv()
-    planner = RuleBasedPlanner()
+    env = (
+        MockEnv(partial_observability=args.partial_observability, layout_seed=args.seed)
+        if args.mock
+        else ThorEnv()
+    )
+    planners = {
+        "rule_based": RuleBasedPlanner,
+        "rule_based_no_memory": ObservationOnlyPlanner,
+        "oracle_debug": OracleDebugPlanner,
+    }
+    planner = planners[args.planner]()
     action_space = ActionSpace()
     executor = ActionExecutor(action_space)
-    current_event: Any | None = None
+    current_observation: Any | None = None
     planning_latencies: list[float] = []
     invalid_action_count = 0
+    search_move_count = 0
     episode_start = perf_counter()
     unmet_conditions: tuple[str, ...] = ()
 
     try:
-        current_event = env.reset(scene)
-        availability = check_object_availability(task, current_event)
+        env.reset(scene)
+        current_observation = env.get_observation()
+        evaluator_state = env.get_evaluator_state()
+        availability = check_object_availability(task, evaluator_state)
         if not availability.available:
             missing = ", ".join(availability.missing_object_types)
             summary["failure_reason"] = f"missing_required_objects: {missing}"
         else:
-            success_result = evaluate_task_success(task, current_event)
+            success_result = evaluate_task_success(task, evaluator_state)
             unmet_conditions = success_result.unmet_conditions
             summary["success"] = success_result.success
 
@@ -121,24 +154,44 @@ def main(argv: list[str] | None = None) -> int:
                 if summary["success"]:
                     break
 
+                observation_before_action = deepcopy(current_observation)
+                planner_received_objects = parse_objects(observation_before_action)
                 planning_start = perf_counter()
-                action = planner.plan(task, current_event, memory=None, action_space=action_space)
+                planner_evaluator_state = evaluator_state if args.planner == "oracle_debug" else None
+                if args.planner == "rule_based":
+                    action = planner.plan(
+                        task,
+                        current_observation,
+                        memory=None,
+                        action_space=action_space,
+                    )
+                else:
+                    action = planner.plan(
+                        task,
+                        current_observation,
+                        memory=None,
+                        action_space=action_space,
+                        evaluator_state=planner_evaluator_state,
+                    )
                 planning_latency = perf_counter() - planning_start
                 planning_latencies.append(planning_latency)
 
                 if action is None:
                     summary["failure_reason"] = "planner_returned_no_action"
                     break
+                if action.get("action") == "MoveToRegion":
+                    search_move_count += 1
 
                 action_start = perf_counter()
                 execution = executor.execute(env, action)
                 action_latency = perf_counter() - action_start
                 if execution.event is not None:
-                    current_event = execution.event
+                    current_observation = env.get_observation()
+                    evaluator_state = env.get_evaluator_state()
                 if execution.invalid_action:
                     invalid_action_count += 1
 
-                success_result = evaluate_task_success(task, current_event)
+                success_result = evaluate_task_success(task, evaluator_state)
                 unmet_conditions = success_result.unmet_conditions
                 summary["success"] = success_result.success
                 summary["steps"] = step_number
@@ -151,7 +204,13 @@ def main(argv: list[str] | None = None) -> int:
                         "success": execution.success,
                         "error": execution.error_message,
                         "invalid_action": execution.invalid_action,
-                        "visible_objects": parse_objects(current_event, visible_only=True),
+                        "agent_observation_before_action": observation_before_action,
+                        "agent_observation_after_action": current_observation,
+                        "visible_objects": parse_objects(current_observation),
+                        "planner_received_object_ids": [
+                            obj["objectId"] for obj in planner_received_objects
+                        ],
+                        "privileged_planner": args.planner == "oracle_debug",
                         "memory_snapshot": {},
                         "planning_latency_seconds": planning_latency,
                         "action_latency_seconds": action_latency,
@@ -169,6 +228,7 @@ def main(argv: list[str] | None = None) -> int:
         env.close()
 
     summary["invalid_action_count"] = invalid_action_count
+    summary["search_move_count"] = search_move_count
     steps = int(summary["steps"])
     summary["invalid_action_rate"] = invalid_action_count / steps if steps else 0.0
     summary["average_planning_latency_seconds"] = (

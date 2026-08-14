@@ -107,6 +107,18 @@ class ThorEnv(EmbodiedEnv):
         agent = self._metadata().get("agent", {})
         return deepcopy(agent) if isinstance(agent, dict) else {}
 
+    def get_observation(self) -> dict[str, Any]:
+        """Return planner-safe metadata containing visible objects only."""
+
+        metadata = deepcopy(dict(self._metadata()))
+        metadata["objects"] = self.get_visible_objects()
+        return metadata
+
+    def get_evaluator_state(self) -> dict[str, Any]:
+        """Return privileged full AI2-THOR metadata for evaluation only."""
+
+        return deepcopy(dict(self._metadata()))
+
     def save_frame(self, path: str | Path) -> Path:
         """Save the latest RGB frame using Pillow when available."""
 

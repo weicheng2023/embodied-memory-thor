@@ -32,7 +32,7 @@ class RuleBasedPlanner:
             return self._place_apple(by_type, "Plate")
         if task.task_name == "wash_apple_put_countertop":
             return self._wash_and_place(by_type)
-        if task.task_name == "slice_apple_put_plate":
+        if task.task_name in {"slice_apple_put_plate", "po_slice_apple_put_plate"}:
             return self._slice_and_place(by_type)
         return None
 

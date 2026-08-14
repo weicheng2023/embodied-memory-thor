@@ -59,6 +59,14 @@ class ThorEnvAdapterTests(unittest.TestCase):
         self.assertEqual(["Apple|1"], [obj["objectId"] for obj in env.get_visible_objects()])
         self.assertEqual("Pass", stepped.metadata["lastAction"])
         self.assertEqual({"cameraHorizon": 0}, env.get_agent_state())
+        self.assertEqual(
+            ["Apple|1"],
+            [obj["objectId"] for obj in env.get_observation()["objects"]],
+        )
+        self.assertEqual(
+            {"Apple|1", "Knife|1"},
+            {obj["objectId"] for obj in env.get_evaluator_state()["objects"]},
+        )
 
     def test_close_stops_injected_controller(self) -> None:
         controller = FakeController()

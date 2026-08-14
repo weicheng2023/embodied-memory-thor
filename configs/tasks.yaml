@@ -58,3 +58,20 @@ tasks:
         object_type: Apple
         receptacle_type: Plate
     max_steps: 10
+
+  po_slice_apple_put_plate:
+    task_name: po_slice_apple_put_plate
+    natural_language_instruction: Find the knife, return to the previously observed apple, slice it, and place it on the plate.
+    required_objects:
+      - Apple
+      - Knife
+      - Plate
+    goal_conditions:
+      - type: object_state
+        object_type: Apple
+        field: isSliced
+        equals: true
+      - type: object_in_receptacle
+        object_type: Apple
+        receptacle_type: Plate
+    max_steps: 14

@@ -4,7 +4,7 @@ A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-T
 
 ## Status
 
-Phases 0–2 are implemented: project scaffolding, environment diagnostics, real/mock environment adapters, safe object parsing, YAML task definitions, object availability checks, state-based evaluation, a transparent rule baseline, and structured episode logging. Memory, LLM planners, and batch experiments are planned for later phases and are not yet claimed as complete.
+Phases 0–2R are implemented: project scaffolding, environment diagnostics, real/mock adapters, state-based evaluation, structured logging, and a controlled partially observable mock harness with audited planner/evaluator information boundaries. Memory, live AI2-THOR validation, LLM planners, and batch experiments are not yet claimed as complete.
 
 ## Motivation and scope
 
@@ -122,6 +122,7 @@ Other configured tasks are:
 put_apple_on_plate
 wash_apple_put_countertop
 slice_apple_put_plate
+po_slice_apple_put_plate
 ```
 
 Each run creates a unique directory under `outputs/runs/<timestamp>/` containing:
@@ -130,6 +131,22 @@ Each run creates a unique directory under `outputs/runs/<timestamp>/` containing
 - `summary.json`: success, steps, invalid-action metrics, planning/episode latency, and failure reason
 
 Task success is evaluated only from object metadata. Planner text is never treated as evidence of success.
+
+## Run the controlled partially observable harness
+
+The Phase 2R mock assigns Apple, Knife, and Plate to distinct seeded regions and exposes only the current region/view to ordinary planners:
+
+```powershell
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner rule_based_no_memory
+```
+
+The privileged oracle is available only as a solvability/debug upper bound:
+
+```powershell
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner oracle_debug
+```
+
+The mock remains an abstract state harness: `MoveToRegion` does not simulate locomotion, collision, vision pixels, or physics. Phase 2R results are preliminary E1 harness evidence, not proof of AI2-THOR performance or memory benefit. See [`docs/partial_observability.md`](docs/partial_observability.md).
 
 ## Repository layout
 
