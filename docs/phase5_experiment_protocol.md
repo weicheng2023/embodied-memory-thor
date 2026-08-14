@@ -2861,3 +2861,21 @@ episode reuse and formal aggregation are disabled. A pass is integration
 evidence only and authorizes planning the six-configuration excluded dry run;
 it is not a superiority result. Focused tests pass 19/19 and the full
 repository regression passes 394 tests plus 70 subtests.
+
+#### FloorPlan17 runtime-v3 integration triplet result
+
+Clean pushed revision `c60e9a6` completed all three excluded episodes with no
+audit error. No-memory and K=2 each succeeded in nine steps using four subgoal
+and two fallback coverage actions; K=2 eviction was observed. Object memory
+also succeeded in nine steps with nine retrievals and two memory-guided actions
+and did not enter the fallback. Every information boundary passed; invalid
+actions, route-action recovery, entry recovery and target-lock recovery were
+zero for all three variants.
+
+Public evidence is
+`docs/evidence/phase5_r2_runtime_v3_integration_probe_v1.json`. It establishes
+that all three providers execute correctly and fairly through the replacement
+runtime, including the intended K=2 eviction and object-memory paths. Equal
+nine-step outcomes provide no memory-superiority evidence. The next gate is an
+excluded 6-configuration x 3-variant runtime-v3 dry run; no prior episode may
+be reused and formal readiness remains unauthorized.
