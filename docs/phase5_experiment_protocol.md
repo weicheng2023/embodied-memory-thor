@@ -2879,3 +2879,21 @@ runtime, including the intended K=2 eviction and object-memory paths. Equal
 nine-step outcomes provide no memory-superiority evidence. The next gate is an
 excluded 6-configuration x 3-variant runtime-v3 dry run; no prior episode may
 be reused and formal readiness remains unauthorized.
+
+#### R2 runtime-v3 six-configuration dry-run precommit
+
+`phase5-r2-runtime-v3-six-configuration-dry-run-v1` is a fresh excluded 18-cell
+matrix. Configuration-major order is FloorPlan3, 4, 6, 7, 12 and 17; within
+each configuration the order is no-memory, K=2, object-memory. Every cell uses
+the frozen runtime-v3 start, task, action-only routes and evaluator, with max
+2048 and a fresh reset. No integration-probe episode is reused.
+
+The existing triplet audit is applied unchanged to every cell: success and
+information boundary are required, route/digest and recovery integrity remain
+fail-closed, K=2 eviction must be observed and object memory must exercise
+retrieval/guidance. Execution stops on the first audit failure. Images, GUI,
+evaluator debug and formal aggregation are disabled. A complete pass can only
+authorize design of fresh formal-v5 readiness; the dry-run rows themselves are
+not reusable and do not constitute a benchmark or superiority result. Focused
+tests pass 19/19 and the full repository regression passes 400 tests plus 70
+subtests.
