@@ -343,14 +343,30 @@ def audit_episode(
         errors.append("intervention_count")
     if summary.get("intervention_failure_count") != 0:
         errors.append("intervention_failure")
-    if (
-        episode.get("memory") == "short_memory_k2"
-        and summary.get("short_memory_evicted_before_reacquisition") is not True
-    ):
-        errors.append("short_memory_k2_eviction")
     progress = summary.get("task_progress", {})
     if not isinstance(progress, Mapping) or progress.get("protocol_violations"):
         errors.append("task_protocol_violation")
+    if isinstance(progress, Mapping):
+        required_distraction_actions = progress.get(
+            "required_distraction_actions", []
+        )
+        book_reacquisition_reached = bool(
+            isinstance(required_distraction_actions, list)
+            and required_distraction_actions
+            and progress.get("distraction_transition_count")
+            == len(required_distraction_actions)
+            and progress.get("book_hidden_step") is not None
+        )
+        cup_reacquisition_reached = bool(
+            progress.get("coffee_machine_toggled_step") is not None
+            and progress.get("cup_hidden_step") is not None
+        )
+        if (
+            episode.get("memory") == "short_memory_k2"
+            and (book_reacquisition_reached or cup_reacquisition_reached)
+            and summary.get("short_memory_evicted_before_reacquisition") is not True
+        ):
+            errors.append("short_memory_k2_eviction")
 
     manifest_path = episode_dir / "run_manifest.json"
     if not manifest_path.is_file():

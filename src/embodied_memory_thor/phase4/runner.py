@@ -43,6 +43,7 @@ from embodied_memory_thor.phase4.task import (
     CupAfterCoffeeProgress,
     PHASE5_BOOK_DISTRACTION_POLICY_V1,
     PHASE5_BOOK_DISTRACTION_POLICY_V2,
+    PHASE5_BOOK_DISTRACTION_POLICY_V3,
 )
 from embodied_memory_thor.phase4.trace import (
     LiveFrameViewer,
@@ -65,6 +66,8 @@ from embodied_memory_thor.phase5.search import (
     FrozenSearchRouteState,
     SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT,
     SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
+    SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT,
+    SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION,
     SearchRouteError,
     load_frozen_search_route,
 )
@@ -208,6 +211,7 @@ class ThorEpisodeConfig:
         if self.book_distraction_policy not in {
             PHASE5_BOOK_DISTRACTION_POLICY_V1,
             PHASE5_BOOK_DISTRACTION_POLICY_V2,
+            PHASE5_BOOK_DISTRACTION_POLICY_V3,
         }:
             raise ValueError("unsupported Book distraction policy")
         if (
@@ -416,6 +420,12 @@ class ThorEpisodeRunner:
         if self.search_route is not None:
             manifest["shared_search_policy"] = {
                 "same_route_available_to_all_memory_variants": True,
+                "entry_alignment_policy": (
+                    SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION
+                ),
+                "entry_alignment_action_limit": (
+                    SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT
+                ),
                 "route_entry_pose_source": (
                     "planner_safe_observation_0_agent_pose_only"
                 ),
@@ -487,12 +497,12 @@ class ThorEpisodeRunner:
         writer.write_manifest(manifest)
 
         if config.task == "thor_book_reacquire_k2":
-            progress = (
-                BookReacquireProgress.phase5_k2_v2()
-                if config.book_distraction_policy
-                == PHASE5_BOOK_DISTRACTION_POLICY_V2
-                else BookReacquireProgress.phase5_k2()
-            )
+            if config.book_distraction_policy == PHASE5_BOOK_DISTRACTION_POLICY_V3:
+                progress = BookReacquireProgress.phase5_k2_v3()
+            elif config.book_distraction_policy == PHASE5_BOOK_DISTRACTION_POLICY_V2:
+                progress = BookReacquireProgress.phase5_k2_v2()
+            else:
+                progress = BookReacquireProgress.phase5_k2()
         elif config.task == "thor_cup_after_coffee_subgoal":
             progress = CupAfterCoffeeProgress()
         else:
@@ -1238,6 +1248,12 @@ class ThorEpisodeRunner:
             ),
             "shared_search_alignment_action_count": (
                 shared_search_alignment_action_count
+            ),
+            "shared_search_entry_alignment_policy": (
+                SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION
+            ),
+            "shared_search_entry_alignment_action_limit": (
+                SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT
             ),
             "shared_search_entry_recovery_policy": (
                 SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION

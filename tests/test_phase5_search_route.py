@@ -24,6 +24,8 @@ from embodied_memory_thor.phase5.search import (
     FrozenSearchRouteState,
     SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT,
     SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
+    SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT,
+    SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION,
     SearchRouteError,
     load_frozen_search_route,
 )
@@ -212,8 +214,39 @@ class Phase5SearchRouteTests(unittest.TestCase):
             action={"action": "RotateLeft"},
             success=True,
         )
+        stalled_alignment_2 = stalled.next_directive(_pose_observation(yaw=180.0))
+        stalled.record_result(
+            stalled_alignment_2,
+            action={"action": "RotateLeft"},
+            success=True,
+        )
         with self.assertRaisesRegex(SearchRouteError, "did not converge"):
             stalled.next_directive(_pose_observation(yaw=180.0))
+
+    def test_route_entry_alignment_v2_recovers_fixed_half_turn(self) -> None:
+        route = load_frozen_search_route(ROUTE_ID)
+        state = FrozenSearchRouteState(
+            route,
+            initial_observation=_pose_observation(yaw=90.0),
+        )
+        current_yaws = (270.0, 180.0)
+        for index, yaw in enumerate(current_yaws):
+            directive = state.next_directive(_pose_observation(yaw=yaw))
+            self.assertEqual(directive["phase"], "route_entry_alignment")
+            self.assertEqual(directive["action"], {"action": "RotateLeft"})
+            state.record_result(
+                directive,
+                action={"action": "RotateLeft"},
+                success=True,
+            )
+            self.assertEqual(state.alignment_action_count, index + 1)
+        coverage = state.next_directive(_pose_observation(yaw=90.0))
+        self.assertEqual(coverage["phase"], "coverage")
+        self.assertEqual(SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT, 2)
+        self.assertEqual(
+            SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION,
+            "phase5-shared-search-entry-alignment-v2",
+        )
 
     def test_planner_must_execute_shared_search_directive_exactly(self) -> None:
         route = load_frozen_search_route(ROUTE_ID)

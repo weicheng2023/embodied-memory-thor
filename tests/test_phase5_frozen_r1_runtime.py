@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
+from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V3
 from embodied_memory_thor.phase5.anchors import stable_digest
 from embodied_memory_thor.phase5.frozen_r1 import (
     FrozenR1ConfigurationError,
@@ -186,6 +187,55 @@ class Phase5FrozenR1RuntimeTests(unittest.TestCase):
                     private_set_path=private_path,
                     search_routes_path=routes_path,
                 )
+
+    def test_production_intervention_accepts_horizon_independent_trigger(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            public_path, private_path, routes_path = self._write_fixture(root)
+            runtime = load_frozen_r1_runtime(
+                "Fixture_R1_fixed_start_001",
+                public_set_path=public_path,
+                private_set_path=private_path,
+                search_routes_path=routes_path,
+            )
+            with patch(
+                "embodied_memory_thor.phase4.runner._git_state",
+                return_value={"code_revision": "c" * 40, "working_tree_dirty": False},
+            ):
+                summary = ThorEpisodeRunner(
+                    ThorEpisodeConfig(
+                        task="thor_book_reacquire_k2",
+                        scene="FloorPlanFixture",
+                        memory="no_memory",
+                        book_distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V3,
+                        search_route_id=runtime.search_route.route_id,
+                        condition="stale_r1",
+                        mode="formal",
+                        max_steps=12,
+                        output_dir=root / "v3",
+                        trace_html=False,
+                        included_in_formal_aggregate=False,
+                    ),
+                    env=_NativeFrozenR1Fixture(),
+                    search_route=runtime.search_route,
+                    evaluator_setup=runtime.configuration,
+                    intervention=runtime.intervention(),
+                ).run()
+            self.assertTrue(
+                summary["success"],
+                (summary["failure_reason"], summary["task_progress"]),
+            )
+            self.assertEqual(summary["intervention_count"], 1)
+            self.assertEqual(
+                summary["task_progress"]["distraction_policy"],
+                PHASE5_BOOK_DISTRACTION_POLICY_V3,
+            )
+            record = json.loads(
+                (root / "v3" / "intervention.jsonl")
+                .read_text(encoding="utf-8")
+                .splitlines()[0]
+            )
+            self.assertEqual(record["trigger_stage"], "controlled_distraction_v3_3")
 
     @staticmethod
     def _write_fixture(root: Path) -> tuple[Path, Path, Path]:

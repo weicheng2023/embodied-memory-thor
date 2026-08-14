@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 PHASE5_BOOK_DISTRACTION_POLICY_V1 = "phase5-book-distraction-v1"
 PHASE5_BOOK_DISTRACTION_POLICY_V2 = "phase5-book-distraction-v2"
+PHASE5_BOOK_DISTRACTION_POLICY_V3 = "phase5-book-distraction-v3"
 
 
 class BookReacquireProgress:
@@ -72,6 +73,19 @@ class BookReacquireProgress:
             require_hidden_at_completion=True,
             distraction_stage_prefix="controlled_distraction_v2",
             distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V2,
+        )
+
+    @classmethod
+    def phase5_k2_v3(cls) -> "BookReacquireProgress":
+        """Build the horizon-independent half-turn plus hidden Pass successor."""
+
+        return cls(
+            task_name="thor_book_reacquire_k2",
+            distraction_actions=("RotateRight", "RotateRight", "Pass"),
+            require_hidden_throughout=False,
+            require_hidden_at_completion=True,
+            distraction_stage_prefix="controlled_distraction_v3",
+            distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V3,
         )
 
     @staticmethod
@@ -204,6 +218,7 @@ class BookReacquireProgress:
             )
         if (
             self.require_hidden_at_completion
+            and was_distraction_action
             and self.distraction_transition_count >= len(self.distraction_actions)
             and success
             and not self._distraction_error

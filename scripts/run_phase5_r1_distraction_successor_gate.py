@@ -22,6 +22,7 @@ from embodied_memory_thor.phase4.runner import (  # noqa: E402
 )
 from embodied_memory_thor.phase4.task import (  # noqa: E402
     PHASE5_BOOK_DISTRACTION_POLICY_V2,
+    PHASE5_BOOK_DISTRACTION_POLICY_V3,
 )
 from embodied_memory_thor.phase5.frozen_r1 import (  # noqa: E402
     load_frozen_r1_runtime,
@@ -34,6 +35,14 @@ DEFAULT_CONFIG = (
     PROJECT_ROOT / "configs" / "phase5_r1_distraction_successor_gate_v1.json"
 )
 EXPECTED_ACTIONS = ("RotateRight", "RotateRight", "LookDown", "LookUp")
+EXPECTED_ACTIONS_BY_POLICY = {
+    PHASE5_BOOK_DISTRACTION_POLICY_V2: EXPECTED_ACTIONS,
+    PHASE5_BOOK_DISTRACTION_POLICY_V3: ("RotateRight", "RotateRight", "Pass"),
+}
+GATE_VERSION_BY_POLICY = {
+    PHASE5_BOOK_DISTRACTION_POLICY_V2: "phase5-r1-distraction-successor-gate-v1",
+    PHASE5_BOOK_DISTRACTION_POLICY_V3: "phase5-r1-distraction-successor-gate-v2",
+}
 
 
 def _write_json(path: Path, value: Any) -> None:
@@ -61,10 +70,11 @@ def _git_state() -> tuple[str, str, bool]:
 
 
 def validate_gate_config(config: Mapping[str, Any]) -> None:
-    if config.get("gate_version") != "phase5-r1-distraction-successor-gate-v1":
-        raise ValueError("gate version mismatch")
-    if config.get("book_distraction_policy") != PHASE5_BOOK_DISTRACTION_POLICY_V2:
+    policy = str(config.get("book_distraction_policy", ""))
+    if policy not in EXPECTED_ACTIONS_BY_POLICY:
         raise ValueError("gate distraction policy mismatch")
+    if config.get("gate_version") != GATE_VERSION_BY_POLICY[policy]:
+        raise ValueError("gate version mismatch")
     if (
         config.get("task") != "thor_book_reacquire_k2"
         or config.get("panel") != "r1_stable"
@@ -73,9 +83,10 @@ def validate_gate_config(config: Mapping[str, Any]) -> None:
         raise ValueError("gate task/panel/condition mismatch")
     if tuple(config.get("variants", ())) != PHASE5_VARIANTS:
         raise ValueError("gate variant order mismatch")
-    if tuple(config.get("expected_actions", ())) != EXPECTED_ACTIONS:
+    expected_actions = EXPECTED_ACTIONS_BY_POLICY[policy]
+    if tuple(config.get("expected_actions", ())) != expected_actions:
         raise ValueError("gate action template mismatch")
-    if config.get("max_steps") != len(EXPECTED_ACTIONS):
+    if config.get("max_steps") != len(expected_actions):
         raise ValueError("gate must stop exactly after the distraction template")
     for key in (
         "save_frames",
@@ -110,7 +121,9 @@ def _audit_episode(
     if not isinstance(progress, Mapping):
         errors.append("task_progress_missing")
     else:
-        if progress.get("distraction_policy") != PHASE5_BOOK_DISTRACTION_POLICY_V2:
+        if progress.get("distraction_policy") != summary.get(
+            "book_distraction_policy"
+        ):
             errors.append("progress_policy")
         if progress.get("distraction_transition_count") != len(expected_actions):
             errors.append("transition_count")
@@ -154,6 +167,9 @@ def _audit_episode(
 def run_gate(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
     config = json.loads(config_path.read_text(encoding="utf-8"))
     validate_gate_config(config)
+    expected_actions = EXPECTED_ACTIONS_BY_POLICY[
+        str(config["book_distraction_policy"])
+    ]
     head, upstream, dirty = _git_state()
     if dirty or head != upstream:
         raise ValueError("distraction gate requires a clean pushed HEAD")
@@ -198,7 +214,7 @@ def run_gate(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
         errors = _audit_episode(
             summary=summary,
             episode_dir=episode_dir,
-            expected_actions=EXPECTED_ACTIONS,
+            expected_actions=expected_actions,
         )
         rows.append(
             {

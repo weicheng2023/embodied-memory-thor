@@ -18,6 +18,10 @@ SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION = (
     "phase5-shared-search-entry-recovery-v1"
 )
 SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT = 64
+SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION = (
+    "phase5-shared-search-entry-alignment-v2"
+)
+SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT = 2
 DEFAULT_SEARCH_ROUTES_PATH = (
     Path(__file__).resolve().parents[3] / "configs" / "phase5_search_routes.json"
 )
@@ -342,9 +346,16 @@ class FrozenSearchRouteState:
             raise SearchRouteError("search route entry camera-horizon mismatch")
 
         if abs(yaw_error) > angle_tolerance:
-            if self._alignment_action_count >= 1:
+            if (
+                self._alignment_action_count
+                >= SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT
+            ):
                 raise SearchRouteError("search route entry alignment did not converge")
-            if abs(abs(yaw_error) - 90.0) > angle_tolerance:
+            supported_yaw_error = any(
+                abs(abs(yaw_error) - candidate) <= angle_tolerance
+                for candidate in (90.0, 180.0)
+            )
+            if not supported_yaw_error:
                 raise SearchRouteError("search route entry yaw mismatch")
             action_name = "RotateRight" if yaw_error > 0 else "RotateLeft"
             return self._directive(

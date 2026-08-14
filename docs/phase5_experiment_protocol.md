@@ -2457,3 +2457,30 @@ no formal result. Only a clean pushed pass permits a versioned full-matrix
 successor. Its formal K=2 audit must require eviction only after the episode has
 actually reached Book/Cup reacquisition; a common earlier task outcome remains
 an outcome unless another integrity rule fails.
+
+#### FloorPlan303 distraction gate v1 stop and horizon-independent v3
+
+The clean pushed `aee5be3` v1 isolation gate stopped after the no-memory row.
+Both fixed 90-degree rotations succeeded and the information boundary passed.
+The third action, `LookDown`, failed because the frozen start was already at
+the simulator's downward horizon limit. This is a relative-horizon template
+failure, not a Book-visibility, setup or memory failure. The row is excluded
+and cannot be reused. Public stop evidence is
+`docs/evidence/phase5_r1_distraction_successor_gate_v1_stop.json`.
+
+`phase5-book-distraction-v3` retains the target-independent half-turn but
+replaces both relative horizon actions with one `Pass`. The exact template is
+therefore `RotateRight -> RotateRight -> Pass`. The Pass changes neither pose
+nor horizon; it creates the additional hidden observation required to evict a
+Book record from an exact K=2 observation window. Final hiddenness is still
+mandatory. Offline tests cover first-turn visibility, final hiddenness, exact
+K=2 eviction, and the evaluator-only stale relocation trigger after Pass.
+
+The half-turn can leave a direct baseline 180 degrees from the frozen route
+entry. `phase5-shared-search-entry-alignment-v2` is a common target-free
+successor that deterministically accepts 90- or 180-degree yaw error from the
+planner-safe pose and uses at most two 90-degree rotations. It does not consume
+object identity/coordinates, memory, anchor/support, route coordinates or
+evaluator state. Existing one-turn behavior is preserved. Failure to converge
+within two actions still invalidates the episode. The next real gate is a fresh
+v2 isolation run from a new clean pushed revision; no v1 row is reused.

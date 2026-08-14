@@ -173,12 +173,22 @@ class FrozenBookRelocation:
         supported_trigger = (
             (task_stage == "controlled_distraction_3" and step == 3)
             or (task_stage == "controlled_distraction_v2_4" and step == 4)
+            or (task_stage == "controlled_distraction_v3_3" and step == 3)
         )
         if not (
             task_name == "thor_book_reacquire_k2"
             and supported_trigger
             and agent_action_success
-            and agent_action.get("action") == "LookUp"
+            and (
+                (
+                    task_stage.endswith("_3")
+                    and agent_action.get("action") in {"LookUp", "Pass"}
+                )
+                or (
+                    task_stage.endswith("_4")
+                    and agent_action.get("action") == "LookUp"
+                )
+            )
         ):
             return None
         self.applied = True
@@ -196,6 +206,7 @@ class FrozenBookRelocation:
         if visible_target:
             return self._record(
                 step=step,
+                trigger_stage=task_stage,
                 action=action,
                 success=False,
                 error="Book remained visible at the frozen intervention milestone",
@@ -209,6 +220,7 @@ class FrozenBookRelocation:
         except Exception as exc:
             return self._record(
                 step=step,
+                trigger_stage=task_stage,
                 action=action,
                 success=False,
                 error=f"{type(exc).__name__}: {exc}",
@@ -223,6 +235,7 @@ class FrozenBookRelocation:
             error = "frozen relocation postcondition failed"
         return self._record(
             step=step,
+            trigger_stage=task_stage,
             action=action,
             success=success,
             error=error,
@@ -233,6 +246,7 @@ class FrozenBookRelocation:
         self,
         *,
         step: int,
+        trigger_stage: str,
         action: Mapping[str, Any],
         success: bool,
         error: str,
@@ -244,11 +258,7 @@ class FrozenBookRelocation:
             "configuration_id": self.configuration.configuration_id,
             "anchor_id": self.configuration.anchor_id,
             "trigger_step": step,
-            "trigger_stage": (
-                "controlled_distraction_v2_4"
-                if step == 4
-                else "controlled_distraction_3"
-            ),
+            "trigger_stage": trigger_stage,
             "included_in_planner_metrics": False,
             "planner_visible": False,
             "native_action": deepcopy(dict(action)),

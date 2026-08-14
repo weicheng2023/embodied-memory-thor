@@ -13,6 +13,7 @@ from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRun
 from embodied_memory_thor.phase4.spatial_memory import build_thor_memory
 from embodied_memory_thor.phase4.task import BookReacquireProgress
 from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V2
+from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V3
 from embodied_memory_thor.phase5.protocol import PHASE5_REQUIRED_METRICS
 from tests.test_phase4_single_case import _SingleCaseThorEnv
 
@@ -236,6 +237,36 @@ class Phase5MemoryProviderTests(unittest.TestCase):
             progress.snapshot()["distraction_error"],
             "book_visible_after_distraction",
         )
+
+    def test_phase5_distraction_v3_is_horizon_independent_and_evicts_k2(self) -> None:
+        progress = BookReacquireProgress.phase5_k2_v3()
+        memory = build_thor_memory("short_memory_k2")
+        visible = _observation(book_visible=True, yaw=0.0, marker="visible")
+        hidden = _observation(book_visible=False, yaw=180.0, marker="hidden")
+        progress.initialize(visible)
+        memory.observe(visible, step=0, observation_id="observation:0")
+        observations = (visible, hidden, hidden)
+        for step, (action, observation_after) in enumerate(
+            zip(("RotateRight", "RotateRight", "Pass"), observations), start=1
+        ):
+            progress.observe_action(
+                step=step,
+                action={"action": action},
+                success=True,
+                observation_after=observation_after,
+            )
+            memory.observe(
+                observation_after,
+                step=step,
+                observation_id=f"observation:{step}",
+            )
+        snapshot = progress.snapshot()
+        self.assertEqual(snapshot["distraction_policy"], PHASE5_BOOK_DISTRACTION_POLICY_V3)
+        self.assertEqual(snapshot["distraction_transition_count"], 3)
+        self.assertTrue(snapshot["short_memory_k2_eviction_ready"])
+        self.assertEqual(snapshot["distraction_error"], "")
+        self.assertEqual(progress.stage, "reacquire_book")
+        self.assertEqual(memory.retrieve("Book"), [])
 
     def test_phase5_r1_evicts_k2_and_preserves_shared_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_dir:

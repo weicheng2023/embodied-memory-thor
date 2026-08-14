@@ -6,10 +6,15 @@ from pathlib import Path
 
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig
 from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V2
+from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V3
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "phase5_r1_distraction_successor_gate_v1.json"
+CONFIG_V2 = ROOT / "configs" / "phase5_r1_distraction_successor_gate_v2.json"
+STOP_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_r1_distraction_successor_gate_v1_stop.json"
+)
 
 
 def _module() -> object:
@@ -61,6 +66,37 @@ def test_runner_accepts_successor_only_for_r1() -> None:
         assert "only" in str(exc)
     else:
         raise AssertionError("R2 accepted the R1-only distraction successor")
+
+
+def test_horizon_independent_successor_is_fixed_excluded_and_stop_bound() -> None:
+    config = json.loads(CONFIG_V2.read_text(encoding="utf-8"))
+    _module().validate_gate_config(config)  # type: ignore[attr-defined]
+    assert config["book_distraction_policy"] == PHASE5_BOOK_DISTRACTION_POLICY_V3
+    assert config["expected_actions"] == ["RotateRight", "RotateRight", "Pass"]
+    assert config["max_steps"] == 3
+    assert config["included_in_formal_aggregate"] is False
+    evidence = json.loads(STOP_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["passed"] is False
+    assert evidence["episode_reuse_allowed"] is False
+    assert evidence["failure_class"] == "relative_horizon_limit_failure"
+    serialized = CONFIG_V2.read_text(encoding="utf-8")
+    for forbidden in (
+        '"target_point"',
+        '"objectId"',
+        '"anchor_id"',
+        '"start_pose"',
+        "Book|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in serialized
+
+
+def test_runner_accepts_horizon_independent_successor_for_r1() -> None:
+    ThorEpisodeConfig(
+        task="thor_book_reacquire_k2",
+        book_distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V3,
+    ).validate()
 
 
 def test_gate_source_has_no_target_conditioned_action_selection() -> None:

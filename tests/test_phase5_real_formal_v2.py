@@ -236,6 +236,56 @@ def test_audit_separates_valid_task_failure_from_integrity_failure() -> None:
         assert any(error.startswith("ordinary_forbidden_key:") for error in errors)
 
 
+def test_k2_eviction_audit_is_conditional_on_reacquisition_stage() -> None:
+    module = _module()
+    episode = next(
+        row
+        for row in _manifest()["episodes"]
+        if row["panel"] == "r1_stable" and row["memory"] == "short_memory_k2"
+    )
+    summary = _valid_failed_outcome_summary(episode)
+    summary["failure_reason"] = "distraction_failed"
+    summary["steps"] = 1
+    summary["task_progress"] = {
+        "required_distraction_actions": ["RotateRight", "LookDown", "LookUp"],
+        "distraction_transition_count": 1,
+        "book_hidden_step": None,
+        "protocol_violations": [],
+    }
+    with tempfile.TemporaryDirectory() as temporary_dir:
+        root = Path(temporary_dir)
+        for name in ("setup.jsonl", "episode.jsonl", "evaluator_setup.jsonl"):
+            (root / name).write_text("{}\n", encoding="utf-8")
+        (root / "run_manifest.json").write_text(
+            json.dumps(
+                {
+                    "included_in_formal_aggregate": True,
+                    "evidence_status": "formal_acceptance_candidate",
+                    "working_tree_dirty": False,
+                    "code_revision": "a" * 40,
+                }
+            ),
+            encoding="utf-8",
+        )
+        errors = module.audit_episode(  # type: ignore[attr-defined]
+            episode=episode,
+            summary=summary,
+            episode_dir=root,
+            expected_code_revision="a" * 40,
+        )
+        assert "short_memory_k2_eviction" not in errors
+        summary["task_progress"].update(
+            {"distraction_transition_count": 3, "book_hidden_step": 1}
+        )
+        errors = module.audit_episode(  # type: ignore[attr-defined]
+            episode=episode,
+            summary=summary,
+            episode_dir=root,
+            expected_code_revision="a" * 40,
+        )
+        assert "short_memory_k2_eviction" in errors
+
+
 def test_execute_gate_fails_before_creating_output() -> None:
     module = _module()
     with tempfile.TemporaryDirectory() as temporary_dir:
