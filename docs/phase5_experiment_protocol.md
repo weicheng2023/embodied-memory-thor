@@ -2757,3 +2757,17 @@ zero terminal recovery failures. It is not a formal result or memory comparison.
 The first launcher invocation was rejected before THOR reset because the runner
 config omitted the already-frozen subgoal route ID; no episode or environment
 action ran. The launcher now declares both frozen R2 route IDs before retry.
+
+The clean pushed retry at `1553b66` exercised the intended mechanism but did
+not pass. Coverage index 200 produced `MoveAhead(false)`, the fixed `Pass`
+succeeded, and the exact `MoveAhead` retry failed with the same blocking class.
+The runner terminated at step 217 with one recovery attempt/two recovery
+actions, zero recovered failures and one terminal recovery failure. Setup,
+planner validity and the information boundary passed. Therefore the blocker is
+classified as persistent route obstruction rather than transient settling.
+Public stop evidence is
+`docs/evidence/phase5_r2_floorplan10_route_action_recovery_gate_v1_stop.json`;
+the episode remains excluded. Automatic execution stops here. Before formal-v5,
+the protocol must choose and pre-register either conservative scene exclusion
+plus a replacement qualified R2 route, or a shared persistent-blocked-action
+successor. The existing `Pass` policy is not sufficient evidence for a rerun.

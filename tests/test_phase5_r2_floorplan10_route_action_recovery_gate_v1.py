@@ -10,6 +10,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "phase5_r2_floorplan10_route_action_recovery_gate_v1.json"
 SCRIPT = ROOT / "scripts" / "run_phase5_r2_floorplan10_route_action_recovery_gate_v1.py"
+EVIDENCE = (
+    ROOT
+    / "docs"
+    / "evidence"
+    / "phase5_r2_floorplan10_route_action_recovery_gate_v1_stop.json"
+)
 
 
 def _module() -> object:
@@ -141,6 +147,36 @@ def test_gate_public_config_contains_no_private_runtime_material() -> None:
         '"target_point"',
         '"anchor_id"',
         '"objectId"',
+        '"reachable_positions"',
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in text
+
+
+def test_real_gate_stop_evidence_records_persistent_failure_and_stays_excluded() -> None:
+    evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["passed"] is False
+    assert evidence["success"] is False
+    assert evidence["classification"] == (
+        "persistent_route_obstacle_not_transient_settling"
+    )
+    assert evidence["steps"] == 217
+    assert evidence["failed_action_index"] == 200
+    assert evidence["recovery_actions"] == ["MoveAhead", "Pass", "MoveAhead"]
+    assert evidence["recovery_action_successes"] == [False, True, False]
+    assert evidence["recovery_attempt_count"] == 1
+    assert evidence["recovery_action_count"] == 2
+    assert evidence["recovered_failure_count"] == 0
+    assert evidence["terminal_failure_count"] == 1
+    assert evidence["information_boundary_passed"] is True
+    assert evidence["included_in_formal_aggregate"] is False
+    text = EVIDENCE.read_text(encoding="utf-8")
+    for forbidden in (
+        '"objectId"',
+        '"target_point"',
+        '"anchor_id"',
+        '"support_id"',
         '"reachable_positions"',
         "TeleportFull",
         "PlaceObjectAtPoint",
