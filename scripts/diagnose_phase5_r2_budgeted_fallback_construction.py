@@ -120,6 +120,19 @@ def _agent_start(metadata: Mapping[str, Any]) -> tuple[Mapping[str, Any], float,
     return position, float(rotation["y"]), float(agent["cameraHorizon"])
 
 
+def _reset_metadata(env: Any, scene: str) -> Mapping[str, Any]:
+    """Use the repository's established post-reset evaluator-state contract."""
+
+    env.reset(scene)
+    metadata = env.get_evaluator_state()
+    return metadata if isinstance(metadata, Mapping) else {}
+
+
+def _restoration_is_clean(metadata: Mapping[str, Any]) -> bool:
+    inventory = metadata.get("inventoryObjects")
+    return bool(metadata) and isinstance(inventory, list) and not inventory
+
+
 def _summary(
     *,
     scene: str,
@@ -200,8 +213,8 @@ def main(argv: list[str] | None = None) -> int:
     restoration_passed = False
     exit_code = 0
     try:
-        reset_event = env.reset(args.scene)
-        start_position, start_yaw, start_horizon = _agent_start(reset_event.metadata)
+        reset_metadata = _reset_metadata(env, args.scene)
+        start_position, start_yaw, start_horizon = _agent_start(reset_metadata)
         reachable_event = env.step({"action": "GetReachablePositions"})
         action_return = reachable_event.metadata.get("actionReturn")
         if (
@@ -226,11 +239,8 @@ def main(argv: list[str] | None = None) -> int:
             failure_reason = str(exc)
             classification = str(config["construction_failure_classification"])
             exit_code = 1
-        restoration_event = env.reset(args.scene)
-        restoration_passed = bool(
-            restoration_event.metadata.get("lastActionSuccess") is True
-            and restoration_event.metadata.get("sceneName") == args.scene
-        )
+        restoration_metadata = _reset_metadata(env, args.scene)
+        restoration_passed = _restoration_is_clean(restoration_metadata)
         if not restoration_passed:
             classification = "diagnostic_integrity_failure"
             failure_reason = "reset_restoration_failed"

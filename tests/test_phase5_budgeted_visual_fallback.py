@@ -177,3 +177,14 @@ def test_public_diagnostic_summary_contains_no_graph_coordinate_or_identity() ->
     assert "reachable_node_count" not in summary
     assert summary["route_actions_executed"] is False
     assert summary["qualification_run"] is False
+
+
+def test_restoration_uses_established_metadata_and_empty_inventory_contract() -> None:
+    module = _diagnostic_module()
+    assert module._restoration_is_clean({  # type: ignore[attr-defined]
+        "agent": {"position": {}}, "inventoryObjects": []
+    })
+    assert not module._restoration_is_clean({  # type: ignore[attr-defined]
+        "agent": {"position": {}}, "inventoryObjects": [{"objectId": "private"}]
+    })
+    assert not module._restoration_is_clean({})  # type: ignore[attr-defined]
