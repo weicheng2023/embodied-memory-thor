@@ -2709,3 +2709,28 @@ resume or selectively reuse any v2/v3/partial cell. Images, GUI and evaluator
 debug remain disabled. Integrity failure stops and excludes the partial matrix;
 an integrity-valid task failure or legal native action rejection remains a
 recorded experimental outcome.
+
+#### Formal v4 invalidation and route-action recovery gate
+
+Clean pushed revision `b6aae91` stopped at cell 31 of 54. Cells 1--30 were task
+successes, including all 18 R1-stable cells, the repaired FloorPlan306 target-
+lock cell and the first four R2 configuration triplets. Cell 31, FloorPlan10
+R2-stable no-memory, completed its 12-action shared subgoal and matched the
+fallback entry. At fallback coverage index 200, the exact frozen `MoveAhead`
+was rejected because a scene obstacle blocked translation. Planner validity,
+information boundary and setup passed; the dedicated route-action-failure
+counter correctly stopped execution. Public evidence is
+`docs/evidence/phase5_real_formal_pilot_v4_invalidated_stop.json`; all 31 cells
+are excluded and cannot be reused.
+
+The same 512-action route passed qualification, fresh-reset replay and reset
+restoration, so the next gate tests a general transient execution successor
+rather than altering the route or increasing 2048. It must be shared by every
+memory variant and both frozen-route roles, consume only the failed ordinary
+route action/result and fixed constants, issue one `Pass` stabilization action,
+then retry the exact same frozen action once without advancing the cursor. It
+must use no target/object/obstacle identity or coordinates, memory, evaluator
+state, candidate outcome or reachable graph, and must retain a small total
+episode recovery cap. A failed stabilization/retry remains fail-closed. Offline
+determinism/privacy/budget tests and one excluded FloorPlan10 no-memory replay
+are required before another formal readiness protocol.

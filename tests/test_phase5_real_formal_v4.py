@@ -25,6 +25,9 @@ AUTHORIZATION = ROOT / "configs" / "phase5_real_formal_execution_v4.json"
 READINESS_EVIDENCE = (
     ROOT / "docs" / "evidence" / "phase5_real_formal_readiness_v4.json"
 )
+INVALIDATED_STOP_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_real_formal_pilot_v4_invalidated_stop.json"
+)
 
 
 def _config() -> dict:
@@ -262,6 +265,36 @@ def test_v4_readiness_evidence_is_public_and_execution_disabled() -> None:
     assert evidence["private_runtime_material_serialized"] is False
     assert evidence["formal_execution_authorized_during_readiness"] is False
     text = READINESS_EVIDENCE.read_text(encoding="utf-8")
+    for forbidden in (
+        '"start_pose"',
+        '"target_point"',
+        '"anchor_id"',
+        '"objectId"',
+        "Book|",
+        "Cup|",
+        "CoffeeMachine|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in text
+
+
+def test_v4_invalidated_stop_is_complete_excluded_and_public() -> None:
+    evidence = json.loads(INVALIDATED_STOP_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["completed_episode_count"] == 31
+    assert evidence["expected_episode_count"] == REAL_EPISODE_COUNT
+    assert evidence["matrix_complete"] is False
+    assert evidence["integrity_valid"] is False
+    assert evidence["included_in_formal_aggregate"] is False
+    assert evidence["partial_matrix_reusable"] is False
+    assert evidence["stop_cell"]["shared_search_failed_action_index"] == 200
+    assert evidence["stop_cell"]["shared_search_failed_action"] == "MoveAhead"
+    assert evidence["stop_cell"]["invalid_planner_decision_count"] == 0
+    assert evidence["stop_cell"]["information_boundary_passed"] is True
+    assert evidence["failure_classification"] == (
+        "shared_frozen_route_transient_obstacle_recovery_gap"
+    )
+    text = INVALIDATED_STOP_EVIDENCE.read_text(encoding="utf-8")
     for forbidden in (
         '"start_pose"',
         '"target_point"',
