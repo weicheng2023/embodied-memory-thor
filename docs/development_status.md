@@ -923,3 +923,9 @@ sources, 12 action-only routes, ignored private starts and a bound private-set
 digest. Focused runtime tests pass 9/9 and full regression passes 289/289. The
 tool must be committed/pushed before deterministic registry generation; no
 memory variant has run.
+
+The first clean freeze attempt stopped before writes because the collector
+expanded the shared FloorPlan3/4 private draft twice and correctly rejected
+duplicate configuration matches. Source-path deduplication is now an explicit
+tested gate; registry generation must wait for its clean pushed fix.
+The deduplication fix passes 5/5 focused and 290/290 full tests.

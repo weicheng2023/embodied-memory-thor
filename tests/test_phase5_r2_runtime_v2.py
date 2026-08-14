@@ -96,3 +96,15 @@ def test_v1_runtime_defaults_remain_unchanged() -> None:
 
     assert frozen_r2.R2_RUNTIME_SET_VERSION == "phase5-r2-frozen-runtime-set-v1"
     assert frozen_r2.DEFAULT_PUBLIC_SET_PATH.name == "phase5_r2_frozen_runtime_v1.json"
+
+
+def test_shared_private_source_is_expanded_only_once() -> None:
+    source = (ROOT / "scripts" / "freeze_phase5_r2_runtime_v2.py").read_text(
+        encoding="utf-8"
+    )
+    assert "if relative in loaded_sources:" in source
+    assert "continue" in source
+    config = json.loads(FREEZE_CONFIG.read_text(encoding="utf-8"))
+    sources = [row["private_source"] for row in config["configurations"]]
+    assert len(sources) == 6
+    assert len(set(sources)) == 5

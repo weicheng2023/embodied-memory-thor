@@ -210,7 +210,10 @@ def freeze(config_path: Path) -> dict[str, Any]:
     for spec in config["configurations"]:
         relative = str(spec["private_source"])
         source_outputs.append(relative)
-        source = loaded_sources.setdefault(relative, _read(PROJECT_ROOT / relative))
+        if relative in loaded_sources:
+            continue
+        source = _read(PROJECT_ROOT / relative)
+        loaded_sources[relative] = source
         if isinstance(source.get("configurations"), list):
             private_rows.extend(source["configurations"])
         else:
