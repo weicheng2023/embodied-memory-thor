@@ -1,0 +1,164 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import tempfile
+from pathlib import Path
+
+import pytest
+
+from embodied_memory_thor.phase5.formal_v2 import (
+    REAL_EPISODE_COUNT,
+    REAL_MANIFEST_SCHEMA_VERSION_V3,
+    REAL_METRIC_SCHEMA_VERSION_V4,
+    REAL_PROTOCOL_VERSION_V3,
+    REAL_REQUIRED_METRICS_V4,
+    build_public_manifest,
+    collect_public_runtime_bindings,
+    validate_precommit,
+    validate_public_manifest,
+)
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CONFIG = ROOT / "configs" / "phase5_real_formal_pilot_v3.json"
+COVERAGE_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_r1_distraction_coverage_gate_v1.json"
+)
+
+
+def _config() -> dict:
+    return json.loads(CONFIG.read_text(encoding="utf-8"))
+
+
+def _manifest() -> dict:
+    config = _config()
+    bindings = collect_public_runtime_bindings(config, root=ROOT)
+    return build_public_manifest(
+        config,
+        code_revision="d" * 40,
+        bindings=bindings,
+    )
+
+
+def _executor() -> object:
+    path = ROOT / "scripts" / "run_phase5_real_formal_pilot_v2.py"
+    spec = importlib.util.spec_from_file_location("phase5_formal_v3_shared", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_v3_precommit_is_readiness_only_and_hash_binds_successor() -> None:
+    config = _config()
+    validate_precommit(config, root=ROOT)
+    assert config["manifest_schema_version"] == REAL_MANIFEST_SCHEMA_VERSION_V3
+    assert config["protocol_version"] == REAL_PROTOCOL_VERSION_V3
+    assert config["metric_schema_version"] == REAL_METRIC_SCHEMA_VERSION_V4
+    assert config["book_distraction_policy"] == "phase5-book-distraction-v4"
+    assert config["formal_execution_authorized"] is False
+    assert config["readiness_only_authorized"] is True
+    assert "docs/evidence/phase5_r1_distraction_coverage_gate_v1.json" in config[
+        "historical_artifacts_frozen"
+    ]
+
+
+def test_v3_manifest_keeps_54_cells_and_binds_task_policies() -> None:
+    manifest = _manifest()
+    validate_public_manifest(manifest)
+    assert manifest["episode_count"] == REAL_EPISODE_COUNT == 54
+    assert tuple(manifest["required_metrics"]) == REAL_REQUIRED_METRICS_V4
+    assert len(REAL_REQUIRED_METRICS_V4) == len(set(REAL_REQUIRED_METRICS_V4))
+    r1 = [row for row in manifest["episodes"] if row["task"] == "thor_book_reacquire_k2"]
+    r2 = [
+        row
+        for row in manifest["episodes"]
+        if row["task"] == "thor_cup_after_coffee_subgoal"
+    ]
+    assert len(r1) == 36 and len(r2) == 18
+    assert {row["book_distraction_policy"] for row in r1} == {
+        "phase5-book-distraction-v4"
+    }
+    assert {row["book_distraction_policy"] for row in r2} == {
+        "phase5-book-distraction-v1"
+    }
+    serialized = json.dumps(manifest, sort_keys=True)
+    for forbidden in (
+        '"start_pose"',
+        '"target_point"',
+        '"anchor_id"',
+        '"objectId"',
+        "Book|",
+        "Cup|",
+        "CoffeeMachine|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in serialized
+
+
+def test_v3_readiness_joins_twelve_private_runtimes_without_serializing_them() -> None:
+    executor = _executor()
+    config = _config()
+    readiness = executor.build_readiness(  # type: ignore[attr-defined]
+        config=config,
+        manifest=_manifest(),
+    )
+    assert readiness["readiness_version"] == "phase5-real-thor-formal-readiness-v3"
+    assert readiness["executor_version"] == "phase5-real-thor-formal-executor-v3"
+    assert readiness["readiness_passed"] is True
+    assert readiness["unique_runtime_count"] == 12
+    assert readiness["formal_execution_authorized"] is False
+    serialized = json.dumps(readiness, sort_keys=True)
+    for forbidden in (
+        '"start_pose"',
+        '"target_point"',
+        '"anchor_id"',
+        '"objectId"',
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in serialized
+
+
+def test_v3_execute_remains_blocked_before_output_creation() -> None:
+    executor = _executor()
+    with tempfile.TemporaryDirectory() as temporary_dir:
+        output = Path(temporary_dir) / "formal-v3"
+        with pytest.raises(ValueError, match="not authorized"):
+            executor.prepare_run(  # type: ignore[attr-defined]
+                config_path=CONFIG,
+                output_dir=output,
+                execute_requested=True,
+            )
+        assert not output.exists()
+
+
+def test_v3_public_gate_evidence_is_complete_excluded_and_coordinate_free() -> None:
+    evidence = json.loads(COVERAGE_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["passed"] is True
+    assert evidence["completed_episode_count"] == 8
+    assert evidence["all_targets_hidden_after_template"] is True
+    assert evidence["all_information_boundaries_passed"] is True
+    assert evidence["included_in_formal_aggregate"] is False
+    text = COVERAGE_EVIDENCE.read_text(encoding="utf-8")
+    for forbidden in (
+        '"x"',
+        '"y"',
+        '"z"',
+        '"objectId"',
+        "Book|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in text
+
+
+def test_v3_wrapper_defaults_to_v3_readiness_config() -> None:
+    source = (ROOT / "scripts" / "run_phase5_real_formal_pilot_v3.py").read_text(
+        encoding="utf-8"
+    )
+    assert "phase5_real_formal_pilot_v3.json" in source
+    assert "--readiness-only" in source
+    assert "--execute" in source

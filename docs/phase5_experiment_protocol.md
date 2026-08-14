@@ -2517,3 +2517,50 @@ episode ends exactly after its derived distraction template and tests
 hiddenness, K=2 readiness, action success, information boundary and exact fixed
 actions; it does not test pickup/task success or enter formal aggregation. Stop
 on the first failure. A pass is required before any formal readiness successor.
+
+#### Six-configuration distraction coverage result
+
+Clean pushed revision `cdd7042` completed all eight declared short episodes.
+Every native action succeeded, every exact initial Book was hidden after its
+3--5 action template, every progress controller entered `reacquire_book`, and
+every information-boundary/audit check passed. FloorPlan303 reproduced the same
+five-action boundary for no-memory, K=2 and object-memory. The other five scenes
+passed their predeclared no-memory coverage rows. No pickup/task-success or
+memory-effect result was evaluated, and all rows remain excluded from formal
+aggregation. Public evidence is
+`docs/evidence/phase5_r1_distraction_coverage_gate_v1.json`.
+
+This pass closes the R1 distraction eligibility gap that invalidated formal-v2.
+It authorizes only a new no-THOR readiness protocol. That successor must keep
+the 54-cell matrix, bind distraction-v4 and entry-alignment-v3 in every public
+R1 contract, add their policy/limit fields to the required metric schema,
+retain the conditional K=2 audit, hash-freeze this gate evidence, and keep
+formal execution disabled until a separate readiness result and authorization
+overlay exist.
+
+### Privacy-preserving real formal manifest v3 precommit
+
+`phase5-real-thor-manifest-v3` preserves the exact 54-cell v2 matrix, runtime
+sets, panel/configuration/variant order, controller settings, 2048 action bound,
+no-image output and privacy boundary. It is a complete new protocol: no v2
+episode or readiness artifact is reused. The R1 cells publicly bind
+`phase5-book-distraction-v4`; R2 cells retain the inert historical v1 Book
+policy because they do not run the Book task.
+
+Metric schema v4 adds the episode Book-distraction policy and shared route-entry
+alignment policy/limit to the required metrics. The executor requires
+`phase5-shared-search-entry-alignment-v3` with a four-action cap. The K=2
+eviction integrity check is conditional: it is mandatory once the task reaches
+Book or Cup reacquisition, but a matched task outcome before that stage is not
+converted into an integrity failure. All previous setup/intervention, route,
+private-log, invalid-action, dirty-revision and information-flow fail-closed
+rules remain.
+
+The v3 base is readiness-only and sets
+`formal_execution_authorized=false`. It hash-freezes both formal-v2 stop
+evidence and the successful six-scene distraction coverage evidence, plus the
+current task/planner/runner/search/formal executor sources and the unchanged
+R1/R2 runtimes. Its public manifest must contain no start/target/anchor/support
+coordinates, object identities or native evaluator actions. A clean pushed
+no-THOR readiness must reconstruct all 54 public cells and join all 12 private
+runtimes before a separately tracked v3 authorization overlay is allowed.

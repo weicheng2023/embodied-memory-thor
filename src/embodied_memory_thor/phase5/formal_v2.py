@@ -18,6 +18,9 @@ from embodied_memory_thor.phase5.search import load_frozen_search_route
 REAL_MANIFEST_SCHEMA_VERSION = "phase5-real-thor-manifest-v2"
 REAL_PROTOCOL_VERSION = "phase5-real-thor-pilot-v2"
 REAL_METRIC_SCHEMA_VERSION = "phase5-real-thor-metrics-v3"
+REAL_MANIFEST_SCHEMA_VERSION_V3 = "phase5-real-thor-manifest-v3"
+REAL_PROTOCOL_VERSION_V3 = "phase5-real-thor-pilot-v3"
+REAL_METRIC_SCHEMA_VERSION_V4 = "phase5-real-thor-metrics-v4"
 REAL_PANEL_ORDER = ("r1_stable", "r2_stable", "r1_stale")
 REAL_EPISODE_COUNT = 54
 REAL_CONFIGURATION_COUNT_PER_PANEL = 6
@@ -37,6 +40,16 @@ REAL_REQUIRED_METRICS = tuple(
             "shared_search_entry_recovery_action_count",
             "shared_search_entry_recovery_pending_action_count",
             "shared_search_entry_recovery_record_failure_count",
+        )
+    )
+)
+REAL_REQUIRED_METRICS_V4 = tuple(
+    dict.fromkeys(
+        REAL_REQUIRED_METRICS
+        + (
+            "book_distraction_policy",
+            "shared_search_entry_alignment_policy",
+            "shared_search_entry_alignment_action_limit",
         )
     )
 )
@@ -63,6 +76,32 @@ _PUBLIC_FORBIDDEN_VALUES = (
 
 class FormalManifestError(ValueError):
     """Raised when a formal precommit or manifest violates its boundary."""
+
+
+def _contract_versions(config: Mapping[str, Any]) -> tuple[str, str, str]:
+    protocol = str(config.get("protocol_version", ""))
+    if protocol == REAL_PROTOCOL_VERSION:
+        return (
+            REAL_MANIFEST_SCHEMA_VERSION,
+            REAL_PROTOCOL_VERSION,
+            REAL_METRIC_SCHEMA_VERSION,
+        )
+    if protocol == REAL_PROTOCOL_VERSION_V3:
+        return (
+            REAL_MANIFEST_SCHEMA_VERSION_V3,
+            REAL_PROTOCOL_VERSION_V3,
+            REAL_METRIC_SCHEMA_VERSION_V4,
+        )
+    raise FormalManifestError("unsupported real formal protocol version")
+
+
+def required_metrics_for(config: Mapping[str, Any]) -> tuple[str, ...]:
+    return (
+        REAL_REQUIRED_METRICS_V4
+        if str(config.get("metric_schema_version", ""))
+        == REAL_METRIC_SCHEMA_VERSION_V4
+        else REAL_REQUIRED_METRICS
+    )
 
 
 def stable_digest(value: Any) -> str:
@@ -101,10 +140,17 @@ def validate_precommit(
     check_hashes: bool = True,
 ) -> None:
     errors: list[str] = []
+    try:
+        manifest_version, protocol_version, metric_version = _contract_versions(
+            config
+        )
+    except FormalManifestError:
+        manifest_version = protocol_version = metric_version = ""
+        errors.append("protocol_version")
     expected_scalars = {
-        "manifest_schema_version": REAL_MANIFEST_SCHEMA_VERSION,
-        "protocol_version": REAL_PROTOCOL_VERSION,
-        "metric_schema_version": REAL_METRIC_SCHEMA_VERSION,
+        "manifest_schema_version": manifest_version,
+        "protocol_version": protocol_version,
+        "metric_schema_version": metric_version,
         "episode_count": REAL_EPISODE_COUNT,
         "configuration_count_per_panel": REAL_CONFIGURATION_COUNT_PER_PANEL,
         "max_steps_per_episode": REAL_MAX_STEPS,
@@ -116,6 +162,10 @@ def validate_precommit(
         errors.append("variants")
     if config.get("readiness_only_authorized") is not True:
         errors.append("readiness_only_authorized")
+    if protocol_version == REAL_PROTOCOL_VERSION_V3 and config.get(
+        "book_distraction_policy"
+    ) != "phase5-book-distraction-v4":
+        errors.append("book_distraction_policy")
 
     output = config.get("output_policy", {})
     if not isinstance(output, Mapping):
@@ -294,12 +344,19 @@ def build_public_manifest(
                     "memory": str(variant),
                     "planner": "deterministic",
                     "max_steps": int(config["max_steps_per_episode"]),
+                    "metric_schema_version": str(config["metric_schema_version"]),
                     **deepcopy(dict(config["output_policy"])),
                     "search_route_id": str(binding["search_route_id"]),
                     "search_route_action_sequence_digest": str(
                         binding["search_route_action_sequence_digest"]
                     ),
                 }
+                episode["book_distraction_policy"] = (
+                    str(config.get("book_distraction_policy"))
+                    if str(episode["task"]) == "thor_book_reacquire_k2"
+                    and config.get("book_distraction_policy") is not None
+                    else "phase5-book-distraction-v1"
+                )
                 if "subgoal_route_id" in binding:
                     episode["subgoal_route_id"] = str(binding["subgoal_route_id"])
                     episode["subgoal_route_action_sequence_digest"] = str(
@@ -307,9 +364,9 @@ def build_public_manifest(
                     )
                 episodes.append(episode)
     manifest = {
-        "manifest_schema_version": REAL_MANIFEST_SCHEMA_VERSION,
-        "protocol_version": REAL_PROTOCOL_VERSION,
-        "metric_schema_version": REAL_METRIC_SCHEMA_VERSION,
+        "manifest_schema_version": str(config["manifest_schema_version"]),
+        "protocol_version": str(config["protocol_version"]),
+        "metric_schema_version": str(config["metric_schema_version"]),
         "code_revision": code_revision,
         "working_tree_dirty": False,
         "episode_count": len(episodes),
@@ -318,7 +375,7 @@ def build_public_manifest(
         "panels": list(REAL_PANEL_ORDER),
         "execution_order": str(config["execution_order"]),
         "controller_settings": deepcopy(dict(config["controller_settings"])),
-        "required_metrics": list(REAL_REQUIRED_METRICS),
+        "required_metrics": list(required_metrics_for(config)),
         "private_runtime_material_serialized": False,
         "episodes": episodes,
     }
@@ -329,10 +386,17 @@ def build_public_manifest(
 
 def validate_public_manifest(manifest: Mapping[str, Any]) -> None:
     errors: list[str] = []
+    try:
+        manifest_version, protocol_version, metric_version = _contract_versions(
+            manifest
+        )
+    except FormalManifestError:
+        manifest_version = protocol_version = metric_version = ""
+        errors.append("protocol_version")
     expected = {
-        "manifest_schema_version": REAL_MANIFEST_SCHEMA_VERSION,
-        "protocol_version": REAL_PROTOCOL_VERSION,
-        "metric_schema_version": REAL_METRIC_SCHEMA_VERSION,
+        "manifest_schema_version": manifest_version,
+        "protocol_version": protocol_version,
+        "metric_schema_version": metric_version,
         "working_tree_dirty": False,
         "episode_count": REAL_EPISODE_COUNT,
         "configuration_count_per_panel": REAL_CONFIGURATION_COUNT_PER_PANEL,
@@ -345,7 +409,7 @@ def validate_public_manifest(manifest: Mapping[str, Any]) -> None:
         errors.append("variants")
     if tuple(manifest.get("panels", ())) != REAL_PANEL_ORDER:
         errors.append("panels")
-    if tuple(manifest.get("required_metrics", ())) != REAL_REQUIRED_METRICS:
+    if tuple(manifest.get("required_metrics", ())) != required_metrics_for(manifest):
         errors.append("required_metrics")
     episodes = manifest.get("episodes", [])
     if not isinstance(episodes, list) or len(episodes) != REAL_EPISODE_COUNT:
@@ -407,6 +471,7 @@ def compact_result_row(
         "panel": str(episode["panel"]),
         "configuration_id": str(episode["configuration_id"]),
         "memory": str(episode["memory"]),
+        "book_distraction_policy": summary.get("book_distraction_policy"),
         "success": summary.get("success"),
         "steps": summary.get("steps"),
         "target_reacquisition_action_count": summary.get(
@@ -423,6 +488,12 @@ def compact_result_row(
         "memory_guided_action_count": summary.get("memory_guided_action_count"),
         "shared_search_entry_recovery_action_count": summary.get(
             "shared_search_entry_recovery_action_count"
+        ),
+        "shared_search_entry_alignment_policy": summary.get(
+            "shared_search_entry_alignment_policy"
+        ),
+        "shared_search_entry_alignment_action_count": summary.get(
+            "shared_search_alignment_action_count"
         ),
         "shared_search_coverage_action_count": summary.get(
             "shared_search_coverage_action_count"

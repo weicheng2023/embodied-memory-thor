@@ -29,6 +29,7 @@ from embodied_memory_thor.phase5.formal_v2 import (  # noqa: E402
     compact_result_row,
     sha256_file,
     stable_digest,
+    required_metrics_for,
     validate_precommit,
 )
 from embodied_memory_thor.phase5.frozen_r1 import (  # noqa: E402
@@ -43,6 +44,7 @@ from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase5_real_formal_pilot_v2.json"
 EXPECTED_FORMAL_EVIDENCE_STATUS = "formal_acceptance_candidate"
 FORMAL_EXECUTOR_VERSION = "phase5-real-thor-formal-executor-v2"
+FORMAL_EXECUTOR_VERSION_V3 = "phase5-real-thor-formal-executor-v3"
 FORBIDDEN_ORDINARY_KEYS = {
     "anchor_id",
     "candidate_order",
@@ -60,6 +62,14 @@ def _write_json(path: Path, value: Any) -> None:
         json.dumps(to_jsonable(value), indent=2, ensure_ascii=False, sort_keys=True)
         + "\n",
         encoding="utf-8",
+    )
+
+
+def _executor_version(config: Mapping[str, Any]) -> str:
+    return (
+        FORMAL_EXECUTOR_VERSION_V3
+        if config.get("protocol_version") == "phase5-real-thor-pilot-v3"
+        else FORMAL_EXECUTOR_VERSION
     )
 
 
@@ -253,8 +263,12 @@ def build_readiness(
         )
         seen.add(configuration_id)
     readiness = {
-        "readiness_version": "phase5-real-thor-formal-readiness-v2",
-        "executor_version": FORMAL_EXECUTOR_VERSION,
+        "readiness_version": (
+            "phase5-real-thor-formal-readiness-v3"
+            if config.get("protocol_version") == "phase5-real-thor-pilot-v3"
+            else "phase5-real-thor-formal-readiness-v2"
+        ),
+        "executor_version": _executor_version(config),
         "code_revision": manifest["code_revision"],
         "manifest_digest": manifest["manifest_digest"],
         "episode_count": len(manifest["episodes"]),
@@ -290,7 +304,7 @@ def audit_episode(
     """Separate integrity validity from the task success outcome."""
 
     errors: list[str] = []
-    for key in REAL_REQUIRED_METRICS:
+    for key in required_metrics_for(episode):
         if key not in summary:
             errors.append(f"missing_metric:{key}")
     if summary.get("information_boundary_passed") is not True:
@@ -322,6 +336,17 @@ def audit_episode(
         errors.append("entry_recovery_policy")
     if summary.get("shared_search_entry_recovery_action_limit") != 64:
         errors.append("entry_recovery_action_limit")
+    if episode.get("metric_schema_version") == "phase5-real-thor-metrics-v4":
+        if summary.get("book_distraction_policy") != episode.get(
+            "book_distraction_policy"
+        ):
+            errors.append("book_distraction_policy")
+        if summary.get("shared_search_entry_alignment_policy") != (
+            "phase5-shared-search-entry-alignment-v3"
+        ):
+            errors.append("entry_alignment_policy")
+        if summary.get("shared_search_entry_alignment_action_limit") != 4:
+            errors.append("entry_alignment_action_limit")
     for key in (
         "invalid_action_count",
         "shared_search_route_entry_mismatch_count",
@@ -464,6 +489,7 @@ def execute_formal(
                 scene=str(episode["scene"]),
                 planner="deterministic",
                 memory=str(episode["memory"]),
+                book_distraction_policy=str(episode["book_distraction_policy"]),
                 search_route_id=search_route.route_id,
                 subgoal_route_id=(
                     subgoal_route.route_id if subgoal_route is not None else None
@@ -501,7 +527,7 @@ def execute_formal(
         _write_json(
             output_dir / "formal_progress.json",
             {
-                "executor_version": FORMAL_EXECUTOR_VERSION,
+                "executor_version": _executor_version(config),
                 "code_revision": manifest["code_revision"],
                 "manifest_digest": manifest["manifest_digest"],
                 "completed_episode_count": len(rows),
@@ -515,7 +541,7 @@ def execute_formal(
             invalidated = True
             break
     result = {
-        "executor_version": FORMAL_EXECUTOR_VERSION,
+        "executor_version": _executor_version(config),
         "code_revision": manifest["code_revision"],
         "manifest_digest": manifest["manifest_digest"],
         "completed_episode_count": len(rows),
