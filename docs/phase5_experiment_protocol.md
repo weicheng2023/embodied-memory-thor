@@ -2842,3 +2842,22 @@ Before any new formal readiness, the next gate is one excluded FloorPlan17
 runtime-v3 triplet in fixed no-memory, K=2 and object-memory order. It must use
 the same task/start/routes/evaluator, stop on the first integrity failure, save
 no images or evaluator debug and remain outside every formal aggregate.
+
+#### FloorPlan17 runtime-v3 integration triplet precommit
+
+`phase5-r2-runtime-v3-integration-probe-v1` binds the new runtime-v3 registry,
+FloorPlan17 qualification and production-gate evidence, current shared runner,
+planner, search and memory-navigation sources. It runs exactly three fresh
+episodes at max 2048 in no-memory, K=2, object-memory order and stops at the
+first episode or information-flow audit failure.
+
+Every variant receives the same frozen start, four-action ordered subgoal,
+212-action target-independent fallback, task and evaluator. The gate requires
+task success, route/digest identity, zero route execution/recovery failures,
+the K=2 eviction event and exercised retrieval/guidance for object memory.
+Shared entry recovery remains permitted and audited; native target-lock
+recovery remains a bounded performance mechanism. Images, GUI, evaluator debug,
+episode reuse and formal aggregation are disabled. A pass is integration
+evidence only and authorizes planning the six-configuration excluded dry run;
+it is not a superiority result. Focused tests pass 19/19 and the full
+repository regression passes 394 tests plus 70 subtests.
