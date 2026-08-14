@@ -3019,3 +3019,35 @@ JSON and Markdown must be deterministic and must retain the original six-
 configuration descriptive evidence boundary. Synthetic tests, hash gates,
 privacy checks and the full repository regression must pass before the frozen
 formal summary is supplied to the aggregator.
+
+#### Formal-v5 descriptive result
+
+Clean pushed analysis revision `9dcf9b5` accepted the hash-frozen formal summary.
+Two independent offline aggregations were byte-identical: full JSON SHA-256
+`a348ed27...4816`, Markdown SHA-256 `b43c0762...1b93c`, and stable analysis digest
+`3d7480d1...a78e`. No episode was rerun or selected, all 54 rows were included,
+panels were not pooled, and no significance test was used.
+
+Every variant succeeded in all 18 of its episodes. K=2 and no-memory were
+identical on every primary performance metric in all three panels. In R1 stable,
+object memory reduced target-reacquisition actions by 0.5 on average (three
+improvements, three ties, no regression) while total steps fell by only 0.17 on
+average (two improvements, three ties, one regression). In R2 stable, object
+memory reduced search rotations by 3.17 on average but increased total steps by
+3.5 and reacquisition actions by 2.33; it improved one, tied one and regressed
+four configurations on total steps. This is mixed evidence, not an unconditional
+memory advantage.
+
+In R1 stale, main action and movement costs were identical across variants.
+Object memory emitted five old-viewpoint misses and five stale-record recoveries
+across six configurations. FloorPlan303 is the explicit limitation: restoring
+the remembered camera horizon made the relocated Book visible directly, so no
+stale miss was emitted in that cell. The intervention and integrity audits still
+passed. Public machine-readable evidence and the human report are
+`docs/evidence/phase5_real_formal_v5_descriptive_results.json` and
+`docs/phase5_formal_results.md`.
+
+The supported E3 claim is conditional and task-specific: persistent memory can
+reduce simple target-reacquisition effort, but memory-guided navigation overhead
+can erase or reverse that gain in a longer ordered task. Six deterministic
+configurations per panel do not justify significance or broad generalization.

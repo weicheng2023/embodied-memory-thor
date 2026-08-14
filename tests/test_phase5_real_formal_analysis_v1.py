@@ -20,6 +20,9 @@ from embodied_memory_thor.phase5.formal_analysis_v1 import (
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "phase5_real_formal_analysis_v1.json"
 EVIDENCE = ROOT / "docs" / "evidence" / "phase5_real_formal_v5_complete.json"
+RESULT_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_real_formal_v5_descriptive_results.json"
+)
 
 
 def _config() -> dict[str, object]:
@@ -152,6 +155,8 @@ def test_public_analysis_material_contains_no_private_runtime_fields() -> None:
         path.read_text(encoding="utf-8")
         for path in (
             CONFIG,
+            RESULT_EVIDENCE,
+            ROOT / "docs" / "phase5_formal_results.md",
             ROOT / "src" / "embodied_memory_thor" / "phase5" / "formal_analysis_v1.py",
             ROOT / "scripts" / "aggregate_phase5_real_formal_v5.py",
         )
@@ -168,3 +173,37 @@ def test_public_analysis_material_contains_no_private_runtime_fields() -> None:
         "PlaceObjectAtPoint",
     ):
         assert forbidden not in text
+
+
+def test_public_result_evidence_is_complete_and_internally_consistent() -> None:
+    result = json.loads(RESULT_EVIDENCE.read_text(encoding="utf-8"))
+    assert result["matrix_complete"] is True
+    assert result["integrity_valid"] is True
+    assert result["included_episode_count"] == 54
+    assert result["task_success_count"] == 54
+    assert result["byte_identical_repeat"] is True
+    assert result["analysis_digest"] == (
+        "3d7480d1f677edfc14b8987f434955cb5689960cf7432cdb01a900d4869aa78e"
+    )
+    assert [panel["panel"] for panel in result["panels"]] == [
+        "r1_stable",
+        "r2_stable",
+        "r1_stale",
+    ]
+    for panel in result["panels"]:
+        assert len(panel["configuration_order"]) == 6
+        assert panel["success_counts"] == [6, 6, 6]
+        assert panel["k2_equals_no_memory_on_all_primary_metrics"] is True
+        assert panel["object_vs_k2_equals_object_vs_no_on_all_primary_metrics"] is True
+        assert len(panel["metrics"]) == 6
+        for metric in panel["metrics"].values():
+            differences = metric["object_minus_no_differences"]
+            better, tied, worse = metric["better_tie_worse"]
+            assert len(differences) == 6
+            assert better + tied + worse == 6
+            assert better == sum(value < 0 for value in differences)
+            assert tied == sum(value == 0 for value in differences)
+            assert worse == sum(value > 0 for value in differences)
+            assert round(sum(differences) / 6, 6) == metric[
+                "object_minus_no_mean"
+            ]

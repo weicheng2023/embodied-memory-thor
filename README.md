@@ -2,27 +2,19 @@
 
 A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-THOR.
 
-Phase 5A infrastructure is under development. The real-THOR runner now exposes
-`no_memory`, exact `short_memory_k2`, and `object_memory` through one deterministic
-planner path, but no Phase 5 comparison episode has run. The ordered second task,
-stale intervention, scene qualification, metrics, and clean manifest remain gates
-before the first excluded engineering dry run.
+Phase 5 formal-v5 is complete. One fixed clean-revision matrix ran 54/54 real
+AI2-THOR episodes across R1 stable, R2 stable, and R1 stale; every task succeeded
+and every integrity/information-boundary audit passed. The comparison keeps
+`no_memory`, exact `short_memory_k2`, and `object_memory` behind the same
+deterministic planner, search, action, and evaluator paths.
 
-The offline R1 candidate is `thor_book_reacquire_k2`. Its shared distraction
-sequence is `RotateRight -> LookDown -> LookUp`, after which K=2 has evicted the
-initial Book observation. This candidate has not yet passed real-scene
-qualification and must not be treated as a comparison result.
-
-The offline R2 candidate is `thor_cup_after_coffee_subgoal`: find and toggle a
-currently visible CoffeeMachine before reacquiring and picking up Cup. It has an
-explicit temporal-order audit and refuses to borrow the Book setup sequence when
-no qualified visible Cup start exists.
-
-The stale R1 path is currently offline-only. Evaluator intervention details are
-isolated in `intervention.jsonl`; planner traces retain only agent actions.
-Old-viewpoint negative evidence marks object memory stale, after which the shared
-fallback can rediscover Book and refresh provenance. A real AI2-THOR relocation
-action and destination have not yet passed qualification.
+The descriptive result is deliberately mixed. Object memory reduced mean R1
+stable target-reacquisition cost by 0.5 actions, but in R2 stable it increased
+mean total steps by 3.5 despite reducing search rotations. In R1 stale, it
+recovered five explicit outdated records while matching baseline principal
+costs. These six-configuration panels support a conditional real-simulator claim,
+not statistical significance or broad generalization. See
+[`docs/phase5_formal_results.md`](docs/phase5_formal_results.md).
 
 ## Status
 
@@ -267,7 +259,8 @@ tests/                           Automated tests
 
 See [`docs/development_status.md`](docs/development_status.md) for the phase-by-phase status.
 
-The preregistered Phase 5 comparison design is in
+The preregistered Phase 5 comparison design and audit history are in
 [`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md). It
 freezes fairness, two task structures, a stale-memory negative panel, scene
-qualification, metrics, and stop rules before any real comparison is run.
+qualification, metrics, and stop rules. The accepted descriptive result is in
+[`docs/phase5_formal_results.md`](docs/phase5_formal_results.md).
