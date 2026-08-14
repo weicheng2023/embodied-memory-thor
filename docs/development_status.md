@@ -916,3 +916,10 @@ The publication gate caught and corrected a five-action-code transcription
 omission without rerunning THOR; the tracked configuration now exactly equals
 the ignored public output. Evidence gates pass 10/10 and full regression
 285/285.
+
+The six-configuration runtime-freeze v2 tool is precommitted without modifying
+runtime v1 or the shared v1 route registry. It validates six tracked public
+sources, 12 action-only routes, ignored private starts and a bound private-set
+digest. Focused runtime tests pass 9/9 and full regression passes 289/289. The
+tool must be committed/pushed before deterministic registry generation; no
+memory variant has run.

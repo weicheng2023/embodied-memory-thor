@@ -169,14 +169,15 @@ def load_frozen_r2_runtime(
     public_set_path: str | Path = DEFAULT_PUBLIC_SET_PATH,
     private_set_path: str | Path = DEFAULT_PRIVATE_SET_PATH,
     search_routes_path: str | Path | None = None,
+    expected_runtime_set_version: str = R2_RUNTIME_SET_VERSION,
 ) -> FrozenR2Runtime:
     """Join public action-only routes to local evaluator-only start material."""
 
     public = json.loads(Path(public_set_path).read_text(encoding="utf-8"))
     private = json.loads(Path(private_set_path).read_text(encoding="utf-8"))
-    if public.get("runtime_set_version") != R2_RUNTIME_SET_VERSION:
+    if public.get("runtime_set_version") != expected_runtime_set_version:
         raise FrozenR2ConfigurationError("public frozen R2 runtime-set version mismatch")
-    if private.get("runtime_set_version") != R2_RUNTIME_SET_VERSION:
+    if private.get("runtime_set_version") != expected_runtime_set_version:
         raise FrozenR2ConfigurationError("private frozen R2 runtime-set version mismatch")
 
     expected_digest = str(public.get("private_configuration_set_digest", ""))

@@ -2237,3 +2237,24 @@ budgeted construction, execution and reacquisition failures. Public evidence
 may expose only action/viewpoint count ranges, digest/action-only route
 references, nominal bin coverage and classifications. Full qualification may
 start only after offline tests, frozen-hash audit and clean push.
+
+### R2 six-configuration runtime freeze v2 precommit
+
+R2 qualification completed at 6/6 with FloorPlan3, 4, 6, 7, 10 and 12. The
+one-configuration runtime v1 and shared v1 route registry remain immutable.
+`phase5-r2-frozen-runtime-set-v2` is a separate six-configuration set with its
+own public runtime registry, action-only route registry and ignored evaluator-
+only setup registry.
+
+The freeze tool accepts only the declared six configurations in fixed order.
+It hash-checks every tracked qualification source, validates 12 route action
+sequences/digests, verifies each ignored TeleportFull start against its public
+start-pose digest, and computes one digest binding the complete private set.
+The public registry contains only opaque configuration IDs, scene labels,
+route/digest references and evidence paths. The private registry alone contains
+target identities and start coordinates and remains under ignored `outputs/`.
+
+Freezing is deterministic bookkeeping: it runs no simulator, planner, memory
+variant or formal statistic. Offline tests and a clean push of the freeze tool
+must precede generation. Generated public/private/route sets must then load all
+six configurations and preserve v1 behavior before any new triplet probe.

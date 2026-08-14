@@ -1,0 +1,71 @@
+{
+  "freeze_version": "phase5-r2-runtime-freeze-v2",
+  "runtime_set_version": "phase5-r2-frozen-runtime-set-v2",
+  "configuration_order": [
+    "FloorPlan3_R2_fixed_start_001",
+    "FloorPlan4_R2_fixed_start_001",
+    "FloorPlan6_R2_fixed_start_001",
+    "FloorPlan7_R2_fixed_start_001",
+    "FloorPlan10_R2_fixed_start_001",
+    "FloorPlan12_R2_fixed_start_001"
+  ],
+  "configurations": [
+    {
+      "configuration_id": "FloorPlan3_R2_fixed_start_001",
+      "evidence": "docs/evidence/phase5_floorplan3_r2_v2_qualification.json",
+      "public_configuration": null,
+      "legacy_route_registry": "configs/phase5_search_routes.json",
+      "private_source": "outputs/phase5_r2_runtime_v2_draft/evaluator_only_qualified_configuration_registry.json"
+    },
+    {
+      "configuration_id": "FloorPlan4_R2_fixed_start_001",
+      "evidence": "docs/evidence/phase5_floorplan4_r2_v2_qualification.json",
+      "public_configuration": null,
+      "legacy_route_registry": "configs/phase5_search_routes.json",
+      "private_source": "outputs/phase5_r2_runtime_v2_draft/evaluator_only_qualified_configuration_registry.json"
+    },
+    {
+      "configuration_id": "FloorPlan6_R2_fixed_start_001",
+      "evidence": "docs/evidence/phase5_floorplan6_r2_qualification_v6.json",
+      "public_configuration": "configs/phase5_r2_floorplan6_qualified_configuration_v1.json",
+      "private_source": "outputs/phase5_r2_qualification_v6_floorplan6_13467da/evaluator_only_configuration_registry_draft.json"
+    },
+    {
+      "configuration_id": "FloorPlan7_R2_fixed_start_001",
+      "evidence": "docs/evidence/phase5_floorplan7_r2_qualification_v6.json",
+      "public_configuration": "configs/phase5_r2_floorplan7_qualified_configuration_v1.json",
+      "private_source": "outputs/phase5_r2_qualification_v6_floorplan7_97ba881/evaluator_only_configuration_registry_draft.json"
+    },
+    {
+      "configuration_id": "FloorPlan10_R2_fixed_start_001",
+      "evidence": "docs/evidence/phase5_floorplan10_r2_qualification_v6.json",
+      "public_configuration": "configs/phase5_r2_floorplan10_qualified_configuration_v1.json",
+      "private_source": "outputs/phase5_r2_qualification_v6_floorplan10_ddd255b/evaluator_only_configuration_registry_draft.json"
+    },
+    {
+      "configuration_id": "FloorPlan12_R2_fixed_start_001",
+      "evidence": "docs/evidence/phase5_floorplan12_r2_qualification_v4.json",
+      "public_configuration": "configs/phase5_r2_floorplan12_qualified_configuration_v1.json",
+      "private_source": "outputs/phase5_r2_qualification_v4/floorplan12_8030b5a/evaluator_only_configuration_registry_draft.json"
+    }
+  ],
+  "public_runtime_output": "configs/phase5_r2_frozen_runtime_v2.json",
+  "public_route_output": "configs/phase5_r2_search_routes_v2.json",
+  "private_runtime_output": "outputs/phase5_r2_frozen_runtime_v2/evaluator_only_configuration_registry.json",
+  "planner_visible": false,
+  "memory_variants_run": false,
+  "formal_use_allowed": false,
+  "historical_artifacts_frozen": {
+    "configs/phase5_search_routes.json": "69b80d5fe93060466c2841157e40793c1992821569a915cceb694d7717e9d384",
+    "docs/evidence/phase5_floorplan3_r2_v2_qualification.json": "980ec6738ab80f20bf4aa617fd91ce89b43c7f6ec7ea2c489035f5a906a49a93",
+    "docs/evidence/phase5_floorplan4_r2_v2_qualification.json": "5373cbea07bab8ae99cb80893b2afe037fffb7a502fbc70c779cac3e671bb2ec",
+    "configs/phase5_r2_floorplan6_qualified_configuration_v1.json": "58fbf450e72a77b5522c62148351071eb993ec0e2bf1789b27ca2e4550af38de",
+    "docs/evidence/phase5_floorplan6_r2_qualification_v6.json": "ceae3c1e6138faf43b63e55bde4b961dae0cd283a830a4c877aa3a3120b473d4",
+    "configs/phase5_r2_floorplan7_qualified_configuration_v1.json": "2981e9f4589f445d0d4b428794d6c32670fbe6ddf4e10a1bb6feb56e918c77dc",
+    "docs/evidence/phase5_floorplan7_r2_qualification_v6.json": "6f1022ebd1a76bf60fbb60ada3518094edb22649803ff535e090aa5a9858ab10",
+    "configs/phase5_r2_floorplan10_qualified_configuration_v1.json": "137579867a39b08be0825acffaa7201019db2501fb10d46bf0d6c5ff00f20078",
+    "docs/evidence/phase5_floorplan10_r2_qualification_v6.json": "edf0d38c46e3307080a396a98c8f2bd7fe49839b7e942bff5430774662a77a5b",
+    "configs/phase5_r2_floorplan12_qualified_configuration_v1.json": "417ec499d2513c474263ff53fdbe456efce7b7069ab4899d5f9b20f822dce2e9",
+    "docs/evidence/phase5_floorplan12_r2_qualification_v4.json": "778166d69a2c2dea27e94d81be8bd72d300386cdd306d2726363e00ebed9fb12"
+  }
+}
