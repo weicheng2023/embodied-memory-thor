@@ -2588,3 +2588,33 @@ selective reuse, images, GUI and evaluator-debug output remain prohibited. An
 integrity failure stops and invalidates the partial matrix; an integrity-valid
 task failure remains an experimental outcome and does not authorize selective
 rerunning.
+
+#### Formal v3 invalidation and target-lock recovery successor gate
+
+Clean pushed revision `983217d` stopped at cell 15 of 54. Cells 1--14 were task
+successes, including the previously failing FloorPlan303 triplet. Cell 15,
+FloorPlan306 R1-stable object-memory, visibly reacquired the Book and passed the
+information boundary, setup and route checks, but its native pickup at camera
+horizon 0 failed with the pickup-collision category. The matched no-memory and
+K=2 controls picked successfully from the same fixed position/yaw/standing
+state after common entry alignment restored camera horizon -30.
+
+The failure exposed two shared target-lock-v1 defects. Its recoverability test
+searched the full native stack trace and matched an internal method-name
+substring, misclassifying collision as a distance/angle failure. After its
+six-action approach budget exhausted, suppression returned control to the
+ordinary visible-target planner, which retried pickup until the 2048 limit.
+The formal audit then correctly stopped on the nonzero native-action integrity
+counter. Public evidence is
+`docs/evidence/phase5_real_formal_pilot_v3_invalidated_stop.json`; all 15 rows
+are excluded and cannot be resumed or reused.
+
+Before another formal protocol, a versioned shared target-lock interaction
+recovery must be pre-registered. It must classify only the first-line ordinary
+simulator reason, use no evaluator/private state or hidden target coordinate,
+be identical for all memory variants, restore a fixed planner-safe interaction
+horizon under a small action cap, retry pickup only within a total bound, and
+terminate with an explicit task failure rather than falling through to an
+unbounded ordinary-planner loop. Offline contract/privacy/budget tests and one
+excluded FloorPlan306 object-memory isolation probe are required before a new
+readiness protocol is allowed.
