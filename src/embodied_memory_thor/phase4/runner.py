@@ -69,6 +69,9 @@ from embodied_memory_thor.phase5.search import (
     SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
     SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT,
     SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION,
+    SHARED_ROUTE_ACTION_RECOVERY_ACTION_LIMIT,
+    SHARED_ROUTE_ACTION_RECOVERY_ATTEMPT_LIMIT,
+    SHARED_ROUTE_ACTION_RECOVERY_POLICY_VERSION,
     SearchRouteError,
     load_frozen_search_route,
 )
@@ -737,7 +740,36 @@ class ThorEpisodeRunner:
                 active_route_kind = None
                 target_lock = None
                 if (
-                    target_lock_policy is not None
+                    subgoal_route_state is not None
+                    and subgoal_route_state.route_action_recovery_pending
+                    and progress.stage == "toggle_coffee_machine"
+                ):
+                    shared_search = subgoal_route_state.next_directive(
+                        current_observation
+                    )
+                    active_route_state = subgoal_route_state
+                    active_route = self.subgoal_route
+                    active_route_kind = "subgoal"
+                elif (
+                    search_route_state is not None
+                    and search_route_state.route_action_recovery_pending
+                    and progress.stage
+                    in {
+                        "reacquire_book",
+                        "pickup_book",
+                        "reacquire_cup",
+                        "pickup_cup",
+                    }
+                ):
+                    shared_search = search_route_state.next_directive(
+                        current_observation
+                    )
+                    active_route_state = search_route_state
+                    active_route = self.search_route
+                    active_route_kind = "fallback"
+                if (
+                    shared_search is None
+                    and target_lock_policy is not None
                     and progress.stage
                     in {"reacquire_book", "pickup_book", "reacquire_cup", "pickup_cup"}
                 ):
@@ -756,6 +788,7 @@ class ThorEpisodeRunner:
                         break
                 if (
                     target_lock is None
+                    and shared_search is None
                     and subgoal_route_state is not None
                     and progress.stage == "toggle_coffee_machine"
                     and not subgoal_route_state.complete
@@ -888,6 +921,8 @@ class ThorEpisodeRunner:
                     if active_route_kind == "subgoal":
                         if shared_search.get("phase") == "route_entry_alignment":
                             shared_subgoal_alignment_action_count += 1
+                        elif shared_search.get("phase") == "route_entry_recovery":
+                            shared_search_entry_recovery_action_count += 1
                         elif shared_search.get("phase") == "coverage":
                             shared_subgoal_coverage_action_count += 1
                     else:
@@ -1315,6 +1350,40 @@ class ThorEpisodeRunner:
             ),
             "shared_search_action_failure_count": (
                 shared_search_action_failure_count
+            ),
+            "shared_route_action_recovery_policy": (
+                SHARED_ROUTE_ACTION_RECOVERY_POLICY_VERSION
+            ),
+            "shared_route_action_recovery_attempt_limit": (
+                SHARED_ROUTE_ACTION_RECOVERY_ATTEMPT_LIMIT
+            ),
+            "shared_route_action_recovery_action_limit": (
+                SHARED_ROUTE_ACTION_RECOVERY_ACTION_LIMIT
+            ),
+            "shared_route_action_recovery_attempt_count": sum(
+                state.route_action_recovery_attempt_count
+                for state in (search_route_state, subgoal_route_state)
+                if state is not None
+            ),
+            "shared_route_action_recovery_action_count": sum(
+                state.route_action_recovery_action_count
+                for state in (search_route_state, subgoal_route_state)
+                if state is not None
+            ),
+            "shared_route_action_recovered_failure_count": sum(
+                state.route_action_recovered_failure_count
+                for state in (search_route_state, subgoal_route_state)
+                if state is not None
+            ),
+            "shared_route_action_recovery_terminal_failure_count": sum(
+                state.route_action_recovery_terminal_failure_count
+                for state in (search_route_state, subgoal_route_state)
+                if state is not None
+            ),
+            "shared_route_action_recovery_pending_action_count": sum(
+                state.route_action_recovery_pending_action_count
+                for state in (search_route_state, subgoal_route_state)
+                if state is not None
             ),
             "shared_subgoal_route_id": (
                 self.subgoal_route.route_id if self.subgoal_route is not None else None

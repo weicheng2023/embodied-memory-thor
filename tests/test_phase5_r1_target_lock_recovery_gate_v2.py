@@ -47,6 +47,7 @@ def test_gate_hash_freeze_detects_only_post_pass_formal_v4_successor_sources() -
     assert changed == [
         "src/embodied_memory_thor/phase5/target_lock.py",
         "src/embodied_memory_thor/phase4/runner.py",
+        "src/embodied_memory_thor/phase4/contracts.py",
     ]
     assert "docs/evidence/phase5_real_formal_pilot_v3_invalidated_stop.json" in (
         config["historical_artifacts_frozen"]

@@ -2734,3 +2734,23 @@ state, candidate outcome or reachable graph, and must retain a small total
 episode recovery cap. A failed stabilization/retry remains fail-closed. Offline
 determinism/privacy/budget tests and one excluded FloorPlan10 no-memory replay
 are required before another formal readiness protocol.
+
+#### Shared route-action recovery v1 precommit
+
+`phase5-shared-route-action-recovery-v1` implements that successor without
+changing either frozen route. A failed ordinary coverage action leaves the
+cursor fixed, emits exactly one `Pass`, and retries the exact same action once.
+The mechanism is shared by all three memory variants and by fallback/subgoal
+route roles. It has an episode-wide cap of four attempts/eight recovery actions;
+failed stabilization or retry is terminal. Recovery directives contain only the
+existing public route contract, phase/index and action. Target/object/obstacle
+identity or coordinates, memory, evaluator state, reachable graph and candidate
+outcome remain forbidden.
+
+Offline state, planner, runner, privacy and fail-closed tests pass for all three
+variants. Full repository regression passes 368 tests plus 70 subtests. The old
+v4 authorization is intentionally hash-invalid under this successor and cannot
+be reused. The next pre-registered real gate is one excluded FloorPlan10 R2
+no-memory replay, max 2048 and no images/GUI, requiring coverage index 200 to
+produce `MoveAhead(false) -> Pass(true) -> MoveAhead(true)`, task success and
+zero terminal recovery failures. It is not a formal result or memory comparison.

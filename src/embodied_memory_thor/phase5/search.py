@@ -22,6 +22,12 @@ SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION = (
     "phase5-shared-search-entry-alignment-v3"
 )
 SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT = 4
+SHARED_ROUTE_ACTION_RECOVERY_POLICY_VERSION = (
+    "phase5-shared-route-action-recovery-v1"
+)
+SHARED_ROUTE_ACTION_RECOVERY_ATTEMPT_LIMIT = 4
+SHARED_ROUTE_ACTION_RECOVERY_ACTION_LIMIT = 8
+SHARED_ROUTE_ACTION_STABILIZATION_ACTION = "Pass"
 DEFAULT_SEARCH_ROUTES_PATH = (
     Path(__file__).resolve().parents[3] / "configs" / "phase5_search_routes.json"
 )
@@ -257,6 +263,13 @@ class FrozenSearchRouteState:
         self._entry_recovery_inverse_actions: list[dict[str, str]] = []
         self._entry_departure_action_count = 0
         self._entry_recovery_action_count = 0
+        self._route_action_recovery_stage: str | None = None
+        self._route_action_recovery_expected_action: dict[str, str] | None = None
+        self._route_action_recovery_action_index: int | None = None
+        self._route_action_recovery_attempt_count = 0
+        self._route_action_recovery_action_count = 0
+        self._route_action_recovered_failure_count = 0
+        self._route_action_recovery_terminal_failure_count = 0
 
     @property
     def coverage_cursor(self) -> int:
@@ -277,6 +290,32 @@ class FrozenSearchRouteState:
     @property
     def entry_recovery_pending_action_count(self) -> int:
         return len(self._entry_recovery_inverse_actions)
+
+    @property
+    def route_action_recovery_pending(self) -> bool:
+        return self._route_action_recovery_stage is not None
+
+    @property
+    def route_action_recovery_attempt_count(self) -> int:
+        return self._route_action_recovery_attempt_count
+
+    @property
+    def route_action_recovery_action_count(self) -> int:
+        return self._route_action_recovery_action_count
+
+    @property
+    def route_action_recovered_failure_count(self) -> int:
+        return self._route_action_recovered_failure_count
+
+    @property
+    def route_action_recovery_terminal_failure_count(self) -> int:
+        return self._route_action_recovery_terminal_failure_count
+
+    @property
+    def route_action_recovery_pending_action_count(self) -> int:
+        if self._route_action_recovery_stage is None:
+            return 0
+        return 2 if self._route_action_recovery_stage == "stabilize" else 1
 
     @property
     def complete(self) -> bool:
@@ -313,6 +352,26 @@ class FrozenSearchRouteState:
         self._entry_departure_action_count += 1
 
     def next_directive(self, observation: Mapping[str, Any]) -> dict[str, Any]:
+        if self._route_action_recovery_stage is not None:
+            if (
+                self._route_action_recovery_expected_action is None
+                or self._route_action_recovery_action_index is None
+            ):
+                raise SearchRouteError("route action recovery state is malformed")
+            if self._route_action_recovery_stage == "stabilize":
+                action = {"action": SHARED_ROUTE_ACTION_STABILIZATION_ACTION}
+                phase = "route_action_stabilization"
+            elif self._route_action_recovery_stage == "retry":
+                action = deepcopy(self._route_action_recovery_expected_action)
+                phase = "route_action_retry"
+            else:
+                raise SearchRouteError("unknown route action recovery stage")
+            return self._directive(
+                action=action,
+                phase=phase,
+                action_index=self._route_action_recovery_action_index,
+            )
+
         if self._coverage_cursor > 0:
             if self._coverage_cursor >= self.route.action_count:
                 raise SearchRouteError("frozen search route exhausted")
@@ -404,12 +463,61 @@ class FrozenSearchRouteState:
         expected = directive.get("action")
         if not isinstance(expected, Mapping) or dict(action) != dict(expected):
             raise SearchRouteError("planner action diverged from frozen search directive")
+        phase = directive.get("phase")
+        if phase == "route_action_stabilization":
+            if self._route_action_recovery_stage != "stabilize":
+                raise SearchRouteError("route action recovery stage mismatch")
+            if dict(expected) != {
+                "action": SHARED_ROUTE_ACTION_STABILIZATION_ACTION
+            }:
+                raise SearchRouteError("route action stabilization action mismatch")
+            self._route_action_recovery_action_count += 1
+            if not success:
+                self._route_action_recovery_terminal_failure_count += 1
+                self._clear_route_action_recovery()
+                raise SearchRouteError("route action stabilization failed")
+            self._route_action_recovery_stage = "retry"
+            return
+        if phase == "route_action_retry":
+            if (
+                self._route_action_recovery_stage != "retry"
+                or self._route_action_recovery_expected_action is None
+                or self._route_action_recovery_action_index != self._coverage_cursor
+            ):
+                raise SearchRouteError("route action retry state mismatch")
+            if dict(expected) != self._route_action_recovery_expected_action:
+                raise SearchRouteError("route action retry diverged from original action")
+            self._route_action_recovery_action_count += 1
+            if not success:
+                self._route_action_recovery_terminal_failure_count += 1
+                self._clear_route_action_recovery()
+                raise SearchRouteError("frozen search directive retry failed")
+            self._coverage_cursor += 1
+            self._route_action_recovered_failure_count += 1
+            self._clear_route_action_recovery()
+            return
+        if phase == "coverage" and not success:
+            if directive.get("action_index") != self._coverage_cursor:
+                raise SearchRouteError("frozen search cursor mismatch")
+            if (
+                self._route_action_recovery_attempt_count
+                >= SHARED_ROUTE_ACTION_RECOVERY_ATTEMPT_LIMIT
+                or self._route_action_recovery_action_count + 2
+                > SHARED_ROUTE_ACTION_RECOVERY_ACTION_LIMIT
+            ):
+                self._route_action_recovery_terminal_failure_count += 1
+                raise SearchRouteError("route action recovery limit exceeded")
+            self._route_action_recovery_expected_action = dict(expected)
+            self._route_action_recovery_action_index = self._coverage_cursor
+            self._route_action_recovery_stage = "stabilize"
+            self._route_action_recovery_attempt_count += 1
+            return
         if not success:
             raise SearchRouteError("frozen search directive failed")
-        if directive.get("phase") == "route_entry_alignment":
+        if phase == "route_entry_alignment":
             self._alignment_action_count += 1
             return
-        if directive.get("phase") == "route_entry_recovery":
+        if phase == "route_entry_recovery":
             if not self._entry_recovery_inverse_actions:
                 raise SearchRouteError("frozen search recovery cursor mismatch")
             if directive.get("action_index") != self._entry_recovery_action_count:
@@ -419,11 +527,16 @@ class FrozenSearchRouteState:
             self._entry_recovery_inverse_actions.pop()
             self._entry_recovery_action_count += 1
             return
-        if directive.get("phase") != "coverage":
+        if phase != "coverage":
             raise SearchRouteError("unknown frozen search phase")
         if directive.get("action_index") != self._coverage_cursor:
             raise SearchRouteError("frozen search cursor mismatch")
         self._coverage_cursor += 1
+
+    def _clear_route_action_recovery(self) -> None:
+        self._route_action_recovery_stage = None
+        self._route_action_recovery_expected_action = None
+        self._route_action_recovery_action_index = None
 
     def _pose_matches_entry(self, current: Mapping[str, float]) -> bool:
         position_error = math.hypot(

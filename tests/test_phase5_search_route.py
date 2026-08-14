@@ -26,6 +26,9 @@ from embodied_memory_thor.phase5.search import (
     SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
     SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT,
     SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION,
+    SHARED_ROUTE_ACTION_RECOVERY_ACTION_LIMIT,
+    SHARED_ROUTE_ACTION_RECOVERY_ATTEMPT_LIMIT,
+    SHARED_ROUTE_ACTION_RECOVERY_POLICY_VERSION,
     SearchRouteError,
     load_frozen_search_route,
 )
@@ -298,6 +301,217 @@ class Phase5SearchRouteTests(unittest.TestCase):
         self.assertEqual(decision.reason_code, "shared_search_coverage")
         self.assertFalse(decision.memory_guided)
         self.assertTrue(validate_planner_decision(decision, request)[0])
+
+    def test_route_action_recovery_is_fixed_pass_then_exact_retry(self) -> None:
+        route = load_frozen_search_route(ROUTE_ID)
+        sequences: dict[str, list[dict[str, Any]]] = {}
+        for variant in ("no_memory", "short_memory_k2", "object_memory"):
+            observation = _pose_observation(yaw=90.0)
+            state = FrozenSearchRouteState(
+                route,
+                initial_observation=observation,
+            )
+            failed = state.next_directive(observation)
+            state.record_result(
+                failed,
+                action=failed["action"],
+                success=False,
+            )
+            self.assertEqual(state.coverage_cursor, 0)
+            self.assertEqual(state.route_action_recovery_pending_action_count, 2)
+
+            emitted = []
+            for expected_phase, success in (
+                ("route_action_stabilization", True),
+                ("route_action_retry", True),
+            ):
+                directive = state.next_directive(observation)
+                self.assertEqual(directive["phase"], expected_phase)
+                request = PlannerRequest(
+                    task_name="thor_book_reacquire_k2",
+                    instruction="Reacquire and pick up the Book.",
+                    task_stage="reacquire_book",
+                    step=4 + len(emitted),
+                    max_steps=20,
+                    observation=observation,
+                    allowed_actions=THOR_BOOK_ACTIONS,
+                    retrieved_memory=(),
+                    shared_search=directive,
+                )
+                audit = audit_planner_request(request)
+                self.assertTrue(audit.passed, (variant, audit.violations))
+                decision = ThorBookReacquirePlanner().plan(request)
+                self.assertFalse(decision.memory_guided)
+                self.assertTrue(validate_planner_decision(decision, request)[0])
+                state.record_result(
+                    directive,
+                    action=decision.action,
+                    success=success,
+                )
+                emitted.append(decision.action)
+                ordinary = json.dumps(request.snapshot(include_digest=False))
+                for forbidden in (
+                    "target_point",
+                    "anchor_id",
+                    "support_id",
+                    "candidate_order",
+                    "reachable_positions",
+                    "obstacle_id",
+                ):
+                    self.assertNotIn(forbidden, ordinary)
+
+            self.assertEqual(emitted[0], {"action": "Pass"})
+            self.assertEqual(emitted[1], failed["action"])
+            self.assertEqual(state.coverage_cursor, 1)
+            self.assertEqual(state.route_action_recovery_attempt_count, 1)
+            self.assertEqual(state.route_action_recovery_action_count, 2)
+            self.assertEqual(state.route_action_recovered_failure_count, 1)
+            self.assertEqual(state.route_action_recovery_terminal_failure_count, 0)
+            self.assertEqual(state.route_action_recovery_pending_action_count, 0)
+            sequences[variant] = emitted
+
+        self.assertEqual(sequences["no_memory"], sequences["short_memory_k2"])
+        self.assertEqual(sequences["no_memory"], sequences["object_memory"])
+        self.assertEqual(
+            SHARED_ROUTE_ACTION_RECOVERY_POLICY_VERSION,
+            "phase5-shared-route-action-recovery-v1",
+        )
+        self.assertEqual(SHARED_ROUTE_ACTION_RECOVERY_ATTEMPT_LIMIT, 4)
+        self.assertEqual(SHARED_ROUTE_ACTION_RECOVERY_ACTION_LIMIT, 8)
+
+    def test_route_action_retry_failure_is_bounded_and_fail_closed(self) -> None:
+        route = load_frozen_search_route(ROUTE_ID)
+        observation = _pose_observation(yaw=90.0)
+        state = FrozenSearchRouteState(
+            route,
+            initial_observation=observation,
+        )
+        failed = state.next_directive(observation)
+        state.record_result(failed, action=failed["action"], success=False)
+        stabilization = state.next_directive(observation)
+        state.record_result(
+            stabilization,
+            action={"action": "Pass"},
+            success=True,
+        )
+        retry = state.next_directive(observation)
+        with self.assertRaisesRegex(SearchRouteError, "retry failed"):
+            state.record_result(retry, action=retry["action"], success=False)
+        self.assertEqual(state.coverage_cursor, 0)
+        self.assertEqual(state.route_action_recovery_attempt_count, 1)
+        self.assertEqual(state.route_action_recovery_action_count, 2)
+        self.assertEqual(state.route_action_recovery_terminal_failure_count, 1)
+        self.assertFalse(state.route_action_recovery_pending)
+
+    def test_route_action_recovery_policy_is_pre_registered_and_private_free(self) -> None:
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "configs"
+            / "phase5_shared_route_action_recovery_v1.json"
+        )
+        policy = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            policy["protocol_version"],
+            SHARED_ROUTE_ACTION_RECOVERY_POLICY_VERSION,
+        )
+        self.assertEqual(policy["stabilization_action"], "Pass")
+        self.assertEqual(policy["exact_failed_action_retry_limit"], 1)
+        self.assertEqual(
+            policy["episode_recovery_attempt_limit"],
+            SHARED_ROUTE_ACTION_RECOVERY_ATTEMPT_LIMIT,
+        )
+        self.assertEqual(
+            policy["episode_recovery_action_limit"],
+            SHARED_ROUTE_ACTION_RECOVERY_ACTION_LIMIT,
+        )
+        self.assertEqual(policy["episode_max_steps_unchanged"], 2048)
+        self.assertFalse(policy["formal_execution_authorized"])
+        public_text = json.dumps(policy, sort_keys=True)
+        for forbidden in (
+            "objectId",
+            "target_point",
+            "anchor_id",
+            "support_id",
+            "reachable_positions",
+        ):
+            self.assertNotIn(forbidden, public_text)
+
+    def test_runner_recovers_one_transient_route_rejection_for_all_variants(self) -> None:
+        class _TransientCoverageEnv(_RelocatableBookThorEnv):
+            def __init__(self) -> None:
+                super().__init__()
+                self.failed_once = False
+
+            def step(self, action_dict: dict[str, Any]) -> Any:
+                if (
+                    not self.failed_once
+                    and action_dict.get("action") == "RotateRight"
+                    and self.yaw == 90
+                    and self.book_yaw == 0
+                ):
+                    self.failed_once = True
+                    self.last_event = self._event(
+                        last_action="RotateRight",
+                        success=False,
+                        error="simulated transient frozen-route failure",
+                    )
+                    return self.last_event
+                return super().step(action_dict)
+
+        recovery_actions: dict[str, list[str]] = {}
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            for variant in ("no_memory", "short_memory_k2", "object_memory"):
+                episode_dir = root / variant
+                summary = ThorEpisodeRunner(
+                    ThorEpisodeConfig(
+                        task="thor_book_reacquire_k2",
+                        memory=variant,
+                        search_route_id=ROUTE_ID,
+                        condition="stale_r1",
+                        max_steps=24,
+                        output_dir=episode_dir,
+                        trace_html=False,
+                    ),
+                    env=_TransientCoverageEnv(),
+                    intervention=_FrozenBookRelocation(),
+                    search_route=load_frozen_search_route(ROUTE_ID),
+                ).run()
+                self.assertTrue(summary["success"], (variant, summary))
+                self.assertTrue(summary["information_boundary_passed"])
+                self.assertEqual(summary["shared_search_action_failure_count"], 0)
+                self.assertEqual(summary["shared_route_action_recovery_attempt_count"], 1)
+                self.assertEqual(summary["shared_route_action_recovery_action_count"], 2)
+                self.assertEqual(
+                    summary["shared_route_action_recovered_failure_count"], 1
+                )
+                self.assertEqual(
+                    summary["shared_route_action_recovery_terminal_failure_count"],
+                    0,
+                )
+                trace = [
+                    json.loads(line)
+                    for line in (episode_dir / "episode.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()
+                ]
+                recovery_actions[variant] = [
+                    row["planner_decision"]["action"]["action"]
+                    for row in trace
+                    if isinstance(
+                        row["planner_input"]["request"].get("shared_search"),
+                        dict,
+                    )
+                    and row["planner_input"]["request"]["shared_search"].get("phase")
+                    in {"route_action_stabilization", "route_action_retry"}
+                ]
+        self.assertEqual(recovery_actions["no_memory"], ["Pass", "RotateRight"])
+        self.assertEqual(
+            recovery_actions["no_memory"], recovery_actions["short_memory_k2"]
+        )
+        self.assertEqual(
+            recovery_actions["no_memory"], recovery_actions["object_memory"]
+        )
 
     def test_entry_recovery_reverses_pose_actions_without_private_input(self) -> None:
         route = load_frozen_search_route(ROUTE_ID)

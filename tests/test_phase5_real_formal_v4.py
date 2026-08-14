@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import tempfile
 from copy import deepcopy
 from pathlib import Path
+
+import pytest
 
 from embodied_memory_thor.phase5.formal_v2 import (
     REAL_EPISODE_COUNT,
@@ -63,7 +66,7 @@ def _authorization_executor() -> object:
 
 def test_v4_precommit_is_readiness_only_and_hash_binds_recovery_gate() -> None:
     config = _config()
-    validate_precommit(config, root=ROOT)
+    validate_precommit(config, root=ROOT, check_hashes=False)
     assert config["manifest_schema_version"] == REAL_MANIFEST_SCHEMA_VERSION_V4
     assert config["protocol_version"] == REAL_PROTOCOL_VERSION_V4
     assert config["metric_schema_version"] == REAL_METRIC_SCHEMA_VERSION_V5
@@ -73,6 +76,17 @@ def test_v4_precommit_is_readiness_only_and_hash_binds_recovery_gate() -> None:
     assert config["readiness_only_authorized"] is True
     assert "docs/evidence/phase5_r1_target_lock_recovery_gate_v2.json" in config[
         "historical_artifacts_frozen"
+    ]
+    changed = [
+        relative
+        for relative, expected in config["historical_artifacts_frozen"].items()
+        if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != expected
+    ]
+    assert changed == [
+        "src/embodied_memory_thor/phase4/runner.py",
+        "src/embodied_memory_thor/phase4/planners.py",
+        "src/embodied_memory_thor/phase4/contracts.py",
+        "src/embodied_memory_thor/phase5/search.py",
     ]
 
 
@@ -215,29 +229,9 @@ def test_v4_terminal_target_lock_failure_is_a_task_outcome() -> None:
     assert errors == []
 
 
-def test_v4_authorization_only_flips_execution_and_preserves_matrix() -> None:
-    base = _config()
-    effective = _authorization_executor().load_authorized_config(AUTHORIZATION)
-    assert base["formal_execution_authorized"] is False
-    assert effective["formal_execution_authorized"] is True
-    for key in (
-        "manifest_schema_version",
-        "protocol_version",
-        "metric_schema_version",
-        "episode_count",
-        "configuration_count_per_panel",
-        "variants",
-        "max_steps_per_episode",
-        "book_distraction_policy",
-        "target_lock_policy",
-        "controller_settings",
-        "output_policy",
-        "panels",
-        "historical_artifacts_frozen",
-    ):
-        assert effective[key] == base[key]
-    assert effective["authorization"]["matrix_contract_override_allowed"] is False
-    validate_precommit(effective, root=ROOT)
+def test_v4_authorization_is_invalidated_by_route_recovery_successor() -> None:
+    with pytest.raises(ValueError, match="invalid formal precommit"):
+        _authorization_executor().load_authorized_config(AUTHORIZATION)
 
 
 def test_v4_authorization_rejects_tampered_readiness_binding() -> None:

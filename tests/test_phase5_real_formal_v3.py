@@ -87,6 +87,8 @@ def test_v3_precommit_contract_is_readiness_only_and_historical_hash_is_frozen()
     ]
     assert changed == [
         "src/embodied_memory_thor/phase4/runner.py",
+        "src/embodied_memory_thor/phase4/planners.py",
+        "src/embodied_memory_thor/phase5/search.py",
         "src/embodied_memory_thor/phase5/formal_v2.py",
         "scripts/run_phase5_real_formal_pilot_v2.py",
     ]

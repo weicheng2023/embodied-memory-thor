@@ -261,6 +261,8 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
         if phase not in {
             "route_entry_alignment",
             "route_entry_recovery",
+            "route_action_stabilization",
+            "route_action_retry",
             "coverage",
         }:
             violations.append("shared_search_phase")
@@ -270,7 +272,11 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             not isinstance(action_index, int) or action_index < 0
         ):
             violations.append("shared_search_recovery_index")
-        elif phase == "coverage" and (
+        elif phase in {
+            "route_action_stabilization",
+            "route_action_retry",
+            "coverage",
+        } and (
             not isinstance(action_index, int) or action_index < 0
         ):
             violations.append("shared_search_coverage_index")
@@ -282,10 +288,15 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             "LookUp",
             "MoveAhead",
             "MoveBack",
+            "Pass",
             "RotateLeft",
             "RotateRight",
         }:
             violations.append("shared_search_action_not_navigation_only")
+        elif phase == "route_action_stabilization" and action.get("action") != "Pass":
+            violations.append("shared_search_stabilization_not_pass")
+        elif phase != "route_action_stabilization" and action.get("action") == "Pass":
+            violations.append("shared_search_pass_outside_stabilization")
 
     if request.shared_search is not None and request.target_lock is not None:
         violations.append("shared_search_and_target_lock_both_active")

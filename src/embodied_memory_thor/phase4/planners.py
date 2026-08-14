@@ -304,6 +304,26 @@ class ThorBookReacquirePlanner:
                 "Reverse the bounded successful pose-action trace to restore the "
                 "shared route entry without target or evaluator coordinates."
             )
+        elif phase == "route_action_stabilization":
+            reason_code = (
+                "shared_subgoal_route_action_stabilization"
+                if subgoal_route
+                else "shared_search_route_action_stabilization"
+            )
+            rationale = (
+                "Execute the fixed one-step stabilization after a rejected "
+                "frozen route action, without inspecting target or obstacle state."
+            )
+        elif phase == "route_action_retry":
+            reason_code = (
+                "shared_subgoal_route_action_retry"
+                if subgoal_route
+                else "shared_search_route_action_retry"
+            )
+            rationale = (
+                "Retry the exact rejected frozen route action once after the "
+                "fixed stabilization step."
+            )
         else:
             reason_code = (
                 "shared_subgoal_navigation"
