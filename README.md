@@ -25,6 +25,16 @@ the fresh matched 54-episode real-simulator comparison. The formal planner is
 deterministic. The optional OpenAI-compatible planner exists behind the same
 structured boundary but was not evaluated in the formal comparison.
 
+## Development provenance
+
+Coding assistants were used extensively for implementation, tests, documentation
+drafting, command orchestration, and repository maintenance. The chronological
+development PR and immutable audit tag remain public, while the reviewed
+integration history groups the identical final tree by research milestone. See
+[`docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md`](docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md)
+for the division of responsibility, history mapping, supported claims, and
+reproduction boundary.
+
 ## Motivation and scope
 
 This project explores how structured object state, recent interaction context, and action-failure history can support small embodied-agent pipelines. Its intended end-to-end loop is:
