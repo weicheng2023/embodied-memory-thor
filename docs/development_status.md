@@ -882,3 +882,11 @@ raised a `TypeError` while freezing its public route because its wrapper omitted
 v5's positional helper argument. The run is not counted as qualified and its
 episode will not be reused. The wrapper signature and regression test are being
 corrected before a separately clean fresh-reset retry; no later scene ran.
+
+The fresh FloorPlan6 retry on clean pushed `13467da` qualified candidate 1.
+All 210 selected starts passed the 3/3 stability gate; 12 candidate pairs froze
+before outcomes. The selected 13-action subgoal and 403-action/26-viewpoint
+budgeted fallback passed the native trial, independent fresh-reset replay and
+restoration. No memory variant or image ran. R2 is now 4/6; FloorPlan7 is next
+after result evidence tests and a clean push.
+FloorPlan6 v6 evidence gates pass 7/7 and the full regression passes 282/282.

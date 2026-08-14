@@ -1,0 +1,39 @@
+{
+  "configuration_id": "FloorPlan6_R2_fixed_start_001",
+  "fallback_route": {
+    "action_codes": "DRRRRDRRRRULFLFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRURFFRRRRDRRRRULFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRULFFFRFRRRRDRRRRURRFFFRRRRDRRRRURRFFFFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRUFFRRRRDRRRRULFFFRFRRRRDRRRRURFLFFRRRRDRRRRURRFFFFFRFRRRRDRRRRULFFFRRRRDRRRRURRFRFFFFFFFFFFLFFFFFFFFFLFRFFRRRRDRRRRULFFFRRRRDRRRRURFFFRRRRDRRRRURRFRFFFRRRRDRRRRULFFRRRRDRRRRUFFFRRRRDRRRRURFRFFFFLFRRRRDRRRRUU",
+    "action_count": 403,
+    "action_sequence_digest": "23a37ebe6f357a2c1310b9338ce668d4e030dee1f271558efed2b60b78c55358",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": false,
+    "route_id": "FloorPlan6_R2_fixed_start_001_fallback_budgeted_visual_v1",
+    "route_role": "target_independent_fallback",
+    "scene": "FloorPlan6",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "2bc3fa3c20f380f26cd2c7a4e174ec804f875ad9e23921f3e1c59abf5b3e7b6f",
+    "target_or_anchor_input_used": false,
+    "task": "thor_cup_after_coffee_subgoal"
+  },
+  "formal_use_allowed": false,
+  "planner_visible_coordinates": false,
+  "qualification_version": "phase5-r2-native-qualification-v6",
+  "scene": "FloorPlan6",
+  "source_qualification_digest": "2bc3fa3c20f380f26cd2c7a4e174ec804f875ad9e23921f3e1c59abf5b3e7b6f",
+  "start_pose_digest": "517fab01f2bca1113770a725a6fb8d5b0f8fad8822f667192bb20bdee883e4ab",
+  "subgoal_route": {
+    "action_codes": "RFFFRFFFFFLUU",
+    "action_count": 13,
+    "action_sequence_digest": "595df275e66e70b590a13c81e16e92bd10736b484deb964e0aaefb5f7141f592",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": true,
+    "route_id": "FloorPlan6_R2_fixed_start_001_subgoal_v1",
+    "route_role": "task_subgoal_navigation",
+    "scene": "FloorPlan6",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "2bc3fa3c20f380f26cd2c7a4e174ec804f875ad9e23921f3e1c59abf5b3e7b6f",
+    "target_or_anchor_input_used": true,
+    "task": "thor_cup_after_coffee_subgoal"
+  }
+}
