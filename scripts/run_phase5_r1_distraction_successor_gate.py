@@ -23,6 +23,7 @@ from embodied_memory_thor.phase4.runner import (  # noqa: E402
 from embodied_memory_thor.phase4.task import (  # noqa: E402
     PHASE5_BOOK_DISTRACTION_POLICY_V2,
     PHASE5_BOOK_DISTRACTION_POLICY_V3,
+    PHASE5_BOOK_DISTRACTION_POLICY_V4,
 )
 from embodied_memory_thor.phase5.frozen_r1 import (  # noqa: E402
     load_frozen_r1_runtime,
@@ -259,15 +260,174 @@ def run_gate(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
     return result
 
 
+def validate_coverage_config(config: Mapping[str, Any]) -> None:
+    if config.get("coverage_gate_version") != (
+        "phase5-r1-distraction-coverage-gate-v1"
+    ):
+        raise ValueError("coverage gate version mismatch")
+    if config.get("book_distraction_policy") != PHASE5_BOOK_DISTRACTION_POLICY_V4:
+        raise ValueError("coverage gate distraction policy mismatch")
+    if config.get("task") != "thor_book_reacquire_k2" or config.get(
+        "condition"
+    ) != "stable":
+        raise ValueError("coverage gate task/condition mismatch")
+    rows = config.get("configuration_order", [])
+    if not isinstance(rows, list) or len(rows) != 6:
+        raise ValueError("coverage gate requires six configurations")
+    expected_ids = (
+        "FloorPlan202_R1_fixed_start_001",
+        "FloorPlan302_R1_fixed_start_001",
+        "FloorPlan303_R1_fixed_start_001",
+        "FloorPlan305_R1_fixed_start_001",
+        "FloorPlan306_R1_fixed_start_001",
+        "FloorPlan307_R1_fixed_start_001",
+    )
+    if tuple(str(row.get("configuration_id", "")) for row in rows) != expected_ids:
+        raise ValueError("coverage gate configuration order mismatch")
+    episode_count = 0
+    for row in rows:
+        actions = row.get("expected_actions", [])
+        variants = tuple(row.get("variants", ()))
+        if (
+            not isinstance(actions, list)
+            or not 3 <= len(actions) <= 5
+            or actions[:2] != ["RotateRight", "RotateRight"]
+            or actions[-1:] != ["Pass"]
+            or any(
+                action not in {"RotateRight", "LookDown", "LookUp", "Pass"}
+                for action in actions
+            )
+        ):
+            raise ValueError("coverage gate action template mismatch")
+        expected_variants = (
+            PHASE5_VARIANTS
+            if row.get("configuration_id")
+            == "FloorPlan303_R1_fixed_start_001"
+            else ("no_memory",)
+        )
+        if variants != expected_variants:
+            raise ValueError("coverage gate variant policy mismatch")
+        episode_count += len(variants)
+    if config.get("total_episode_count") != episode_count or episode_count != 8:
+        raise ValueError("coverage gate episode count mismatch")
+    for key in (
+        "save_frames",
+        "trace_html",
+        "visualize",
+        "save_evaluator_debug",
+        "included_in_formal_aggregate",
+    ):
+        if config.get(key) is not False:
+            raise ValueError(f"coverage gate output policy mismatch: {key}")
+
+
+def run_coverage_gate(*, config_path: Path, output_dir: Path) -> dict[str, Any]:
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    validate_coverage_config(config)
+    head, upstream, dirty = _git_state()
+    if dirty or head != upstream:
+        raise ValueError("coverage gate requires a clean pushed HEAD")
+    if output_dir.exists():
+        raise ValueError("coverage gate output directory already exists")
+    output_dir.mkdir(parents=True)
+
+    rows: list[dict[str, Any]] = []
+    for configuration in config["configuration_order"]:
+        runtime = load_frozen_r1_runtime(str(configuration["configuration_id"]))
+        public = runtime.configuration.public_reference()
+        if str(configuration.get("scene", "")) != str(public.get("scene", "")):
+            raise ValueError("coverage gate frozen scene mismatch")
+        expected_actions = tuple(map(str, configuration["expected_actions"]))
+        for variant in configuration["variants"]:
+            episode_index = len(rows) + 1
+            episode_dir = output_dir / (
+                f"{episode_index:03d}_{configuration['configuration_id']}_{variant}"
+            )
+            summary = ThorEpisodeRunner(
+                ThorEpisodeConfig(
+                    task=str(config["task"]),
+                    scene=str(configuration["scene"]),
+                    planner="deterministic",
+                    memory=str(variant),
+                    book_distraction_policy=str(config["book_distraction_policy"]),
+                    search_route_id=runtime.search_route.route_id,
+                    condition="stable",
+                    mode="formal",
+                    max_steps=len(expected_actions),
+                    output_dir=episode_dir,
+                    save_frames=False,
+                    trace_html=False,
+                    visualize=False,
+                    save_evaluator_debug=False,
+                    included_in_formal_aggregate=False,
+                    run_purpose=str(config["run_purpose"]),
+                ),
+                search_route=runtime.search_route,
+                evaluator_setup=runtime.configuration,
+            ).run()
+            errors = _audit_episode(
+                summary=summary,
+                episode_dir=episode_dir,
+                expected_actions=expected_actions,
+            )
+            rows.append(
+                {
+                    "episode_index": episode_index,
+                    "configuration_id": configuration["configuration_id"],
+                    "variant": variant,
+                    "evaluated_action_count": summary.get("steps"),
+                    "book_hidden": isinstance(
+                        summary.get("task_progress", {}).get("book_hidden_step"),
+                        int,
+                    ),
+                    "post_template_stage": summary.get("task_progress", {}).get(
+                        "stage"
+                    ),
+                    "information_boundary_passed": summary.get(
+                        "information_boundary_passed"
+                    ),
+                    "audit_errors": errors,
+                }
+            )
+            if errors:
+                break
+        if rows[-1]["audit_errors"]:
+            break
+    passed = len(rows) == int(config["total_episode_count"]) and all(
+        not row["audit_errors"] for row in rows
+    )
+    result = {
+        "coverage_gate_version": config["coverage_gate_version"],
+        "code_revision": head,
+        "working_tree_dirty": False,
+        "book_distraction_policy": config["book_distraction_policy"],
+        "expected_episode_count": config["total_episode_count"],
+        "completed_episode_count": len(rows),
+        "included_in_formal_aggregate": False,
+        "passed": passed,
+        "rows": rows,
+        "claim_boundary": config["claim_boundary"],
+        "next_gate": (
+            "version a fresh formal readiness protocol"
+            if passed
+            else "stop and diagnose the first distraction coverage failure"
+        ),
+    }
+    _write_json(output_dir / "coverage_gate_summary.json", result)
+    return result
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        result = run_gate(
-            config_path=args.config.expanduser().resolve(),
-            output_dir=args.output_dir.expanduser().resolve(),
+        config_path = args.config.expanduser().resolve()
+        raw = json.loads(config_path.read_text(encoding="utf-8"))
+        runner = run_coverage_gate if "coverage_gate_version" in raw else run_gate
+        result = runner(
+            config_path=config_path, output_dir=args.output_dir.expanduser().resolve()
         )
     except (json.JSONDecodeError, OSError, subprocess.SubprocessError, ValueError) as exc:
         print(f"phase5_r1_distraction_gate_error: {exc}", file=sys.stderr)

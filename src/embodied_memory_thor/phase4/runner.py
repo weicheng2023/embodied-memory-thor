@@ -44,6 +44,7 @@ from embodied_memory_thor.phase4.task import (
     PHASE5_BOOK_DISTRACTION_POLICY_V1,
     PHASE5_BOOK_DISTRACTION_POLICY_V2,
     PHASE5_BOOK_DISTRACTION_POLICY_V3,
+    PHASE5_BOOK_DISTRACTION_POLICY_V4,
 )
 from embodied_memory_thor.phase4.trace import (
     LiveFrameViewer,
@@ -212,6 +213,7 @@ class ThorEpisodeConfig:
             PHASE5_BOOK_DISTRACTION_POLICY_V1,
             PHASE5_BOOK_DISTRACTION_POLICY_V2,
             PHASE5_BOOK_DISTRACTION_POLICY_V3,
+            PHASE5_BOOK_DISTRACTION_POLICY_V4,
         }:
             raise ValueError("unsupported Book distraction policy")
         if (
@@ -497,7 +499,9 @@ class ThorEpisodeRunner:
         writer.write_manifest(manifest)
 
         if config.task == "thor_book_reacquire_k2":
-            if config.book_distraction_policy == PHASE5_BOOK_DISTRACTION_POLICY_V3:
+            if config.book_distraction_policy == PHASE5_BOOK_DISTRACTION_POLICY_V4:
+                progress = BookReacquireProgress.phase5_k2_v4()
+            elif config.book_distraction_policy == PHASE5_BOOK_DISTRACTION_POLICY_V3:
                 progress = BookReacquireProgress.phase5_k2_v3()
             elif config.book_distraction_policy == PHASE5_BOOK_DISTRACTION_POLICY_V2:
                 progress = BookReacquireProgress.phase5_k2_v2()

@@ -14,6 +14,7 @@ from embodied_memory_thor.phase4.spatial_memory import build_thor_memory
 from embodied_memory_thor.phase4.task import BookReacquireProgress
 from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V2
 from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V3
+from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V4
 from embodied_memory_thor.phase5.protocol import PHASE5_REQUIRED_METRICS
 from tests.test_phase4_single_case import _SingleCaseThorEnv
 
@@ -267,6 +268,61 @@ class Phase5MemoryProviderTests(unittest.TestCase):
         self.assertEqual(snapshot["distraction_error"], "")
         self.assertEqual(progress.stage, "reacquire_book")
         self.assertEqual(memory.retrieve("Book"), [])
+
+    def test_phase5_distraction_v4_uses_only_absolute_initial_horizon(self) -> None:
+        cases = {
+            -30.0: ("RotateRight", "RotateRight", "LookDown", "Pass"),
+            0.0: ("RotateRight", "RotateRight", "Pass"),
+            30.0: ("RotateRight", "RotateRight", "LookUp", "Pass"),
+            60.00001525878906: (
+                "RotateRight",
+                "RotateRight",
+                "LookUp",
+                "LookUp",
+                "Pass",
+            ),
+        }
+        for horizon, expected in cases.items():
+            visible = _observation(book_visible=True, yaw=0.0, marker="visible")
+            visible["agent"]["cameraHorizon"] = horizon
+            progress = BookReacquireProgress.phase5_k2_v4()
+            progress.initialize(visible)
+            self.assertEqual(progress.distraction_actions, expected)
+            planner = ThorBookReacquirePlanner()
+            for step, action_name in enumerate(expected, start=1):
+                stage = progress.stage
+                self.assertTrue(stage.startswith("controlled_distraction_v4_"))
+                decision = planner.plan(
+                    PlannerRequest(
+                        task_name="thor_book_reacquire_k2",
+                        instruction="Reacquire and pick up the Book.",
+                        task_stage=stage,
+                        step=step,
+                        max_steps=10,
+                        observation=visible,
+                        allowed_actions=(
+                            "LookDown", "LookUp", "MoveAhead", "Pass",
+                            "PickupObject", "RotateLeft", "RotateRight",
+                        ),
+                        retrieved_memory=(),
+                    )
+                )
+                self.assertEqual(decision.action, {"action": action_name})
+                progress.observe_action(
+                    step=step,
+                    action=decision.action,
+                    success=True,
+                    observation_after=(
+                        _observation(book_visible=False, yaw=180.0, marker="hidden")
+                        if step == len(expected)
+                        else visible
+                    ),
+                )
+            self.assertEqual(progress.stage, "reacquire_book")
+            self.assertEqual(
+                progress.snapshot()["distraction_policy"],
+                PHASE5_BOOK_DISTRACTION_POLICY_V4,
+            )
 
     def test_phase5_r1_evicts_k2_and_preserves_shared_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_dir:

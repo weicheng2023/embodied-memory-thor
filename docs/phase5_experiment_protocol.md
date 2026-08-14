@@ -2484,3 +2484,36 @@ object identity/coordinates, memory, anchor/support, route coordinates or
 evaluator state. Existing one-turn behavior is preserved. Failure to converge
 within two actions still invalidates the episode. The next real gate is a fresh
 v2 isolation run from a new clean pushed revision; no v1 row is reused.
+
+#### FloorPlan303 gate v2 stop and six-configuration distraction v4 gate
+
+The clean `2162095` gate-v2 no-memory row executed both rotations and Pass
+successfully, with setup and information-boundary checks passing. The exact
+initial Book was nevertheless still visible after the half-turn. There was one
+initially visible Book and no instance substitution. The frozen view's roughly
+60-degree downward horizon and near-field geometry therefore invalidate the
+assumption that yaw-only distraction guarantees hiddenness. The row is excluded
+and cannot be reused. Public stop evidence is
+`docs/evidence/phase5_r1_distraction_successor_gate_v2_stop.json`.
+
+`phase5-book-distraction-v4` derives a bounded alignment to absolute horizon
+0 only from the planner-safe initial `cameraHorizon`, using the already audited
+0.001-degree normalization rule. It executes the fixed half-turn, the derived
+LookUp/LookDown actions, and one final Pass. It never branches on Book
+visibility or consumes object identity/coordinates, memory, evaluator state,
+anchor/support, route graph or candidate outcome. Final exact-target hiddenness
+remains mandatory.
+
+Because distraction v4 can differ from the frozen route entry in both horizon
+and yaw, `phase5-shared-search-entry-alignment-v3` deterministically restores
+one or two 30-degree horizon steps followed by one or two 90-degree yaw steps,
+using planner-safe pose only and a total four-action cap. Any off-grid error or
+nonconvergence fails closed.
+
+The next real gate covers all six frozen R1 configurations in declared order.
+It runs one no-memory row per scene and the full three-variant triplet on the
+previously failing FloorPlan303, for eight excluded short episodes total. Each
+episode ends exactly after its derived distraction template and tests
+hiddenness, K=2 readiness, action success, information boundary and exact fixed
+actions; it does not test pickup/task success or enter formal aggregation. Stop
+on the first failure. A pass is required before any formal readiness successor.

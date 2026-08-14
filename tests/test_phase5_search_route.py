@@ -208,18 +208,15 @@ class Phase5SearchRouteTests(unittest.TestCase):
             route,
             initial_observation=_pose_observation(yaw=90.0),
         )
-        stalled_alignment = stalled.next_directive(_pose_observation(yaw=180.0))
-        stalled.record_result(
-            stalled_alignment,
-            action={"action": "RotateLeft"},
-            success=True,
-        )
-        stalled_alignment_2 = stalled.next_directive(_pose_observation(yaw=180.0))
-        stalled.record_result(
-            stalled_alignment_2,
-            action={"action": "RotateLeft"},
-            success=True,
-        )
+        for _ in range(SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT):
+            stalled_alignment = stalled.next_directive(
+                _pose_observation(yaw=180.0)
+            )
+            stalled.record_result(
+                stalled_alignment,
+                action={"action": "RotateLeft"},
+                success=True,
+            )
         with self.assertRaisesRegex(SearchRouteError, "did not converge"):
             stalled.next_directive(_pose_observation(yaw=180.0))
 
@@ -242,11 +239,39 @@ class Phase5SearchRouteTests(unittest.TestCase):
             self.assertEqual(state.alignment_action_count, index + 1)
         coverage = state.next_directive(_pose_observation(yaw=90.0))
         self.assertEqual(coverage["phase"], "coverage")
-        self.assertEqual(SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT, 2)
+        self.assertEqual(SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT, 4)
         self.assertEqual(
             SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION,
-            "phase5-shared-search-entry-alignment-v2",
+            "phase5-shared-search-entry-alignment-v3",
         )
+
+    def test_route_entry_alignment_v3_recovers_horizon_and_half_turn(self) -> None:
+        route = load_frozen_search_route(ROUTE_ID)
+        state = FrozenSearchRouteState(
+            route,
+            initial_observation=_pose_observation(yaw=90.0, horizon=60.0),
+        )
+        observations = (
+            _pose_observation(yaw=270.0, horizon=0.0),
+            _pose_observation(yaw=270.0, horizon=30.0),
+            _pose_observation(yaw=270.0, horizon=60.0),
+            _pose_observation(yaw=180.0, horizon=60.0),
+        )
+        expected = ("LookDown", "LookDown", "RotateLeft", "RotateLeft")
+        for observation, action_name in zip(observations, expected):
+            directive = state.next_directive(observation)
+            self.assertEqual(directive["phase"], "route_entry_alignment")
+            self.assertEqual(directive["action"], {"action": action_name})
+            state.record_result(
+                directive,
+                action={"action": action_name},
+                success=True,
+            )
+        coverage = state.next_directive(
+            _pose_observation(yaw=90.0, horizon=60.0)
+        )
+        self.assertEqual(coverage["phase"], "coverage")
+        self.assertEqual(state.alignment_action_count, 4)
 
     def test_planner_must_execute_shared_search_directive_exactly(self) -> None:
         route = load_frozen_search_route(ROUTE_ID)

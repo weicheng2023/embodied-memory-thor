@@ -7,6 +7,7 @@ from pathlib import Path
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig
 from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V2
 from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V3
+from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V4
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +15,10 @@ CONFIG = ROOT / "configs" / "phase5_r1_distraction_successor_gate_v1.json"
 CONFIG_V2 = ROOT / "configs" / "phase5_r1_distraction_successor_gate_v2.json"
 STOP_EVIDENCE = (
     ROOT / "docs" / "evidence" / "phase5_r1_distraction_successor_gate_v1_stop.json"
+)
+COVERAGE_CONFIG = ROOT / "configs" / "phase5_r1_distraction_coverage_gate_v1.json"
+V2_STOP_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_r1_distraction_successor_gate_v2_stop.json"
 )
 
 
@@ -97,6 +102,34 @@ def test_runner_accepts_horizon_independent_successor_for_r1() -> None:
         task="thor_book_reacquire_k2",
         book_distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V3,
     ).validate()
+
+
+def test_six_configuration_coverage_gate_is_fixed_and_excluded() -> None:
+    config = json.loads(COVERAGE_CONFIG.read_text(encoding="utf-8"))
+    _module().validate_coverage_config(config)  # type: ignore[attr-defined]
+    assert config["book_distraction_policy"] == PHASE5_BOOK_DISTRACTION_POLICY_V4
+    assert config["total_episode_count"] == 8
+    assert len(config["configuration_order"]) == 6
+    floorplan303 = config["configuration_order"][2]
+    assert floorplan303["variants"] == [
+        "no_memory",
+        "short_memory_k2",
+        "object_memory",
+    ]
+    evidence = json.loads(V2_STOP_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["passed"] is False
+    assert evidence["same_initial_target_visible_after_half_turn"] is True
+    serialized = COVERAGE_CONFIG.read_text(encoding="utf-8")
+    for forbidden in (
+        '"target_point"',
+        '"objectId"',
+        '"anchor_id"',
+        '"start_pose"',
+        "Book|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in serialized
 
 
 def test_gate_source_has_no_target_conditioned_action_selection() -> None:

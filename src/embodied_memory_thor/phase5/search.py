@@ -19,9 +19,9 @@ SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION = (
 )
 SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT = 64
 SHARED_SEARCH_ENTRY_ALIGNMENT_POLICY_VERSION = (
-    "phase5-shared-search-entry-alignment-v2"
+    "phase5-shared-search-entry-alignment-v3"
 )
-SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT = 2
+SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT = 4
 DEFAULT_SEARCH_ROUTES_PATH = (
     Path(__file__).resolve().parents[3] / "configs" / "phase5_search_routes.json"
 )
@@ -343,7 +343,29 @@ class FrozenSearchRouteState:
         if position_error > self.route.entry_position_tolerance_meters:
             raise SearchRouteError("search route entry position mismatch")
         if horizon_error > angle_tolerance:
-            raise SearchRouteError("search route entry camera-horizon mismatch")
+            if (
+                self._alignment_action_count
+                >= SHARED_SEARCH_ENTRY_ALIGNMENT_ACTION_LIMIT
+            ):
+                raise SearchRouteError("search route entry alignment did not converge")
+            horizon_steps = horizon_error / 30.0
+            if (
+                abs(horizon_steps - round(horizon_steps))
+                > angle_tolerance / 30.0
+                or round(horizon_steps) not in {1, 2}
+            ):
+                raise SearchRouteError("search route entry camera-horizon mismatch")
+            action_name = (
+                "LookDown"
+                if self._entry_pose["camera_horizon"]
+                > current["camera_horizon"]
+                else "LookUp"
+            )
+            return self._directive(
+                action={"action": action_name},
+                phase="route_entry_alignment",
+                action_index=None,
+            )
 
         if abs(yaw_error) > angle_tolerance:
             if (

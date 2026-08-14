@@ -1,0 +1,55 @@
+{
+  "coverage_gate_version": "phase5-r1-distraction-coverage-gate-v1",
+  "book_distraction_policy": "phase5-book-distraction-v4",
+  "supersedes_gate": "phase5-r1-distraction-successor-gate-v2",
+  "v2_stop_evidence": "docs/evidence/phase5_r1_distraction_successor_gate_v2_stop.json",
+  "task": "thor_book_reacquire_k2",
+  "condition": "stable",
+  "mode": "formal",
+  "save_frames": false,
+  "trace_html": false,
+  "visualize": false,
+  "save_evaluator_debug": false,
+  "included_in_formal_aggregate": false,
+  "run_purpose": "phase5_r1_distraction_coverage_gate",
+  "configuration_order": [
+    {
+      "configuration_id": "FloorPlan202_R1_fixed_start_001",
+      "scene": "FloorPlan202",
+      "variants": ["no_memory"],
+      "expected_actions": ["RotateRight", "RotateRight", "LookDown", "Pass"]
+    },
+    {
+      "configuration_id": "FloorPlan302_R1_fixed_start_001",
+      "scene": "FloorPlan302",
+      "variants": ["no_memory"],
+      "expected_actions": ["RotateRight", "RotateRight", "Pass"]
+    },
+    {
+      "configuration_id": "FloorPlan303_R1_fixed_start_001",
+      "scene": "FloorPlan303",
+      "variants": ["no_memory", "short_memory_k2", "object_memory"],
+      "expected_actions": ["RotateRight", "RotateRight", "LookUp", "LookUp", "Pass"]
+    },
+    {
+      "configuration_id": "FloorPlan305_R1_fixed_start_001",
+      "scene": "FloorPlan305",
+      "variants": ["no_memory"],
+      "expected_actions": ["RotateRight", "RotateRight", "LookDown", "Pass"]
+    },
+    {
+      "configuration_id": "FloorPlan306_R1_fixed_start_001",
+      "scene": "FloorPlan306",
+      "variants": ["no_memory"],
+      "expected_actions": ["RotateRight", "RotateRight", "LookDown", "Pass"]
+    },
+    {
+      "configuration_id": "FloorPlan307_R1_fixed_start_001",
+      "scene": "FloorPlan307",
+      "variants": ["no_memory"],
+      "expected_actions": ["RotateRight", "RotateRight", "Pass"]
+    }
+  ],
+  "total_episode_count": 8,
+  "claim_boundary": "Excluded R1 distraction hiddenness and variant-parity coverage gate only; not task-success episodes and not a memory-effect result"
+}

@@ -174,6 +174,10 @@ class FrozenBookRelocation:
             (task_stage == "controlled_distraction_3" and step == 3)
             or (task_stage == "controlled_distraction_v2_4" and step == 4)
             or (task_stage == "controlled_distraction_v3_3" and step == 3)
+            or (
+                task_stage.startswith("controlled_distraction_v4_")
+                and task_stage.endswith("_Pass")
+            )
         )
         if not (
             task_name == "thor_book_reacquire_k2"
@@ -187,6 +191,10 @@ class FrozenBookRelocation:
                 or (
                     task_stage.endswith("_4")
                     and agent_action.get("action") == "LookUp"
+                )
+                or (
+                    task_stage.startswith("controlled_distraction_v4_")
+                    and agent_action.get("action") == "Pass"
                 )
             )
         ):

@@ -9,6 +9,8 @@ from typing import Any, Mapping
 PHASE5_BOOK_DISTRACTION_POLICY_V1 = "phase5-book-distraction-v1"
 PHASE5_BOOK_DISTRACTION_POLICY_V2 = "phase5-book-distraction-v2"
 PHASE5_BOOK_DISTRACTION_POLICY_V3 = "phase5-book-distraction-v3"
+PHASE5_BOOK_DISTRACTION_POLICY_V4 = "phase5-book-distraction-v4"
+PHASE5_BOOK_DISTRACTION_HORIZON_TOLERANCE_DEGREES = 0.001
 
 
 class BookReacquireProgress:
@@ -24,6 +26,8 @@ class BookReacquireProgress:
         require_hidden_at_completion: bool = False,
         distraction_stage_prefix: str | None = None,
         distraction_policy: str = "legacy-book-distraction",
+        absolute_horizon_target: float | None = None,
+        k2_eviction_transition_count: int = 2,
     ) -> None:
         if not distraction_actions:
             raise ValueError("at least one distraction action is required")
@@ -34,6 +38,8 @@ class BookReacquireProgress:
         self.require_hidden_at_completion = require_hidden_at_completion
         self.distraction_stage_prefix = distraction_stage_prefix
         self.distraction_policy = distraction_policy
+        self.absolute_horizon_target = absolute_horizon_target
+        self.k2_eviction_transition_count = k2_eviction_transition_count
         self.initial_book_id: str | None = None
         self.initial_book_observed_step: int | None = None
         self.distraction_turns = 0
@@ -73,6 +79,7 @@ class BookReacquireProgress:
             require_hidden_at_completion=True,
             distraction_stage_prefix="controlled_distraction_v2",
             distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V2,
+            k2_eviction_transition_count=3,
         )
 
     @classmethod
@@ -86,6 +93,22 @@ class BookReacquireProgress:
             require_hidden_at_completion=True,
             distraction_stage_prefix="controlled_distraction_v3",
             distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V3,
+            k2_eviction_transition_count=3,
+        )
+
+    @classmethod
+    def phase5_k2_v4(cls) -> "BookReacquireProgress":
+        """Build the half-turn plus planner-pose absolute-horizon successor."""
+
+        return cls(
+            task_name="thor_book_reacquire_k2",
+            distraction_actions=("RotateRight", "RotateRight", "Pass"),
+            require_hidden_throughout=False,
+            require_hidden_at_completion=True,
+            distraction_stage_prefix="controlled_distraction_v4",
+            distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V4,
+            absolute_horizon_target=0.0,
+            k2_eviction_transition_count=3,
         )
 
     @staticmethod
@@ -118,6 +141,30 @@ class BookReacquireProgress:
             return
         self.initial_book_observed_step = 0
         self._current_book_visible = True
+        if self.absolute_horizon_target is not None:
+            agent = observation.get("agent", {})
+            try:
+                observed_horizon = float(agent["cameraHorizon"])
+            except (KeyError, TypeError, ValueError):
+                self._preflight_error = "initial_camera_horizon_missing"
+                return
+            normalized = round(observed_horizon / 30.0) * 30.0
+            if (
+                abs(observed_horizon - normalized)
+                > PHASE5_BOOK_DISTRACTION_HORIZON_TOLERANCE_DEGREES
+                or normalized not in {-30.0, 0.0, 30.0, 60.0}
+            ):
+                self._preflight_error = "initial_camera_horizon_off_grid"
+                return
+            delta = self.absolute_horizon_target - normalized
+            action = "LookDown" if delta > 0 else "LookUp"
+            alignment = (action,) * int(abs(delta) / 30.0)
+            self.distraction_actions = (
+                "RotateRight",
+                "RotateRight",
+                *alignment,
+                "Pass",
+            )
 
     @property
     def preflight_error(self) -> str:
@@ -135,6 +182,14 @@ class BookReacquireProgress:
             if self.distraction_turns >= self.max_distraction_turns:
                 return "distraction_failed"
             if self.distraction_stage_prefix is not None:
+                next_action = self.distraction_actions[
+                    self.distraction_transition_count
+                ]
+                if self.distraction_policy == PHASE5_BOOK_DISTRACTION_POLICY_V4:
+                    return (
+                        f"{self.distraction_stage_prefix}_"
+                        f"{self.distraction_transition_count + 1}_{next_action}"
+                    )
                 return (
                     f"{self.distraction_stage_prefix}_"
                     f"{self.distraction_transition_count + 1}"
@@ -245,7 +300,8 @@ class BookReacquireProgress:
                 "distraction_transition_count": self.distraction_transition_count,
                 "required_distraction_actions": list(self.distraction_actions),
                 "short_memory_k2_eviction_ready": (
-                    self.distraction_transition_count >= 2
+                    self.distraction_transition_count
+                    >= self.k2_eviction_transition_count
                 ),
                 "book_hidden_step": self.book_hidden_step,
                 "book_reacquired_step": self.book_reacquired_step,

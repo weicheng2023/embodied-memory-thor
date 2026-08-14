@@ -13,6 +13,7 @@ from typing import Any, Mapping
 
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
 from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V3
+from embodied_memory_thor.phase4.task import PHASE5_BOOK_DISTRACTION_POLICY_V4
 from embodied_memory_thor.phase5.anchors import stable_digest
 from embodied_memory_thor.phase5.frozen_r1 import (
     FrozenR1ConfigurationError,
@@ -188,7 +189,7 @@ class Phase5FrozenR1RuntimeTests(unittest.TestCase):
                     search_routes_path=routes_path,
                 )
 
-    def test_production_intervention_accepts_horizon_independent_trigger(self) -> None:
+    def test_production_intervention_accepts_absolute_horizon_trigger(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_dir:
             root = Path(temporary_dir)
             public_path, private_path, routes_path = self._write_fixture(root)
@@ -207,7 +208,7 @@ class Phase5FrozenR1RuntimeTests(unittest.TestCase):
                         task="thor_book_reacquire_k2",
                         scene="FloorPlanFixture",
                         memory="no_memory",
-                        book_distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V3,
+                        book_distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V4,
                         search_route_id=runtime.search_route.route_id,
                         condition="stale_r1",
                         mode="formal",
@@ -228,14 +229,16 @@ class Phase5FrozenR1RuntimeTests(unittest.TestCase):
             self.assertEqual(summary["intervention_count"], 1)
             self.assertEqual(
                 summary["task_progress"]["distraction_policy"],
-                PHASE5_BOOK_DISTRACTION_POLICY_V3,
+                PHASE5_BOOK_DISTRACTION_POLICY_V4,
             )
             record = json.loads(
                 (root / "v3" / "intervention.jsonl")
                 .read_text(encoding="utf-8")
                 .splitlines()[0]
             )
-            self.assertEqual(record["trigger_stage"], "controlled_distraction_v3_3")
+            self.assertEqual(
+                record["trigger_stage"], "controlled_distraction_v4_3_Pass"
+            )
 
     @staticmethod
     def _write_fixture(root: Path) -> tuple[Path, Path, Path]:

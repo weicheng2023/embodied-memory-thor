@@ -161,6 +161,22 @@ class ThorBookReacquirePlanner:
                     "target reacquisition."
                 ),
             )
+        if stage.startswith("controlled_distraction_v4_"):
+            action_name = stage.rsplit("_", 1)[-1]
+            if action_name not in {"RotateRight", "LookDown", "LookUp", "Pass"}:
+                return self._decision(
+                    {"action": "Pass"},
+                    reason_code="invalid_controlled_distraction_v4_stage",
+                    rationale="Fail closed on an invalid distraction action stage.",
+                )
+            return self._decision(
+                {"action": action_name},
+                reason_code="controlled_distraction_v4_planner_pose_alignment",
+                rationale=(
+                    "Execute the frozen half-turn and planner-pose absolute-"
+                    "horizon distraction sequence."
+                ),
+            )
 
         if stage == "toggle_coffee_machine":
             if request.shared_search is not None:

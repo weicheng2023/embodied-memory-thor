@@ -1,0 +1,21 @@
+{
+  "evidence_version": "phase5-r1-distraction-successor-gate-v2-stop",
+  "gate_version": "phase5-r1-distraction-successor-gate-v2",
+  "code_revision": "216209518bc73dbc3fb8e11caea69b1433876677",
+  "gate_summary_sha256": "b2d2009970edcff9409c0ef692f63cffdc6143e7a134ca08360fc8baa36f96b6",
+  "configuration_id": "FloorPlan303_R1_fixed_start_001",
+  "book_distraction_policy": "phase5-book-distraction-v3",
+  "passed": false,
+  "completed_variant_count": 1,
+  "included_in_formal_aggregate": false,
+  "episode_reuse_allowed": false,
+  "setup_completed": true,
+  "information_boundary_passed": true,
+  "native_action_failure_count": 0,
+  "fixed_half_turn_completed": true,
+  "initial_visible_book_count": 1,
+  "same_initial_target_visible_after_half_turn": true,
+  "failure_class": "downward_near_field_target_remained_visible_after_yaw_only_distraction",
+  "classification": "excluded_distraction_gate_failed_visual_hiddenness_postcondition",
+  "required_successor": "derive absolute horizon alignment only from planner-safe initial cameraHorizon, retain the fixed half-turn, finish with Pass, and gate every frozen R1 configuration before formal execution"
+}
