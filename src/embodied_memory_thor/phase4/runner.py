@@ -531,6 +531,7 @@ class ThorEpisodeRunner:
         artifact_latencies: list[float] = []
         information_boundary_passed = True
         invalid_action_count = 0
+        invalid_planner_decision_count = 0
         memory_guided_action_count = 0
         memory_retrieval_count = 0
         useful_memory_retrieval_count = 0
@@ -846,7 +847,7 @@ class ThorEpisodeRunner:
                 )
                 if not valid_decision:
                     information_boundary_passed = False
-                    invalid_action_count += 1
+                    invalid_planner_decision_count += 1
                     failure_reason = "invalid_planner_decision:" + ";".join(decision_errors)
                     break
                 if decision.memory_guided:
@@ -1343,6 +1344,16 @@ class ThorEpisodeRunner:
                     "target_lock_interaction_recovery_action_count": 0,
                     "target_lock_interaction_recovery_attempt_count": 0,
                     "target_lock_terminal_failure_count": 0,
+                    "target_lock_policy": TARGET_LOCK_POLICY_VERSION,
+                    "target_lock_interaction_recovery_action_limit": (
+                        TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT
+                    ),
+                    "target_lock_interaction_recovery_retry_limit": (
+                        TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT
+                    ),
+                    "target_lock_canonical_pickup_horizon_degrees": (
+                        TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES
+                    ),
                 }
             ),
             "setup_completed": setup_completed,
@@ -1382,6 +1393,7 @@ class ThorEpisodeRunner:
                 else None
             ),
             "invalid_action_count": invalid_action_count,
+            "invalid_planner_decision_count": invalid_planner_decision_count,
             "information_boundary_passed": information_boundary_passed,
             "task_progress": progress_snapshot,
             "average_planning_latency_seconds": self._average(planning_latencies),

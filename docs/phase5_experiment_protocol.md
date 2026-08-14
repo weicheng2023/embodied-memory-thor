@@ -2641,3 +2641,49 @@ one recovery action/attempt, zero terminal failures, task success and a passing
 information boundary. It freezes the v3 stop evidence, v2 policy/config,
 runner/contracts and unchanged R1 runtime/route. This isolation gate is a
 mechanism-repair check only, not a memory comparison or formal result.
+
+Clean pushed revision `623ec53` passed that exact isolation gate in nine
+evaluated actions. The target-lock subsequence was
+`PickupObject(false) -> LookUp(true) -> PickupObject(true)` at planner-safe
+horizons `0 -> 0 -> -30`. It recorded one native failed interaction/invalid
+action, one recovery action and attempt, zero terminal failures, task success,
+and a passing information boundary. The recovery directive contained only its
+action name. Public evidence is
+`docs/evidence/phase5_r1_target_lock_recovery_gate_v2.json`; the episode remains
+excluded and supports only the repaired mechanism.
+
+This pass authorizes design of a fresh formal-v4 readiness protocol, not direct
+execution. That protocol must bind target-lock-v2 and add its policy, limits,
+recovery and terminal counters to the required metrics. It must distinguish an
+action-space/schema-invalid planner decision (integrity failure) from a legal
+planner action that THOR rejects (recorded performance outcome). Route action
+failures, setup/intervention errors, information leakage and invalid planner
+decisions remain fail-closed. No formal-v3 row is reusable.
+
+### Privacy-preserving real formal manifest v4 precommit
+
+`phase5-real-thor-manifest-v4` starts a completely fresh protocol while keeping
+the exact 54-cell matrix, panel/configuration/variant order, R1/R2 frozen
+runtimes and routes, controller settings, 2048 episode ceiling and no-image
+output of v3. Every cell publicly binds `phase5-shared-target-lock-v2`; R1 also
+keeps distraction-v4 and route-entry alignment-v3. No v3 row or output is
+reused.
+
+Metric schema v5 has 64 required fields. In addition to v4, it requires the
+target-lock policy, canonical -30-degree interaction horizon, four-action/one-
+retry bounds, recovery action/attempt counts, terminal-failure count, and a
+separate `invalid_planner_decision_count`. `invalid_action_count` continues to
+record schema-valid actions rejected by THOR and remains a performance metric.
+Planner action-space/schema violations increment the separate counter and fail
+integrity; route-controlled failures retain their dedicated fail-closed
+counters. A bounded terminal target-lock failure is a task outcome, like other
+task failures, provided every integrity audit remains valid.
+
+The readiness-only base sets formal execution false and hash-freezes the v3
+invalidated stop, the successful real target-lock-v2 isolation evidence, the
+successful R1 distraction gate, all public/private runtime loaders and route
+registries, and current runner/task/planner/contracts/search/target-lock/formal
+sources. Its no-THOR readiness must reconstruct 54 public cells, verify all 64
+metrics and join all 12 private runtimes on one clean pushed revision. A
+separate hash-bound authorization is required afterward; readiness itself may
+not start an episode.

@@ -21,6 +21,9 @@ REAL_METRIC_SCHEMA_VERSION = "phase5-real-thor-metrics-v3"
 REAL_MANIFEST_SCHEMA_VERSION_V3 = "phase5-real-thor-manifest-v3"
 REAL_PROTOCOL_VERSION_V3 = "phase5-real-thor-pilot-v3"
 REAL_METRIC_SCHEMA_VERSION_V4 = "phase5-real-thor-metrics-v4"
+REAL_MANIFEST_SCHEMA_VERSION_V4 = "phase5-real-thor-manifest-v4"
+REAL_PROTOCOL_VERSION_V4 = "phase5-real-thor-pilot-v4"
+REAL_METRIC_SCHEMA_VERSION_V5 = "phase5-real-thor-metrics-v5"
 REAL_PANEL_ORDER = ("r1_stable", "r2_stable", "r1_stale")
 REAL_EPISODE_COUNT = 54
 REAL_CONFIGURATION_COUNT_PER_PANEL = 6
@@ -50,6 +53,21 @@ REAL_REQUIRED_METRICS_V4 = tuple(
             "book_distraction_policy",
             "shared_search_entry_alignment_policy",
             "shared_search_entry_alignment_action_limit",
+        )
+    )
+)
+REAL_REQUIRED_METRICS_V5 = tuple(
+    dict.fromkeys(
+        REAL_REQUIRED_METRICS_V4
+        + (
+            "invalid_planner_decision_count",
+            "target_lock_policy",
+            "target_lock_interaction_recovery_action_limit",
+            "target_lock_interaction_recovery_retry_limit",
+            "target_lock_canonical_pickup_horizon_degrees",
+            "target_lock_interaction_recovery_action_count",
+            "target_lock_interaction_recovery_attempt_count",
+            "target_lock_terminal_failure_count",
         )
     )
 )
@@ -92,16 +110,22 @@ def _contract_versions(config: Mapping[str, Any]) -> tuple[str, str, str]:
             REAL_PROTOCOL_VERSION_V3,
             REAL_METRIC_SCHEMA_VERSION_V4,
         )
+    if protocol == REAL_PROTOCOL_VERSION_V4:
+        return (
+            REAL_MANIFEST_SCHEMA_VERSION_V4,
+            REAL_PROTOCOL_VERSION_V4,
+            REAL_METRIC_SCHEMA_VERSION_V5,
+        )
     raise FormalManifestError("unsupported real formal protocol version")
 
 
 def required_metrics_for(config: Mapping[str, Any]) -> tuple[str, ...]:
-    return (
-        REAL_REQUIRED_METRICS_V4
-        if str(config.get("metric_schema_version", ""))
-        == REAL_METRIC_SCHEMA_VERSION_V4
-        else REAL_REQUIRED_METRICS
-    )
+    metric_version = str(config.get("metric_schema_version", ""))
+    if metric_version == REAL_METRIC_SCHEMA_VERSION_V5:
+        return REAL_REQUIRED_METRICS_V5
+    if metric_version == REAL_METRIC_SCHEMA_VERSION_V4:
+        return REAL_REQUIRED_METRICS_V4
+    return REAL_REQUIRED_METRICS
 
 
 def stable_digest(value: Any) -> str:
@@ -162,10 +186,14 @@ def validate_precommit(
         errors.append("variants")
     if config.get("readiness_only_authorized") is not True:
         errors.append("readiness_only_authorized")
-    if protocol_version == REAL_PROTOCOL_VERSION_V3 and config.get(
+    if protocol_version in {REAL_PROTOCOL_VERSION_V3, REAL_PROTOCOL_VERSION_V4} and config.get(
         "book_distraction_policy"
     ) != "phase5-book-distraction-v4":
         errors.append("book_distraction_policy")
+    if protocol_version == REAL_PROTOCOL_VERSION_V4 and config.get(
+        "target_lock_policy"
+    ) != "phase5-shared-target-lock-v2":
+        errors.append("target_lock_policy")
 
     output = config.get("output_policy", {})
     if not isinstance(output, Mapping):
@@ -357,6 +385,10 @@ def build_public_manifest(
                     and config.get("book_distraction_policy") is not None
                     else "phase5-book-distraction-v1"
                 )
+                if config.get("protocol_version") == REAL_PROTOCOL_VERSION_V4:
+                    episode["target_lock_policy"] = str(
+                        config["target_lock_policy"]
+                    )
                 if "subgoal_route_id" in binding:
                     episode["subgoal_route_id"] = str(binding["subgoal_route_id"])
                     episode["subgoal_route_action_sequence_digest"] = str(
@@ -486,6 +518,20 @@ def compact_result_row(
             "repeated_viewpoint_visit_count"
         ),
         "memory_guided_action_count": summary.get("memory_guided_action_count"),
+        "invalid_action_count": summary.get("invalid_action_count"),
+        "invalid_planner_decision_count": summary.get(
+            "invalid_planner_decision_count"
+        ),
+        "target_lock_policy": summary.get("target_lock_policy"),
+        "target_lock_interaction_recovery_action_count": summary.get(
+            "target_lock_interaction_recovery_action_count"
+        ),
+        "target_lock_interaction_recovery_attempt_count": summary.get(
+            "target_lock_interaction_recovery_attempt_count"
+        ),
+        "target_lock_terminal_failure_count": summary.get(
+            "target_lock_terminal_failure_count"
+        ),
         "shared_search_entry_recovery_action_count": summary.get(
             "shared_search_entry_recovery_action_count"
         ),

@@ -259,16 +259,26 @@ class SharedTargetLockPolicy:
 
         return {
             "policy": TARGET_LOCK_POLICY_VERSION,
+            "target_lock_policy": TARGET_LOCK_POLICY_VERSION,
             "target_type": self.target_type,
             "recovery_action_budget": self.recovery_action_budget,
             "approach_action_budget": self.approach_action_budget,
             "interaction_recovery_action_limit": (
                 TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT
             ),
+            "target_lock_interaction_recovery_action_limit": (
+                TARGET_LOCK_INTERACTION_RECOVERY_ACTION_LIMIT
+            ),
             "interaction_recovery_retry_limit": (
                 TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT
             ),
+            "target_lock_interaction_recovery_retry_limit": (
+                TARGET_LOCK_INTERACTION_RECOVERY_RETRY_LIMIT
+            ),
             "canonical_pickup_horizon_degrees": (
+                TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES
+            ),
+            "target_lock_canonical_pickup_horizon_degrees": (
                 TARGET_LOCK_CANONICAL_PICKUP_HORIZON_DEGREES
             ),
             **self.metrics.snapshot(),

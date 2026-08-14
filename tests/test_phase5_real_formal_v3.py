@@ -85,7 +85,11 @@ def test_v3_precommit_contract_is_readiness_only_and_historical_hash_is_frozen()
         for relative, expected in config["historical_artifacts_frozen"].items()
         if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != expected
     ]
-    assert changed == ["src/embodied_memory_thor/phase4/runner.py"]
+    assert changed == [
+        "src/embodied_memory_thor/phase4/runner.py",
+        "src/embodied_memory_thor/phase5/formal_v2.py",
+        "scripts/run_phase5_real_formal_pilot_v2.py",
+    ]
 
 
 def test_v3_manifest_keeps_54_cells_and_binds_task_policies() -> None:

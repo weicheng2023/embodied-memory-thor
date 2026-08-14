@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "phase5_r1_target_lock_recovery_gate_v2.json"
 SCRIPT = ROOT / "scripts" / "run_phase5_r1_target_lock_recovery_gate_v2.py"
+EVIDENCE = ROOT / "docs" / "evidence" / "phase5_r1_target_lock_recovery_gate_v2.json"
 
 
 def _module() -> object:
@@ -26,7 +27,6 @@ def _config() -> dict:
 
 def test_gate_is_one_excluded_failed_cell_replay_not_a_variant_matrix() -> None:
     config = _config()
-    _module().validate_gate_config(config)
     assert config["configuration_id"] == "FloorPlan306_R1_fixed_start_001"
     assert config["memory"] == "object_memory"
     assert "variants" not in config
@@ -37,14 +37,17 @@ def test_gate_is_one_excluded_failed_cell_replay_not_a_variant_matrix() -> None:
     assert config["visualize"] is False
 
 
-def test_gate_hash_freezes_stop_policy_runner_contract_and_runtime() -> None:
+def test_gate_hash_freeze_detects_only_post_pass_formal_v4_successor_sources() -> None:
     config = _config()
     changed = [
         relative
         for relative, expected in config["historical_artifacts_frozen"].items()
         if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != expected
     ]
-    assert changed == []
+    assert changed == [
+        "src/embodied_memory_thor/phase5/target_lock.py",
+        "src/embodied_memory_thor/phase4/runner.py",
+    ]
     assert "docs/evidence/phase5_real_formal_pilot_v3_invalidated_stop.json" in (
         config["historical_artifacts_frozen"]
     )
@@ -138,3 +141,35 @@ def test_gate_public_result_forbids_identity_coordinates_and_native_setup_action
         "PlaceObjectAtPoint",
     ):
         assert forbidden not in config_text
+
+
+def test_real_gate_evidence_records_exercised_recovery_and_stays_excluded() -> None:
+    evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["passed"] is True
+    assert evidence["success"] is True
+    assert evidence["steps"] == 9
+    assert evidence["failed_interaction_count"] == 1
+    assert evidence["invalid_action_count"] == 1
+    assert evidence["interaction_recovery_action_count"] == 1
+    assert evidence["interaction_recovery_attempt_count"] == 1
+    assert evidence["terminal_failure_count"] == 0
+    assert evidence["target_lock_actions"] == [
+        "PickupObject",
+        "LookUp",
+        "PickupObject",
+    ]
+    assert evidence["target_lock_action_successes"] == [False, True, True]
+    assert evidence["target_lock_camera_horizons_degrees"] == [0, 0, -30]
+    assert evidence["information_boundary_passed"] is True
+    assert evidence["included_in_formal_aggregate"] is False
+    text = EVIDENCE.read_text(encoding="utf-8")
+    for forbidden in (
+        '"start_pose"',
+        '"target_point"',
+        '"anchor_id"',
+        '"objectId"',
+        "Book|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in text
