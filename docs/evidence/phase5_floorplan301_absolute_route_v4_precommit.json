@@ -1,0 +1,23 @@
+{
+  "claim": "FloorPlan301 route-only setup QA; no placement, anchor, or memory agent",
+  "precommit_version": "phase5-absolute-route-precommit-v1",
+  "code_revision": "2cbe010b8b6473bc1bc34069cd80321bbeae61c3",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan301",
+  "configuration_id": "FloorPlan301_R1_fixed_start_001",
+  "start_pose_digest": "a8c018d9086425866d9e09258eb709394e05f1e456f188c9409069422a4bb401",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "route_digest": "09e3d64b7adb1afe2df76c573211a60caad4435ab4e1f84433d1d168191cd30b",
+  "route_action_count": 108,
+  "route_action_limit": 240,
+  "absolute_scan_horizon_degrees": 0.0,
+  "horizon_alignment_action_count": 1,
+  "horizon_restoration_action_count": 1,
+  "target_or_anchor_input_used": false,
+  "passed": true,
+  "coordinates_exposed": false,
+  "placement_actions_run": false,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "next_gate": "FloorPlan301 candidate-1 diagnostic using this committed contract"
+}

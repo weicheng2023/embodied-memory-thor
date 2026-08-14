@@ -1,0 +1,41 @@
+{
+  "evidence_version": "phase5-r1-target-lock-interaction-recovery-gate-v2-result-v1",
+  "gate_version": "phase5-r1-target-lock-interaction-recovery-gate-v2",
+  "code_revision": "623ec530900a32ab20556cab4f511904ea246082",
+  "working_tree_dirty": false,
+  "configuration_id": "FloorPlan306_R1_fixed_start_001",
+  "memory": "object_memory",
+  "target_lock_policy": "phase5-shared-target-lock-v2",
+  "passed": true,
+  "success": true,
+  "steps": 9,
+  "failed_interaction_count": 1,
+  "invalid_action_count": 1,
+  "interaction_recovery_action_count": 1,
+  "interaction_recovery_attempt_count": 1,
+  "terminal_failure_count": 0,
+  "target_lock_actions": [
+    "PickupObject",
+    "LookUp",
+    "PickupObject"
+  ],
+  "target_lock_action_successes": [
+    false,
+    true,
+    true
+  ],
+  "target_lock_camera_horizons_degrees": [
+    0,
+    0,
+    -30
+  ],
+  "interaction_recovery_action_contains_only_action_name": true,
+  "information_boundary_passed": true,
+  "audit_errors": [],
+  "included_in_formal_aggregate": false,
+  "claim_boundary": "excluded single-cell mechanism repair gate only; not a memory comparison, task benchmark or formal result",
+  "source_gate_summary_sha256": "2c6b81468b1558a5e7c8f520519430565e1428bab134067ec16520cab7b154cf",
+  "source_episode_summary_sha256": "9c218f2fcd4d0e02861c509ad7d77e5ead5a862515449c194e9eebe0550f8ac0",
+  "source_run_manifest_sha256": "7ab54cb03e373a823d4d065a8ef6b0ea6f2d184cafd74011b805624a39003441",
+  "next_gate": "design a fresh formal-v4 readiness protocol that binds target-lock-v2 and separates legal native action failures from invalid planner decisions"
+}

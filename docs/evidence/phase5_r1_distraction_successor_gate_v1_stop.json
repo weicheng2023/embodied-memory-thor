@@ -1,0 +1,20 @@
+{
+  "evidence_version": "phase5-r1-distraction-successor-gate-v1-stop",
+  "gate_version": "phase5-r1-distraction-successor-gate-v1",
+  "code_revision": "aee5be364f1bbd46193d8141014c700f71efd50f",
+  "gate_summary_sha256": "033a31e79ffcffc63d30a3d8c544e897f9c4d746b13746bbca009f471d756b79",
+  "configuration_id": "FloorPlan303_R1_fixed_start_001",
+  "book_distraction_policy": "phase5-book-distraction-v2",
+  "passed": false,
+  "completed_variant_count": 1,
+  "included_in_formal_aggregate": false,
+  "episode_reuse_allowed": false,
+  "information_boundary_passed": true,
+  "setup_completed": true,
+  "successful_fixed_rotations": 2,
+  "failed_action": "LookDown",
+  "failure_class": "relative_horizon_limit_failure",
+  "failure_reason": "the frozen start was already at the downward horizon limit, so the relative LookDown action failed",
+  "classification": "excluded_distraction_gate_failed_horizon_assumption",
+  "required_successor": "retain the fixed target-independent half-turn and replace relative camera actions with one horizon-neutral Pass observation"
+}

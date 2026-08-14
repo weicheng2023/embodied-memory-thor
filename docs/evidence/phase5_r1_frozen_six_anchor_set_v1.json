@@ -1,0 +1,23 @@
+{
+  "record_version": "phase5-r1-frozen-six-anchor-set-v1-result-v1",
+  "anchor_set_version": "phase5-r1-frozen-six-anchor-set-v1",
+  "anchor_count": 6,
+  "scenes": [
+    "FloorPlan202", "FloorPlan302", "FloorPlan303", "FloorPlan305", "FloorPlan306", "FloorPlan307"
+  ],
+  "private_anchor_set_digest": "423cf8ef98d73b56d836edbda83563cf4ebdc0604063e1ccf9530f876f781d92",
+  "source_registry_scene_match_passed": true,
+  "source_registry_digest_match_passed": true,
+  "one_unique_anchor_per_scene_passed": true,
+  "public_qualification_evidence_passed": true,
+  "private_registry_written": true,
+  "private_registry_git_ignored": true,
+  "planner_visible": false,
+  "coordinates_exposed": false,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "scene_expansion_complete": true,
+  "floorplan308_started": false,
+  "claim_boundary": "six verified real-THOR relocation anchors; not a memory-agent comparison or formal episode",
+  "next_gate": "review and preregister the six-scene formal memory-comparison manifest before running any memory variant"
+}

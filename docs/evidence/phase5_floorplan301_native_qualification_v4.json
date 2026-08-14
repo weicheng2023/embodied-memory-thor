@@ -1,0 +1,56 @@
+{
+  "record_version": "phase5-floorplan301-native-qualification-v4-result-v1",
+  "code_revision": "548c7ceb55e621949933a0b90eff5eef31e8d0cc",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan301",
+  "support_policy_version": "phase5-r1-support-policy-v3",
+  "qualification_version": "phase5-anchor-qualification-v4",
+  "private_registry_version": "phase5-private-anchor-registry-v4",
+  "candidate_policy_version": "phase5-native-first-advisory-ranking-v1",
+  "geometry_diagnostic_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "passed": false,
+  "classification": "native_candidate_prefix_exhausted_without_anchor",
+  "support_query_count": 8,
+  "support_queries_fresh_reset_isolated": true,
+  "query_state_reused": false,
+  "total_candidate_count": 3969,
+  "hard_geometry_rejection_count": 0,
+  "advisory_predicted_clear_count": 0,
+  "advisory_boundary_crossing_count": 3969,
+  "advisory_obstacle_overlap_count": 1890,
+  "frozen_native_candidate_trial_limit": 12,
+  "candidate_trial_count": 12,
+  "candidate_support_type_summary": [
+    {
+      "support_type": "Shelf",
+      "candidate_trial_count": 12
+    }
+  ],
+  "native_placement_attempt_count": 12,
+  "native_placement_success_count": 0,
+  "native_error_category_summary": [
+    {
+      "category": "spawn_area_blocked_by_scene_wall",
+      "count": 12
+    }
+  ],
+  "all_trials_fresh_reset": true,
+  "force_action_used": false,
+  "book_rotation_action_used": false,
+  "target_material_move_count": 0,
+  "fallback_route_run_count": 0,
+  "fresh_reset_replay_run_count": 0,
+  "reset_restoration_pass_count": 12,
+  "reset_restoration_failure_count": 0,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "anchor_frozen": false,
+  "full_floorplan301_qualification_passed": false,
+  "later_scenes_started": false,
+  "coordinates_exposed": false,
+  "candidate_plan_digest": "a646ad5943b727a3b9186092a5cc28ab780639f5202ab71ed202e321d4b297bd",
+  "coverage_route_digest": "09e3d64b7adb1afe2df76c573211a60caad4435ab4e1f84433d1d168191cd30b",
+  "private_registry_digest": "06deb9b2e75aaa8d9607d1dd78deb416d4652e8dbb550e91a2c62fbd233fd71c",
+  "interpretation": "native validation confirmed that advisory geometry must not be called success evidence, but the frozen first-12 prefix covered only Shelf and therefore did not test Desk or Dresser",
+  "next_gate": "precommit support-type-balanced native candidate sampling before any further FloorPlan301 placement"
+}

@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "real AI2-THOR relocation qualification only; not a memory comparison",
+  "conclusion": "not_qualified",
+  "environment": {
+    "ai2thor_version": "5.0.0",
+    "images_saved": false,
+    "scene": "FloorPlan1"
+  },
+  "evidence_level": "E2_qualification_failure_analysis",
+  "native_api_candidate": {
+    "coordinate_query": "GetSpawnCoordinatesAboveReceptacle",
+    "placement": "PlaceObjectAtPoint"
+  },
+  "attempts": [
+    {
+      "code_revision": "f4f51fcaebdf5aa31b97d4b3493e49889bf90160",
+      "placement_attempted": false,
+      "probe_version": "phase5-real-relocation-probe-v1",
+      "result": "failed",
+      "reason": "anywhere=false returned no usable coordinates across 42 ranked non-parent receptacles",
+      "working_tree_dirty": false
+    },
+    {
+      "code_revision": "2fceeafbafdb0b649b3d0fdde6013160e9e508ed",
+      "placement_attempted": true,
+      "probe_version": "phase5-real-relocation-probe-v2",
+      "query_candidate_count": 441,
+      "result": "failed",
+      "reason": "farthest edge point rejected because the Book spawn area intersected a Wall",
+      "reset_reproducible": true,
+      "working_tree_dirty": false
+    },
+    {
+      "code_revision": "e2419f3f729279cb8f8b891934d9d9dba2e2b4e1",
+      "placement_attempted": true,
+      "probe_version": "phase5-real-relocation-probe-v3",
+      "query_candidate_count": 441,
+      "result": "failed",
+      "reason": "support-center point rejected because Pan|+00.72|+00.90|-02.42 occupied the Book spawn area",
+      "reset_reproducible": true,
+      "working_tree_dirty": false
+    }
+  ],
+  "protocol_decision": {
+    "freeze_relocation_api": false,
+    "formal_stale_panel_allowed": false,
+    "next_gate": "precompute Book-footprint clearance against support bounds and evaluator obstacle AABBs, then freeze a v4 selector before one further probe"
+  }
+}

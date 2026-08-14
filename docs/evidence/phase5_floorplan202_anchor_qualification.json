@@ -1,0 +1,51 @@
+{
+  "evidence_version": "phase5-floorplan202-anchor-qualification-v1",
+  "claim_boundary": "coordinate-free evaluator-only relocation-anchor QA; not a memory comparison",
+  "scene": "FloorPlan202",
+  "configuration_id": "FloorPlan202_R1_fixed_start_001",
+  "code_revision": "36720ae2b4a0dfdc110a6659b76a3bd049b57f1b",
+  "working_tree_dirty": false,
+  "ai2thor_version": "5.0.0",
+  "script_version": "phase5-anchor-batch-v4",
+  "qualification_version": "phase5-anchor-qualification-v1",
+  "images_saved": false,
+  "memory_agents_run": false,
+  "candidate_plan_digest": "b2010c8105aaeef767b163710dea15bdd266ab43bf6e8a708875a8e81fbfe764",
+  "coverage_route_digest": "ae83584fcc3fcbee674a5c7fb16e40a0c5df28204c499ef0b386589bcba846f6",
+  "coverage_route_action_count": 225,
+  "private_registry_digest": "6cda14e91eb3540d5e4a80805d157858522317b2eab518c5e077a0aa96d377b8",
+  "geometry": {
+    "accepted_candidate_count": 74,
+    "rejected_candidate_count": 808,
+    "frozen_physical_trial_limit": 12
+  },
+  "result": {
+    "passed": false,
+    "anchor_count": 0,
+    "candidate_trial_count": 12,
+    "fatal_error": "",
+    "native_placement_passed_count": 12,
+    "old_view_invisible_count": 12,
+    "stable_count": 12,
+    "non_support_overlap_free_count": 12,
+    "reset_restoration_passed_count": 12,
+    "rediscovered_count": 4,
+    "picked_up_count": 0,
+    "not_rediscovered_count": 8,
+    "rediscovered_but_not_picked_count": 4
+  },
+  "failure_groups": [
+    {
+      "candidate_orders": [1, 2, 3, 7, 9, 10, 11, 12],
+      "reason": "target_not_rediscovered_within_fallback_limit"
+    },
+    {
+      "candidate_orders": [4, 5, 6, 8],
+      "discovery_step": 197,
+      "reason": "visible_target_not_picked_within_interaction_limit",
+      "diagnostic": "one successful approach action was followed by loss of visibility and 19 successful in-place systematic-search rotations"
+    }
+  ],
+  "stop_rule_applied": "stopped before FloorPlan301; no trial beyond the frozen first 12 candidates",
+  "interpretation": "physical relocation is feasible, but route geometry alone did not guarantee visual rediscovery and the shared fallback did not recover after transient visibility"
+}

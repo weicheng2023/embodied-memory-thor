@@ -1,0 +1,33 @@
+{
+  "claim": "FloorPlan202 route-v4 candidate-1 diagnostic and full relocation-anchor qualification; not a memory comparison",
+  "code_revision": "68c58b654b86d7a5c18cadf64c6696de1e6ce9f0",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan202",
+  "absolute_scan_horizon_degrees": 0.0,
+  "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+  "coverage_route_digest": "cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae",
+  "coverage_route_action_count": 227,
+  "coverage_route_action_limit": 240,
+  "diagnostic": {
+    "candidate_order": 1,
+    "passed": true,
+    "discovery_step": 26,
+    "pickup_step": 27,
+    "failed_action_count": 0,
+    "anchor_frozen": false
+  },
+  "qualification": {
+    "passed": true,
+    "candidate_trial_count": 1,
+    "selected_anchor_id": "FloorPlan202_R1_stale_Book_anchor_001",
+    "physical_placement_qa_passed": true,
+    "shared_fallback_pickup_passed": true,
+    "fresh_reset_replay_passed": true,
+    "reset_restoration_passed": true,
+    "private_registry_digest": "423ed9a67f26da9d91a1620077be08d202f82f4ae120f70846584268f9f5bb4d"
+  },
+  "coordinates_exposed": false,
+  "images_saved": false,
+  "memory_agents_run": false,
+  "next_gate": "coordinate-free route-only precommit for FloorPlan301 before any placement"
+}
