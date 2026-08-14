@@ -22,6 +22,10 @@ from embodied_memory_thor.phase5.budgeted_fallback import (
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "configs" / "phase5_r2_budgeted_visual_fallback_v1.json"
+EVIDENCE_PATH = (
+    ROOT / "docs" / "evidence"
+    / "phase5_floorplan6_r2_budgeted_fallback_construction_v1.json"
+)
 
 
 def _grid(width: int, height: int) -> list[dict[str, float]]:
@@ -188,3 +192,20 @@ def test_restoration_uses_established_metadata_and_empty_inventory_contract() ->
         "agent": {"position": {}}, "inventoryObjects": [{"objectId": "private"}]
     })
     assert not module._restoration_is_clean({})  # type: ignore[attr-defined]
+
+
+def test_floorplan6_public_construction_evidence_is_safe_and_bounded() -> None:
+    evidence = json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
+    encoded = json.dumps(evidence, sort_keys=True)
+    assert evidence["classification"] == "budgeted_visual_fallback_construction_passed"
+    assert evidence["action_count"] == 404 <= evidence["action_limit"] == 2048
+    assert evidence["viewpoint_count"] == 26
+    assert evidence["route_digest"] == (
+        "aa40a6e0f5aed9c899de48cbaa4f79520f6a7b0f687fb8154ab833afd338b5af"
+    )
+    assert evidence["reset_restoration_passed"] is True
+    assert evidence["route_actions_executed"] is False
+    assert evidence["qualification_run"] is False
+    assert '"x"' not in encoded and '"y"' not in encoded and '"z"' not in encoded
+    assert "objectId" not in encoded and "reachable_positions" not in encoded
+    assert "Cup|" not in encoded and "CoffeeMachine|" not in encoded

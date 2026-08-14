@@ -861,9 +861,8 @@ exhaustive-fallback and FloorPlan3/4/12 qualification artifacts are hash-frozen.
 After offline regression and a clean push, only FloorPlan6, 7, 8, 10, 13 and
 16 may receive route-construction diagnostics in that order. The first pass
 ends the batch before qualification; FloorPlan17 remains blocked.
-Focused successor tests pass 10/10 and the complete offline regression passes
-274/274. The first FloorPlan6 construction produced a valid 404-action route
-but an over-strict reset-event field check rejected restoration. The diagnostic
-now uses the repository's established post-reset evaluator-state plus empty-
-inventory contract. A clean pushed retry is required; no later scene or
-qualification ran.
+The corrected FloorPlan6 diagnostic passed from clean pushed `cef5b78`: 26
+viewpoints and 404 planned actions, with the same route digest as the initial
+audit-bug run and successful reset restoration. No route action, qualification,
+memory variant, image or FloorPlan7+ run occurred. The first-pass stop rule is
+active. Result-evidence gates pass 11/11 and the full regression passes 275/275.

@@ -2204,3 +2204,12 @@ repository regression and a clean pushed commit. Real work is construction
 only, ordered FloorPlan6, 7, 8, 10, 13, 16. It performs no route execution,
 qualification, memory variant, image or formal statistic. Processing stops at
 the first construction pass; FloorPlan17 and later remain prohibited.
+
+The first permitted real construction diagnostic passed on FloorPlan6 from
+clean pushed revision `cef5b78`: 26 viewpoints, 404 planned actions under the
+2048 limit, both fixed horizons represented, all occupied bins represented,
+and reset restoration passed. Its route digest reproduced across the initial
+audit-bug run and corrected retry. No route action, object-specific query,
+qualification, memory variant or later scene ran. The registered stop-on-first-
+pass rule is now active; FloorPlan7 and all later scenes remain untouched until
+separate authorization.
