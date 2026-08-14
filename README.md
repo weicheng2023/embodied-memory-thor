@@ -2,9 +2,28 @@
 
 A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-THOR.
 
+Phase 5 formal-v5 is complete. One fixed clean-revision matrix ran 54/54 real
+AI2-THOR episodes across R1 stable, R2 stable, and R1 stale; every task succeeded
+and every integrity/information-boundary audit passed. The comparison keeps
+`no_memory`, exact `short_memory_k2`, and `object_memory` behind the same
+deterministic planner, search, action, and evaluator paths.
+
+The descriptive result is deliberately mixed. Object memory reduced mean R1
+stable target-reacquisition cost by 0.5 actions, but in R2 stable it increased
+mean total steps by 3.5 despite reducing search rotations. In R1 stale, it
+recovered five explicit outdated records while matching baseline principal
+costs. These six-configuration panels support a conditional real-simulator claim,
+not statistical significance or broad generalization. See
+[`docs/phase5_formal_results.md`](docs/phase5_formal_results.md).
+
 ## Status
 
-Phases 0–3 are complete. The formal `phase3-v2` controlled pilot ran 54/54 successful episodes from a clean revision, with all information-boundary and protocol checks passing. Results are descriptive E1 mock evidence, not a real AI2-THOR memory claim. LLM planners remain later work.
+Phases 0-5 are complete, and the Phase 6 research package is assembled. Phase 3
+provided controlled symbolic partial-observation evidence; Phase 4 established
+the real closed loop and auditable planner/evaluator boundary; Phase 5 completed
+the fresh matched 54-episode real-simulator comparison. The formal planner is
+deterministic. The optional OpenAI-compatible planner exists behind the same
+structured boundary but was not evaluated in the formal comparison.
 
 ## Motivation and scope
 
@@ -12,12 +31,12 @@ This project explores how structured object state, recent interaction context, a
 
 ```text
 AI2-THOR environment
-→ observation parsing
-→ memory update
-→ planner decision
-→ action execution
-→ state-based success evaluation
-→ logging and report generation
+-> observation parsing
+-> memory update
+-> planner decision
+-> action execution
+-> state-based success evaluation
+-> logging and report generation
 ```
 
 The project is a lightweight research preparation project. It is not a state-of-the-art method, does not train a large VLA or diffusion-policy model, and is not a reproduction of a paper from James Cheng's group. Its focus is systems engineering, memory/context design, robust evaluation, and reproducibility.
@@ -83,11 +102,14 @@ The default command succeeds when optional components are absent and explains th
 
 ## Tests
 
-The Phase 0 tests use only the Python standard library:
+Run the complete offline suite with:
 
 ```powershell
-python -m unittest discover -s tests -v
+python -m pytest -q
 ```
+
+The accepted Phase 6 checkpoint passes 422 tests plus 70 generated
+subtests.
 
 They are also compatible with `pytest` after installing the development extra.
 
@@ -244,3 +266,17 @@ tests/                           Automated tests
 ```
 
 See [`docs/development_status.md`](docs/development_status.md) for the phase-by-phase status.
+
+The preregistered Phase 5 comparison design and audit history are in
+[`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md). It
+freezes fairness, two task structures, a stale-memory negative panel, scene
+qualification, metrics, and stop rules. The accepted descriptive result is in
+[`docs/phase5_formal_results.md`](docs/phase5_formal_results.md).
+
+## Research presentation package
+
+- [`docs/report.md`](docs/report.md): complete research narrative;
+- [`docs/architecture.md`](docs/architecture.md): system and information-flow design;
+- [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons;
+- [`docs/application_abstract.md`](docs/application_abstract.md): copy-ready 120-180 word English abstract;
+- [`PROJECT_SCORECARD.md`](PROJECT_SCORECARD.md): rubric-based self-assessment and remaining gaps.
