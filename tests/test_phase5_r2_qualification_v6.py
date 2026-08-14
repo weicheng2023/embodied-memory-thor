@@ -21,6 +21,8 @@ FLOORPLAN6_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan6_r2_qualifi
 FLOORPLAN7_CONFIG = ROOT / "configs" / "phase5_r2_floorplan7_qualified_configuration_v1.json"
 FLOORPLAN7_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan7_r2_qualification_v6.json"
 FLOORPLAN8_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan8_r2_qualification_v6.json"
+FLOORPLAN10_CONFIG = ROOT / "configs" / "phase5_r2_floorplan10_qualified_configuration_v1.json"
+FLOORPLAN10_EVIDENCE = ROOT / "docs" / "evidence" / "phase5_floorplan10_r2_qualification_v6.json"
 
 
 def _module() -> object:
@@ -223,5 +225,30 @@ def test_floorplan8_v6_registered_subgoal_skip_is_safe_and_not_fallback_failure(
     assert evidence["fallback_route_action_count_max"] <= 2048
     assert evidence["reset_restoration_passed"] is True
     serialized = json.dumps(evidence)
+    for forbidden in ('"x"', '"y"', '"z"', "Cup|", "CoffeeMachine|", "objectId"):
+        assert forbidden not in serialized
+
+
+def test_floorplan10_completes_six_scene_r2_qualification_set() -> None:
+    evidence = json.loads(FLOORPLAN10_EVIDENCE.read_text(encoding="utf-8"))
+    configuration = json.loads(FLOORPLAN10_CONFIG.read_text(encoding="utf-8"))
+    assert evidence["passed"] is True
+    assert evidence["qualified_r2_count_after_scene"] == 6
+    assert evidence["qualified_scene_set"] == [
+        "FloorPlan3", "FloorPlan4", "FloorPlan6",
+        "FloorPlan7", "FloorPlan10", "FloorPlan12",
+    ]
+    assert evidence["candidate_trials_executed"] == 1
+    assert evidence["fresh_reset_replay_passed"] is True
+    assert evidence["reset_restoration_passed"] is True
+    assert evidence["fallback_route_action_count"] == 512 <= 2048
+    assert evidence["fallback_viewpoint_count"] == 37
+    assert configuration["configuration_id"] == evidence["configuration_id"]
+    assert configuration["source_qualification_digest"] == evidence[
+        "source_qualification_digest"
+    ]
+    assert configuration["fallback_route"]["action_count"] == 512
+    assert len(configuration["fallback_route"]["action_codes"]) == 512
+    serialized = json.dumps({"evidence": evidence, "configuration": configuration})
     for forbidden in ('"x"', '"y"', '"z"', "Cup|", "CoffeeMachine|", "objectId"):
         assert forbidden not in serialized

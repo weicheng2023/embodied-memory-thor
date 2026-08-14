@@ -1,0 +1,39 @@
+{
+  "configuration_id": "FloorPlan10_R2_fixed_start_001",
+  "fallback_route": {
+    "action_codes": "DRRRRDRRRRULFLFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRULFFRRRRDRRRRULFFFRFRRRRDRRRRULFFFRRRRDRRRRUFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRUFFRRRRDRRRRURRFFLFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURFFFFFFFFRFFLFFRFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFFRRRRDRRRRUU",
+    "action_count": 512,
+    "action_sequence_digest": "813e674ba41fa16c9b604fede496bbd2ba795da23553dbc9e872bc51cd0172f2",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": false,
+    "route_id": "FloorPlan10_R2_fixed_start_001_fallback_budgeted_visual_v1",
+    "route_role": "target_independent_fallback",
+    "scene": "FloorPlan10",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "f2f6f112630b16c4d4b31a8c89a1aba21b93aa884b43524872efc819b79e2db2",
+    "target_or_anchor_input_used": false,
+    "task": "thor_cup_after_coffee_subgoal"
+  },
+  "formal_use_allowed": false,
+  "planner_visible_coordinates": false,
+  "qualification_version": "phase5-r2-native-qualification-v6",
+  "scene": "FloorPlan10",
+  "source_qualification_digest": "f2f6f112630b16c4d4b31a8c89a1aba21b93aa884b43524872efc819b79e2db2",
+  "start_pose_digest": "0ec88fe9ebb271180cd2170d5557284e372368bece4338501f0c835770494671",
+  "subgoal_route": {
+    "action_codes": "RRFFRFFFRRUU",
+    "action_count": 12,
+    "action_sequence_digest": "543464c56595804e1a5eb97e531cfd891ce668a168f2bc5c1090117fb0639b28",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": true,
+    "route_id": "FloorPlan10_R2_fixed_start_001_subgoal_v1",
+    "route_role": "task_subgoal_navigation",
+    "scene": "FloorPlan10",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "f2f6f112630b16c4d4b31a8c89a1aba21b93aa884b43524872efc819b79e2db2",
+    "target_or_anchor_input_used": true,
+    "task": "thor_cup_after_coffee_subgoal"
+  }
+}

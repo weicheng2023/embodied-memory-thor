@@ -905,3 +905,14 @@ postcondition before fallback execution; restoration passed. This is not
 evidence against budgeted visual coverage. R2 remains 5/6 and FloorPlan10 is
 next after the negative evidence is tested and pushed.
 FloorPlan8 evidence gates pass 9/9 and the full regression passes 284/284.
+
+FloorPlan10 on clean `ddd255b` qualified candidate 1: 53/74 stable starts,
+12 pairs frozen before outcomes, a 12-action subgoal, and a 512-action/
+37-viewpoint budgeted fallback passed native trial, fresh replay and
+restoration. R2 qualification is complete at 6/6: FloorPlan3, 4, 6, 7, 10,
+12. FloorPlan13/16 are no longer needed. No memory variant may run until these
+six action-only configurations are frozen as a new runtime-set version.
+The publication gate caught and corrected a five-action-code transcription
+omission without rerunning THOR; the tracked configuration now exactly equals
+the ignored public output. Evidence gates pass 10/10 and full regression
+285/285.
