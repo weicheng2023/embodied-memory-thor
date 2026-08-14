@@ -1,6 +1,10 @@
 # Phase 4 Real-THOR Execution and Trace
 
-Implementation status: protocol-v2 corrected single live case passed. Protocol-v3 crash-isolates the optional OpenCV/Qt viewer after a reported xcb abort; 7/7 targeted and 60/60 offline tests pass, but the v3 manual visual rerun remains pending.
+Implementation status: protocol-v2 corrected single live case passed.
+Protocol-v3 crash-isolates the optional OpenCV/Qt viewer after a reported xcb
+abort. The later manual case completed the core episode and retained all
+non-GUI artifacts even though the isolated viewer reported a display timeout;
+Phase 4 visual integration is closed. Formal Phase 5 runs therefore use no GUI.
 
 Phase 4 connects the visible-observation memory path to a real AI2-THOR episode
 while preserving a strict planner/evaluator boundary. A successful first run will

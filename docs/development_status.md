@@ -1,6 +1,23 @@
 # Development Status
 
-## Phase 5A1 started
+## Current status: Phases 0-6 complete
+
+The accepted formal-v5 run completed 54/54 real AI2-THOR episodes on clean
+revision `069dab5`, with 54 task successes, zero integrity errors, and all rows
+accepted for the fixed aggregate. Hash-bound descriptive analysis on clean
+revision `9dcf9b5` was byte-identical across two runs. The result is mixed:
+object memory slightly reduced R1 stable reacquisition cost, increased overall
+R2 stable action cost despite fewer rotations, and safely completed the stale
+panel with five explicit record corrections. Public results are in
+`docs/phase5_formal_results.md` and
+`docs/evidence/phase5_real_formal_v5_descriptive_results.json`.
+
+Phase 6 packages the architecture, research report, failure analysis,
+158-word application abstract, and conservative 91/100 scorecard. Documentation
+and result-consistency gates pass, as do 422 tests plus 70 subtests. No new
+experiment or selective rerun was part of this documentation phase.
+
+## Historical Phase 5 engineering log (began at Phase 5A1)
 
 The manual Phase 4 protocol-v3 case completed successfully even though the
 isolated live viewer reported `viewer_display_timeout`; all non-GUI artifacts and
