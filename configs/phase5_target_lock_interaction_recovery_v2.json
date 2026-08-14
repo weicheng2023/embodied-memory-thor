@@ -1,0 +1,37 @@
+{
+  "protocol_version": "phase5-shared-target-lock-v2",
+  "predecessor_stop_evidence": "docs/evidence/phase5_real_formal_pilot_v3_invalidated_stop.json",
+  "applies_to_memory_variants": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "failure_reason_input": "first line of the ordinary planner-visible simulator error only",
+  "pickup_collision_markers": [
+    "collide",
+    "clip into"
+  ],
+  "canonical_pickup_horizon_degrees": -30,
+  "horizon_step_degrees": 30,
+  "horizon_tolerance_degrees": 0.001,
+  "interaction_recovery_action_limit": 4,
+  "interaction_recovery_retry_limit": 1,
+  "terminal_failure_handoff": "stop_episode_without_planner_fallthrough",
+  "allowed_recovery_inputs": [
+    "current planner-safe cameraHorizon",
+    "ordinary action success boolean",
+    "ordinary first-line simulator error",
+    "fixed policy constants"
+  ],
+  "forbidden_recovery_inputs": [
+    "memory records or memory variant",
+    "target coordinates",
+    "target objectId",
+    "anchor or support data",
+    "candidate outcome",
+    "reachable graph",
+    "evaluator metadata or hidden state"
+  ],
+  "formal_execution_authorized": false,
+  "next_gate": "offline contract, determinism, privacy and bounded-termination tests followed by one excluded FloorPlan306 object-memory isolation probe"
+}

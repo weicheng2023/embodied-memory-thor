@@ -1,0 +1,269 @@
+{
+  "aggregate_support_types": [
+    {
+      "metadata_count": 0,
+      "positive_spawn_scene_count": 0,
+      "receptacle_presence_scene_count": 0,
+      "receptacle_true_count": 0,
+      "spawn_coordinate_count": 0,
+      "spawn_query_success_count": 0,
+      "support_type": "Bed"
+    },
+    {
+      "metadata_count": 1,
+      "positive_spawn_scene_count": 1,
+      "receptacle_presence_scene_count": 1,
+      "receptacle_true_count": 1,
+      "spawn_coordinate_count": 143,
+      "spawn_query_success_count": 1,
+      "support_type": "CoffeeTable"
+    },
+    {
+      "metadata_count": 0,
+      "positive_spawn_scene_count": 0,
+      "receptacle_presence_scene_count": 0,
+      "receptacle_true_count": 0,
+      "spawn_coordinate_count": 0,
+      "spawn_query_success_count": 0,
+      "support_type": "CounterTop"
+    },
+    {
+      "metadata_count": 0,
+      "positive_spawn_scene_count": 0,
+      "receptacle_presence_scene_count": 0,
+      "receptacle_true_count": 0,
+      "spawn_coordinate_count": 0,
+      "spawn_query_success_count": 0,
+      "support_type": "Desk"
+    },
+    {
+      "metadata_count": 0,
+      "positive_spawn_scene_count": 0,
+      "receptacle_presence_scene_count": 0,
+      "receptacle_true_count": 0,
+      "spawn_coordinate_count": 0,
+      "spawn_query_success_count": 0,
+      "support_type": "DiningTable"
+    },
+    {
+      "metadata_count": 0,
+      "positive_spawn_scene_count": 0,
+      "receptacle_presence_scene_count": 0,
+      "receptacle_true_count": 0,
+      "spawn_coordinate_count": 0,
+      "spawn_query_success_count": 0,
+      "support_type": "Dresser"
+    },
+    {
+      "metadata_count": 1,
+      "positive_spawn_scene_count": 0,
+      "receptacle_presence_scene_count": 1,
+      "receptacle_true_count": 1,
+      "spawn_coordinate_count": 0,
+      "spawn_query_success_count": 0,
+      "support_type": "Shelf"
+    },
+    {
+      "metadata_count": 1,
+      "positive_spawn_scene_count": 0,
+      "receptacle_presence_scene_count": 1,
+      "receptacle_true_count": 1,
+      "spawn_coordinate_count": 0,
+      "spawn_query_success_count": 0,
+      "support_type": "SideTable"
+    }
+  ],
+  "candidate_receptacle_types": [
+    "Bed",
+    "CoffeeTable",
+    "CounterTop",
+    "Desk",
+    "DiningTable",
+    "Dresser",
+    "Shelf",
+    "SideTable"
+  ],
+  "census_complete": false,
+  "census_version": "phase5-r1-support-census-v1",
+  "claim": "read-only support-type census; not placement, qualification, or a memory comparison",
+  "code_revision": "1db67c2c1ab510460d3a0c7aeefb6401f06eae8d",
+  "config_digest": "5bc3eb5c2e38f11fec2ac46db45dd3f77082116fb30f2173c7ac85cb329cbf8a",
+  "coordinates_exposed": false,
+  "fallback_route_run": false,
+  "fatal_error_category": "unexpected_state_mutation",
+  "floorplan301_restart_allowed": false,
+  "images_saved": false,
+  "inspected_scenes": [
+    "FloorPlan202",
+    "FloorPlan301",
+    "FloorPlan302",
+    "FloorPlan303",
+    "FloorPlan304",
+    "FloorPlan305"
+  ],
+  "memory_agents_run": false,
+  "passed": false,
+  "pickup_actions_run": false,
+  "placement_actions_run": false,
+  "raw_digest": "9589bf924f82708197fa65d78118ddfd729a6fea82835a0af0192ea4bdbbc070",
+  "scene_count": 1,
+  "scenes": [
+    {
+      "last_action_isolated_by_next_scene_reset": true,
+      "pickupable_book_count": 1,
+      "reachable_count": 180,
+      "reachable_query_success": true,
+      "reset_success": true,
+      "scene": "FloorPlan202",
+      "state_unchanged_after_spawn_queries": false,
+      "support_types": [
+        {
+          "error_type_summary": {},
+          "metadata_count": 0,
+          "nonvisible_receptacle_count": 0,
+          "positive_spawn_query_count": 0,
+          "receptacle_true_count": 0,
+          "spawn_coordinate_count": 0,
+          "spawn_query_attempt_count": 0,
+          "spawn_query_success_count": 0,
+          "support_type": "Bed",
+          "visible_receptacle_count": 0
+        },
+        {
+          "error_type_summary": {},
+          "metadata_count": 1,
+          "nonvisible_receptacle_count": 0,
+          "positive_spawn_query_count": 1,
+          "receptacle_true_count": 1,
+          "spawn_coordinate_count": 143,
+          "spawn_query_attempt_count": 1,
+          "spawn_query_success_count": 1,
+          "support_type": "CoffeeTable",
+          "visible_receptacle_count": 1
+        },
+        {
+          "error_type_summary": {},
+          "metadata_count": 0,
+          "nonvisible_receptacle_count": 0,
+          "positive_spawn_query_count": 0,
+          "receptacle_true_count": 0,
+          "spawn_coordinate_count": 0,
+          "spawn_query_attempt_count": 0,
+          "spawn_query_success_count": 0,
+          "support_type": "CounterTop",
+          "visible_receptacle_count": 0
+        },
+        {
+          "error_type_summary": {},
+          "metadata_count": 0,
+          "nonvisible_receptacle_count": 0,
+          "positive_spawn_query_count": 0,
+          "receptacle_true_count": 0,
+          "spawn_coordinate_count": 0,
+          "spawn_query_attempt_count": 0,
+          "spawn_query_success_count": 0,
+          "support_type": "Desk",
+          "visible_receptacle_count": 0
+        },
+        {
+          "error_type_summary": {},
+          "metadata_count": 0,
+          "nonvisible_receptacle_count": 0,
+          "positive_spawn_query_count": 0,
+          "receptacle_true_count": 0,
+          "spawn_coordinate_count": 0,
+          "spawn_query_attempt_count": 0,
+          "spawn_query_success_count": 0,
+          "support_type": "DiningTable",
+          "visible_receptacle_count": 0
+        },
+        {
+          "error_type_summary": {},
+          "metadata_count": 0,
+          "nonvisible_receptacle_count": 0,
+          "positive_spawn_query_count": 0,
+          "receptacle_true_count": 0,
+          "spawn_coordinate_count": 0,
+          "spawn_query_attempt_count": 0,
+          "spawn_query_success_count": 0,
+          "support_type": "Dresser",
+          "visible_receptacle_count": 0
+        },
+        {
+          "error_type_summary": {
+            "action_failed": 1
+          },
+          "metadata_count": 1,
+          "nonvisible_receptacle_count": 1,
+          "positive_spawn_query_count": 0,
+          "receptacle_true_count": 1,
+          "spawn_coordinate_count": 0,
+          "spawn_query_attempt_count": 1,
+          "spawn_query_success_count": 0,
+          "support_type": "Shelf",
+          "visible_receptacle_count": 0
+        },
+        {
+          "error_type_summary": {
+            "action_failed": 1
+          },
+          "metadata_count": 1,
+          "nonvisible_receptacle_count": 1,
+          "positive_spawn_query_count": 0,
+          "receptacle_true_count": 1,
+          "spawn_coordinate_count": 0,
+          "spawn_query_attempt_count": 1,
+          "spawn_query_success_count": 0,
+          "support_type": "SideTable",
+          "visible_receptacle_count": 0
+        }
+      ],
+      "unexpected_action_count": 0
+    }
+  ],
+  "script_version": "phase5-r1-support-census-script-v1",
+  "stop_reason": "exact object-state digests changed across read-only spawn queries in FloorPlan202; the batch stopped before later scenes",
+  "support_policy_candidate": {
+    "admitted_support_types": [
+      "CoffeeTable"
+    ],
+    "exclusions": [
+      {
+        "reason": "too_rare_in_inspected_scenes+no_positive_read_only_spawn_query",
+        "support_type": "Bed"
+      },
+      {
+        "reason": "too_rare_in_inspected_scenes+no_positive_read_only_spawn_query",
+        "support_type": "CounterTop"
+      },
+      {
+        "reason": "too_rare_in_inspected_scenes+no_positive_read_only_spawn_query",
+        "support_type": "Desk"
+      },
+      {
+        "reason": "too_rare_in_inspected_scenes+no_positive_read_only_spawn_query",
+        "support_type": "DiningTable"
+      },
+      {
+        "reason": "too_rare_in_inspected_scenes+no_positive_read_only_spawn_query",
+        "support_type": "Dresser"
+      },
+      {
+        "reason": "no_positive_read_only_spawn_query",
+        "support_type": "Shelf"
+      },
+      {
+        "reason": "no_positive_read_only_spawn_query",
+        "support_type": "SideTable"
+      }
+    ],
+    "formal_use_allowed": false,
+    "placement_outcomes_used": false,
+    "policy_version": "phase5-r1-support-policy-v3-candidate",
+    "route_version": "phase5-target-independent-absolute-horizon-v4",
+    "safety_margin_meters": 0.02,
+    "selection_rule": "predeclared semantic Book support candidate and present as a receptacle with a positive read-only spawn query in at least the frozen minimum number of inspected scenes"
+  },
+  "support_policy_recommendation_available": false,
+  "working_tree_dirty": false
+}

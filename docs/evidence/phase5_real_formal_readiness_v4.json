@@ -1,0 +1,50 @@
+{
+  "evidence_version": "phase5-real-thor-formal-readiness-v4-result-v1",
+  "readiness_version": "phase5-real-thor-formal-readiness-v4",
+  "executor_version": "phase5-real-thor-formal-executor-v4",
+  "code_revision": "2a18ea5cb2766947281d2d28421e1d994e8fd823",
+  "working_tree_dirty": false,
+  "head_matched_upstream": true,
+  "readiness_passed": true,
+  "episode_count": 54,
+  "panel_count": 3,
+  "matched_cell_count": 18,
+  "unique_runtime_count": 12,
+  "required_metric_count": 64,
+  "private_runtime_join_passed": true,
+  "private_runtime_material_serialized": false,
+  "public_manifest_contains_start_pose": false,
+  "public_manifest_contains_target_or_anchor": false,
+  "public_manifest_contains_object_identity": false,
+  "public_manifest_contains_evaluator_native_action": false,
+  "book_distraction_policy": "phase5-book-distraction-v4",
+  "target_lock_policy": "phase5-shared-target-lock-v2",
+  "shared_search_entry_alignment_policy": "phase5-shared-search-entry-alignment-v3",
+  "shared_search_entry_alignment_action_limit": 4,
+  "target_lock_interaction_recovery_action_limit": 4,
+  "target_lock_interaction_recovery_retry_limit": 1,
+  "target_lock_canonical_pickup_horizon_degrees": -30,
+  "manifest_digest": "51ef356eaa1e989eff385e7e4095741c1c88699410db734d00c8a5aa046b641d",
+  "source_formal_manifest_sha256": "32a029a43ded16567cf112b935747db66813ec2218df8cd4f7e0fdb374353919",
+  "source_readiness_sha256": "6824bf7c61ab82d13d8d37077acd84ccc940f65c757ed394505d63447e744823",
+  "readiness_base_config_sha256": "bbeab3ba202827bf4d5f61513589208a08d66535c1cbbbc9ba874e4851777716",
+  "runtime_sets": [
+    {
+      "runtime_set": "phase5-r1-frozen-six-anchor-set-v1",
+      "configuration_count": 6,
+      "route_count": 6,
+      "private_join_count": 6
+    },
+    {
+      "runtime_set": "phase5-r2-frozen-runtime-set-v2",
+      "configuration_count": 6,
+      "route_count": 12,
+      "private_join_count": 6
+    }
+  ],
+  "formal_execution_authorized_during_readiness": false,
+  "thor_started": false,
+  "memory_episode_started": false,
+  "formal_statistic_computed": false,
+  "next_gate": "use a separately versioned and hash-bound v4 authorization launcher; start one complete fresh 54-cell run from cell 1 on one clean pushed revision"
+}

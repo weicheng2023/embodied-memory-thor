@@ -1,0 +1,70 @@
+{
+  "evidence_version": "phase5-floorplan3-r2-production-probe-v1-stop-v1",
+  "claim_boundary": "excluded real AI2-THOR R2 production integration failure; not a formal memory comparison and not Phase 5B evidence",
+  "scene": "FloorPlan3",
+  "configuration_id": "FloorPlan3_R2_fixed_start_001",
+  "code_revision": "a32a6bc6a575fde41d5efa9aaf19056d3fe6e4e7",
+  "working_tree_dirty": false,
+  "probe_version": "phase5-r2-production-integration-probe-v1",
+  "included_in_formal_aggregate": false,
+  "run_order": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "completed_variant_count": 3,
+  "passed": false,
+  "information_boundary_passed_for_all_variants": true,
+  "images_saved": false,
+  "results": [
+    {
+      "variant": "no_memory",
+      "success": true,
+      "steps": 13,
+      "subgoal_route_actions": 6,
+      "fallback_route_actions": 4,
+      "memory_guided_actions": 0,
+      "target_reacquisition_actions": 11,
+      "audit_errors": []
+    },
+    {
+      "variant": "short_memory_k2",
+      "success": true,
+      "steps": 13,
+      "subgoal_route_actions": 6,
+      "fallback_route_actions": 4,
+      "memory_guided_actions": 0,
+      "short_memory_evicted_before_reacquisition": true,
+      "target_reacquisition_actions": 11,
+      "audit_errors": []
+    },
+    {
+      "variant": "object_memory",
+      "success": false,
+      "steps": 140,
+      "failure_reason": "max_steps_exceeded",
+      "subgoal_route_actions": 6,
+      "fallback_route_actions": 0,
+      "memory_guided_actions": 132,
+      "repeated_viewpoint_visits": 131,
+      "target_reacquisition_actions": null,
+      "audit_errors": [
+        "episode_failed:max_steps_exceeded"
+      ]
+    }
+  ],
+  "diagnosis": {
+    "classification": "object_memory_discrete_heading_oscillation",
+    "first_failing_stage": "reacquire_cup",
+    "first_memory_guided_step": 9,
+    "repeated_reason_code": "return_to_last_seen_position_heading",
+    "repeated_reason_count": 132,
+    "action_pattern": "alternating RotateLeft and RotateRight without translation",
+    "cause": "continuous bearing with one-degree convergence tolerance is incompatible with ninety-degree primitive rotations when the desired bearing lies between adjacent executable headings",
+    "fallback_blocked_by_retained_memory": true,
+    "information_leak_detected": false
+  },
+  "source_output": "outputs/phase5_r2_production_probe_v1/floorplan3_a32a6bc",
+  "floorplan4_or_later_run": false,
+  "next_gate": "precommit and offline-test a shared discrete-heading convergence and bounded memory-to-fallback policy, then rerun the complete excluded triplet from a clean pushed revision; do not reuse passing v1 episodes"
+}

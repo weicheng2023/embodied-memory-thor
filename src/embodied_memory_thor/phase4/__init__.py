@@ -12,6 +12,7 @@ from embodied_memory_thor.phase4.spatial_memory import (
     NoThorMemory,
     ThorObjectMemory,
     ThorObjectMemoryRecord,
+    ThorShortMemory,
     build_thor_memory,
 )
 from embodied_memory_thor.phase4.planners import (
@@ -21,10 +22,11 @@ from embodied_memory_thor.phase4.planners import (
 )
 from embodied_memory_thor.phase4.parity import compare_trace_parity
 from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRunner
-from embodied_memory_thor.phase4.task import BookReacquireProgress
+from embodied_memory_thor.phase4.task import BookReacquireProgress, CupAfterCoffeeProgress
 
 __all__ = [
     "BookReacquireProgress",
+    "CupAfterCoffeeProgress",
     "EVALUATOR_ONLY_LABEL",
     "NoThorMemory",
     "OpenAICompatiblePlanner",
@@ -33,6 +35,7 @@ __all__ = [
     "RGB_BOUNDARY_LABEL",
     "ThorObjectMemory",
     "ThorObjectMemoryRecord",
+    "ThorShortMemory",
     "ThorBookReacquirePlanner",
     "ThorEpisodeConfig",
     "ThorEpisodeRunner",

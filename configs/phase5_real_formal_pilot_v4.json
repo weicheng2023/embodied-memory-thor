@@ -1,0 +1,107 @@
+{
+  "manifest_schema_version": "phase5-real-thor-manifest-v4",
+  "protocol_version": "phase5-real-thor-pilot-v4",
+  "metric_schema_version": "phase5-real-thor-metrics-v5",
+  "run_purpose": "phase5_real_thor_formal_pilot_v4",
+  "episode_count": 54,
+  "configuration_count_per_panel": 6,
+  "variants": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "execution_order": "panel order, then declared configuration order, then declared variant order",
+  "max_steps_per_episode": 2048,
+  "book_distraction_policy": "phase5-book-distraction-v4",
+  "target_lock_policy": "phase5-shared-target-lock-v2",
+  "controller_settings": {
+    "width": 300,
+    "height": 300,
+    "quality": "Low",
+    "gridSize": 0.25,
+    "snapToGrid": true,
+    "rotateStepDegrees": 90,
+    "fieldOfView": 90,
+    "renderDepthImage": false,
+    "renderInstanceSegmentation": false
+  },
+  "output_policy": {
+    "mode": "formal",
+    "save_frames": false,
+    "trace_html": false,
+    "visualize": false,
+    "save_evaluator_debug": false,
+    "included_in_formal_aggregate": true
+  },
+  "panels": [
+    {
+      "panel": "r1_stable",
+      "task": "thor_book_reacquire_k2",
+      "condition": "stable",
+      "runtime_set": "phase5-r1-frozen-six-anchor-set-v1",
+      "configuration_ids": [
+        "FloorPlan202_R1_fixed_start_001",
+        "FloorPlan302_R1_fixed_start_001",
+        "FloorPlan303_R1_fixed_start_001",
+        "FloorPlan305_R1_fixed_start_001",
+        "FloorPlan306_R1_fixed_start_001",
+        "FloorPlan307_R1_fixed_start_001"
+      ]
+    },
+    {
+      "panel": "r2_stable",
+      "task": "thor_cup_after_coffee_subgoal",
+      "condition": "stable",
+      "runtime_set": "phase5-r2-frozen-runtime-set-v2",
+      "configuration_ids": [
+        "FloorPlan3_R2_fixed_start_001",
+        "FloorPlan4_R2_fixed_start_001",
+        "FloorPlan6_R2_fixed_start_001",
+        "FloorPlan7_R2_fixed_start_001",
+        "FloorPlan10_R2_fixed_start_001",
+        "FloorPlan12_R2_fixed_start_001"
+      ]
+    },
+    {
+      "panel": "r1_stale",
+      "task": "thor_book_reacquire_k2",
+      "condition": "stale_r1",
+      "runtime_set": "phase5-r1-frozen-six-anchor-set-v1",
+      "configuration_ids": [
+        "FloorPlan202_R1_fixed_start_001",
+        "FloorPlan302_R1_fixed_start_001",
+        "FloorPlan303_R1_fixed_start_001",
+        "FloorPlan305_R1_fixed_start_001",
+        "FloorPlan306_R1_fixed_start_001",
+        "FloorPlan307_R1_fixed_start_001"
+      ]
+    }
+  ],
+  "private_runtime_policy": "private setup, target identity and relocation coordinates are joined locally by opaque configuration_id and never serialized into the public manifest",
+  "integrity_stop_policy": "stop on leakage, missing metric, setup/intervention failure, route contract failure, invalid planner decision, dirty/unpushed code, or incomplete runtime join; retain all partial output and never resume selectively",
+  "native_action_outcome_policy": "a schema-valid planner action rejected by THOR remains in invalid_action_count and failed_interaction_count as agent performance; it is not an invalid planner decision; route-controlled action failure retains its dedicated fail-closed integrity counter",
+  "outcome_policy": "task success/failure is an experimental outcome when integrity remains valid; bounded target-lock terminal failure is an outcome; K=2 eviction is required only after the reacquisition stage is reached; every valid cell stays in the aggregate",
+  "formal_execution_authorized": false,
+  "readiness_only_authorized": true,
+  "historical_artifacts_frozen": {
+    "configs/phase5_r1_frozen_anchor_set_v1.json": "f280c46897b6e6fa720003eadf9cdd4d25e60f483661f0e6518d46b705fa8f07",
+    "configs/phase5_search_routes.json": "69b80d5fe93060466c2841157e40793c1992821569a915cceb694d7717e9d384",
+    "configs/phase5_r2_frozen_runtime_v2.json": "96dbfcf4af09314ba25ecd463870bff6573c4e102d985ed290af43f2e3e70027",
+    "configs/phase5_r2_search_routes_v2.json": "985ac054f091a0f02cf772ebf20721df01efaf356b5bb79575d5fdc86f0e6f3e",
+    "docs/evidence/phase5_real_formal_pilot_v3_invalidated_stop.json": "4f749da7d9d610f5e0a698f8e1330b6c26c7fa2bc923f6ea1fa60a65563c9779",
+    "docs/evidence/phase5_r1_target_lock_recovery_gate_v2.json": "e6b63134fb519e51e11f367e78b5c61cc462ed02a682523d29b6df670004ae58",
+    "docs/evidence/phase5_r1_distraction_coverage_gate_v1.json": "f0a73faf823341d8f5062eac12e3a0eeb9c111899e0587ec2de19cfe52ab34f9",
+    "configs/phase5_target_lock_interaction_recovery_v2.json": "398c5da41dd7e31aaaa9b7846b98f545080de4bc23ea70f96e9f7370f24e7e4d",
+    "src/embodied_memory_thor/phase5/frozen_r1.py": "268bc9efbe5320dfdb0585633e6154facc55485e3ae08e4580ee3112d06968d6",
+    "src/embodied_memory_thor/phase5/frozen_r2_v2.py": "2e042f64d152105e9fa6bfb50e0613a8510c5cd9e2a66618c42f642b3fffced8",
+    "src/embodied_memory_thor/phase4/runner.py": "564262e88129d46883077738c391bf153d8c7f3390f4e101fd7b0cf3ca6b8c24",
+    "src/embodied_memory_thor/phase4/task.py": "f61bf1873daba91ceb9dd67285037610c0818c32fc323e57f8818bc46cb9d08e",
+    "src/embodied_memory_thor/phase4/planners.py": "62077e279f3f9dcbea90039cc334766a1b0b00f3e74939bc969153b7c8377237",
+    "src/embodied_memory_thor/phase4/contracts.py": "2e2acce44e1604f7a791e411d3555959be19af1655be0d9c0fee595cb6de4a29",
+    "src/embodied_memory_thor/phase5/search.py": "a8b4cd07b332a2f9a768200fb1434aac06abe7b88ccc739d4ec63f16fbb558de",
+    "src/embodied_memory_thor/phase5/target_lock.py": "1bc4d34d151a823c9baa1acfb9991a165330c179fffb4e09185b28f7d7dad7ad",
+    "src/embodied_memory_thor/phase5/formal_v2.py": "daadf14b446f7ce6304d795b34c7c171984a536c15a95f2a37ed939e0f91f578",
+    "scripts/run_phase5_real_formal_pilot_v2.py": "15f21ca47dd03292a9aec86b68fcee6b22693f87810cdbd4a8d7829d7bc09047",
+    "scripts/run_phase5_real_formal_pilot_v4.py": "c8338cbfd7db8e13229a25dfb863c5b36ffdf9548403392fb3786037612b3d02"
+  }
+}

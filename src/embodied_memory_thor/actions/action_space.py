@@ -14,6 +14,7 @@ class ActionSpace:
         {
             "Pass",
             "MoveAhead",
+            "MoveBack",
             "MoveToRegion",
             "RotateLeft",
             "RotateRight",

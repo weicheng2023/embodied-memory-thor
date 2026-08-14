@@ -1,0 +1,31 @@
+{
+  "evidence_version": "phase5-real-formal-pilot-v2-invalidated-stop-v1",
+  "code_revision": "ed092cf7bf15c18dd75451f4990a0c66cec7cb69",
+  "formal_manifest_digest": "c1e514c5f86ec11419c152c0a8564674927bad5a190a5a59e1159305c0f64361",
+  "formal_summary_sha256": "9b65787e14229e5e7f51fefb6e069e38c22244db07a64cb7f194d9060fa2d9a3",
+  "result_digest": "aaade46cec732d8da97c9d7cac7e7af20c2f1032020ed19b7eb7ca83f6d424d4",
+  "expected_episode_count": 54,
+  "completed_episode_count": 8,
+  "task_success_count": 6,
+  "task_failure_count": 2,
+  "matrix_complete": false,
+  "integrity_valid": false,
+  "included_in_formal_aggregate": false,
+  "partial_cells_reusable": false,
+  "stop_cell": {
+    "episode_index": 8,
+    "panel": "r1_stable",
+    "configuration_id": "FloorPlan303_R1_fixed_start_001",
+    "memory": "short_memory_k2"
+  },
+  "diagnosis": {
+    "common_task_failure": "the target remained visible after the first action of the fixed one-turn distraction template",
+    "native_action_failed": false,
+    "evaluator_setup_failed": false,
+    "information_boundary_failed": false,
+    "variant_specific_failure": false,
+    "secondary_audit_defect": "K=2 eviction was required even when a common task failure occurred before the reacquisition stage"
+  },
+  "classification": "invalidated formal pilot caused by insufficient shared distraction coverage and an over-eager conditional metric audit",
+  "required_successor": "use one fixed target-independent half-turn distraction template shared by all variants, gate it on FloorPlan303, condition the K=2 eviction audit on reaching reacquisition, and rerun every cell under a new protocol version"
+}

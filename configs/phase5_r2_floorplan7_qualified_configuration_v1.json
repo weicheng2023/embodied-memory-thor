@@ -1,0 +1,39 @@
+{
+  "configuration_id": "FloorPlan7_R2_fixed_start_001",
+  "fallback_route": {
+    "action_codes": "DRRRRDRRRRURRFRFLFFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRULFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURRFFLFRFLFFRRRRDRRRRURFFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRURFFRRRRDRRRRURFLFRFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRUFFRRRRDRRRRULFFFRRRRDRRRRULFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRURFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRULFFFRRRRDRRRRULFFRRRRDRRRRULFFFFFFLFFRFFLFFFFFFFFFFFFFFFFFFRFFFLFFFFFRRRRDRRRRUU",
+    "action_count": 685,
+    "action_sequence_digest": "c88d898b73f85b71b74087f801788fc278eccf975cb0ef418b9beba3d78508b8",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": false,
+    "route_id": "FloorPlan7_R2_fixed_start_001_fallback_budgeted_visual_v1",
+    "route_role": "target_independent_fallback",
+    "scene": "FloorPlan7",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "5983c66ae38c791d31a346b6f485c33546ae334f5029d5be4f7acea3efd38d71",
+    "target_or_anchor_input_used": false,
+    "task": "thor_cup_after_coffee_subgoal"
+  },
+  "formal_use_allowed": false,
+  "planner_visible_coordinates": false,
+  "qualification_version": "phase5-r2-native-qualification-v6",
+  "scene": "FloorPlan7",
+  "source_qualification_digest": "5983c66ae38c791d31a346b6f485c33546ae334f5029d5be4f7acea3efd38d71",
+  "start_pose_digest": "e734774c49ee6bfcae7a3fc8cb5d9a03070b563b7755236a1ed6a88790ab3269",
+  "subgoal_route": {
+    "action_codes": "FRFLFRFFLFU",
+    "action_count": 11,
+    "action_sequence_digest": "a8742b547ce4d687b23fcca1d7325e30a91629aef53a756e8fa66bb20f47289b",
+    "entry_angle_tolerance_degrees": 1.0,
+    "entry_position_tolerance_meters": 0.05,
+    "qualification_goal_input_used": true,
+    "route_id": "FloorPlan7_R2_fixed_start_001_subgoal_v1",
+    "route_role": "task_subgoal_navigation",
+    "scene": "FloorPlan7",
+    "schema_version": "phase5-search-route-v1",
+    "source_qualification_route_digest": "5983c66ae38c791d31a346b6f485c33546ae334f5029d5be4f7acea3efd38d71",
+    "target_or_anchor_input_used": true,
+    "task": "thor_cup_after_coffee_subgoal"
+  }
+}

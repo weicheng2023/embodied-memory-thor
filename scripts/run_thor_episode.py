@@ -19,6 +19,14 @@ from embodied_memory_thor.phase4.runner import (  # noqa: E402
     ThorEpisodeConfig,
     ThorEpisodeRunner,
 )
+from embodied_memory_thor.phase5.frozen_r1 import (  # noqa: E402
+    FrozenR1ConfigurationError,
+    load_frozen_r1_runtime,
+)
+from embodied_memory_thor.phase5.frozen_r2 import (  # noqa: E402
+    FrozenR2ConfigurationError,
+    load_frozen_r2_runtime,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -31,20 +39,48 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--task", default="thor_book_reacquire")
     parser.add_argument("--scene", default="FloorPlan1")
     parser.add_argument(
+        "--configuration-id",
+        help=(
+            "opaque frozen R1 or R2 configuration; loads evaluator-only setup "
+            "and public action-only routes"
+        ),
+    )
+    parser.add_argument(
         "--planner",
-        choices=("object_memory", "no_memory", "deterministic", "openai_compatible"),
+        choices=(
+            "object_memory",
+            "short_memory_k2",
+            "no_memory",
+            "deterministic",
+            "openai_compatible",
+        ),
         default="object_memory",
         help=(
-            "object_memory/no_memory select the deterministic reference planner "
+            "object_memory/short_memory_k2/no_memory select the deterministic reference planner "
             "with that history boundary"
         ),
     )
     parser.add_argument(
         "--memory",
-        choices=("object_memory", "no_memory"),
+        choices=("object_memory", "short_memory_k2", "no_memory"),
         help="explicit memory mode; mainly used with deterministic/openai_compatible",
     )
+    parser.add_argument(
+        "--subgoal-route-id",
+        help="public ordered-R2 task-subgoal navigation route ID",
+    )
+    parser.add_argument(
+        "--search-route-id",
+        help=(
+            "public target-independent Phase 5 fallback route ID"
+        ),
+    )
     parser.add_argument("--mode", choices=("formal", "debug"), default="formal")
+    parser.add_argument(
+        "--condition",
+        choices=("stable", "stale_r1"),
+        default="stable",
+    )
     parser.add_argument("--max-steps", type=int, default=12)
     parser.add_argument("--output-dir")
     parser.add_argument("--save-frames", action="store_true")
@@ -76,14 +112,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _planner_and_memory(args: argparse.Namespace) -> tuple[str, str]:
-    if args.planner == "object_memory":
-        if args.memory and args.memory != "object_memory":
-            raise ValueError("--planner object_memory conflicts with --memory no_memory")
-        return "deterministic", "object_memory"
-    if args.planner == "no_memory":
-        if args.memory and args.memory != "no_memory":
-            raise ValueError("--planner no_memory conflicts with --memory object_memory")
-        return "deterministic", "no_memory"
+    memory_aliases = {"object_memory", "short_memory_k2", "no_memory"}
+    if args.planner in memory_aliases:
+        if args.memory and args.memory != args.planner:
+            raise ValueError(
+                f"--planner {args.planner} conflicts with --memory {args.memory}"
+            )
+        return "deterministic", args.planner
     return args.planner, args.memory or "object_memory"
 
 
@@ -99,6 +134,9 @@ def _build_config(args: argparse.Namespace) -> ThorEpisodeConfig:
         scene=args.scene,
         planner=planner,
         memory=memory,
+        subgoal_route_id=args.subgoal_route_id,
+        search_route_id=args.search_route_id,
+        condition=args.condition,
         mode=args.mode,
         max_steps=args.max_steps,
         output_dir=output_dir,
@@ -126,13 +164,71 @@ def _build_config(args: argparse.Namespace) -> ThorEpisodeConfig:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
+        r1_runtime = None
+        r2_runtime = None
+        if args.configuration_id:
+            if args.task == "thor_book_reacquire_k2":
+                r1_runtime = load_frozen_r1_runtime(args.configuration_id)
+                runtime = r1_runtime
+            elif args.task == "thor_cup_after_coffee_subgoal":
+                r2_runtime = load_frozen_r2_runtime(args.configuration_id)
+                runtime = r2_runtime
+            else:
+                raise ValueError(
+                    "--configuration-id requires a Phase 5 comparison task"
+                )
+            if args.scene != "FloorPlan1" and args.scene != runtime.configuration.scene:
+                raise ValueError("--scene conflicts with the frozen configuration")
+            args.scene = runtime.configuration.scene
+            frozen_search_route = (
+                r1_runtime.search_route
+                if r1_runtime is not None
+                else r2_runtime.fallback_route
+            )
+            if args.search_route_id and args.search_route_id != frozen_search_route.route_id:
+                raise ValueError("--search-route-id conflicts with the frozen configuration")
+            args.search_route_id = frozen_search_route.route_id
+            if r2_runtime is not None:
+                if (
+                    args.subgoal_route_id
+                    and args.subgoal_route_id != r2_runtime.subgoal_route.route_id
+                ):
+                    raise ValueError(
+                        "--subgoal-route-id conflicts with the frozen configuration"
+                    )
+                args.subgoal_route_id = r2_runtime.subgoal_route.route_id
+            elif args.subgoal_route_id:
+                raise ValueError("--subgoal-route-id requires an ordered-R2 configuration")
         config = _build_config(args)
         config.validate()
-    except ValueError as exc:
+    except (
+        FrozenR1ConfigurationError,
+        FrozenR2ConfigurationError,
+        OSError,
+        ValueError,
+    ) as exc:
         print(f"configuration_error: {exc}", file=sys.stderr)
         return 2
 
-    summary = ThorEpisodeRunner(config).run()
+    summary = ThorEpisodeRunner(
+        config,
+        search_route=(
+            r1_runtime.search_route
+            if r1_runtime is not None
+            else r2_runtime.fallback_route if r2_runtime is not None else None
+        ),
+        subgoal_route=(r2_runtime.subgoal_route if r2_runtime is not None else None),
+        evaluator_setup=(
+            r1_runtime.configuration
+            if r1_runtime is not None
+            else r2_runtime.configuration if r2_runtime is not None else None
+        ),
+        intervention=(
+            r1_runtime.intervention()
+            if r1_runtime is not None and config.condition == "stale_r1"
+            else None
+        ),
+    ).run()
     print(json.dumps(summary, indent=2, ensure_ascii=False, sort_keys=True))
     return 0 if summary["success"] else 1
 

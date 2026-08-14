@@ -24,6 +24,9 @@ dist/
 outputs/*
 !outputs/.gitkeep
 
+# Evaluator-only hidden state stays local; commit only coordinate-free summaries.
+configs/evaluator_only/*.json
+
 # Editors and operating systems
 .idea/
 .vscode/

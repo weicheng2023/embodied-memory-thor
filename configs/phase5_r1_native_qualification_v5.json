@@ -1,0 +1,64 @@
+{
+  "protocol_version": "phase5-r1-native-qualification-v5",
+  "scene": "FloorPlan301",
+  "support_policy_version": "phase5-r1-support-policy-v3",
+  "qualification_version": "phase5-anchor-qualification-v5",
+  "private_registry_version": "phase5-private-anchor-registry-v5",
+  "candidate_policy_version": "phase5-native-first-type-balanced-ranking-v2",
+  "source_within_type_policy_version": "phase5-native-first-advisory-ranking-v1",
+  "geometry_diagnostic_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "support_query_protocol": {
+    "anywhere": true,
+    "one_query_per_fresh_reset": true,
+    "query_state_reused": false,
+    "post_query_clean_reset_before_route_and_candidate_plan": true
+  },
+  "hard_candidate_exclusions": [
+    "non-numeric coordinate",
+    "duplicate coordinate for the same support",
+    "movement below 0.5 meters"
+  ],
+  "advisory_only_predictions": [
+    "AABB Book footprint crosses support boundary",
+    "AABB Book footprint overlaps a current support occupant"
+  ],
+  "support_type_order": [
+    "Bed",
+    "CoffeeTable",
+    "CounterTop",
+    "Desk",
+    "DiningTable",
+    "Dresser",
+    "Shelf",
+    "SideTable"
+  ],
+  "candidate_order_rule": "round-robin over present support types in the predeclared semantic order; within each type preserve native-first advisory ranking v1",
+  "candidate_order_frozen_before_native_outcomes": true,
+  "prior_v4_outcomes_used_to_select_candidates": false,
+  "v4_cohort_extended_or_pooled": false,
+  "maximum_native_candidate_trials": 12,
+  "batch_rule": "run the frozen balanced prefix until the first fully qualified anchor or all 12 candidates fail; retain every failure",
+  "native_acceptance_gates": [
+    "PlaceObjectAtPoint succeeds without forceAction",
+    "same Book survives and moves at least 0.5 meters",
+    "Book is invisible from the old viewpoint",
+    "Book remains stable for three Pass samples",
+    "expected support relation exists",
+    "no post-placement non-support overlap",
+    "shared target-independent fallback rediscovers and picks up Book",
+    "fresh-reset placement replay passes",
+    "reset restores the original configuration"
+  ],
+  "placement_trial_fresh_reset": true,
+  "fresh_reset_replay_required": true,
+  "safety_margin_meters_for_advisory_diagnostic": 0.02,
+  "force_action_allowed": false,
+  "book_rotation_action_allowed": false,
+  "memory_agents_allowed": false,
+  "images_allowed": false,
+  "later_scenes_allowed": false,
+  "formal_episode_dynamic_spawn_query_allowed": false,
+  "formal_episode_uses_frozen_anchor_only": true,
+  "execution_gate": "run only after offline tests, full regression, clean commit, and push; treat this as an independent engineering qualification cohort"
+}

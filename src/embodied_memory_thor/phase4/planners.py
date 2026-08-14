@@ -10,17 +10,23 @@ from typing import Any, Mapping, Protocol
 
 from embodied_memory_thor.actions import ActionSpace
 from embodied_memory_thor.phase4.contracts import PlannerDecision, PlannerRequest
+from embodied_memory_thor.phase5.memory_navigation import (
+    MEMORY_NAVIGATION_ROTATION_STEP_DEGREES,
+    quantize_yaw_to_action_grid,
+)
 
 
 THOR_BOOK_ACTIONS = (
     "LookDown",
     "LookUp",
     "MoveAhead",
+    "MoveBack",
     "Pass",
     "PickupObject",
     "RotateLeft",
     "RotateRight",
 )
+THOR_CUP_COFFEE_ACTIONS = THOR_BOOK_ACTIONS + ("ToggleObjectOn",)
 
 
 class StructuredPlanner(Protocol):
@@ -80,12 +86,20 @@ class ThorBookReacquirePlanner:
         position_tolerance: float = 0.18,
         interaction_distance: float = 1.5,
         rotation_tolerance_degrees: float = 1.0,
+        visible_target_rotation_tolerance_degrees: float = 45.0,
         horizon_tolerance_degrees: float = 1.0,
+        memory_rotation_step_degrees: float = (
+            MEMORY_NAVIGATION_ROTATION_STEP_DEGREES
+        ),
     ) -> None:
         self.position_tolerance = position_tolerance
         self.interaction_distance = interaction_distance
         self.rotation_tolerance_degrees = rotation_tolerance_degrees
+        self.visible_target_rotation_tolerance_degrees = (
+            visible_target_rotation_tolerance_degrees
+        )
         self.horizon_tolerance_degrees = horizon_tolerance_degrees
+        self.memory_rotation_step_degrees = float(memory_rotation_step_degrees)
 
     def plan(self, request: PlannerRequest) -> PlannerDecision:
         stage = request.task_stage
@@ -97,12 +111,136 @@ class ThorBookReacquirePlanner:
             ),
             None,
         )
+        visible_cup = next(
+            (
+                obj
+                for obj in _visible_objects(request)
+                if obj.get("visible") is True and obj.get("objectType") == "Cup"
+            ),
+            None,
+        )
+        visible_coffee_machine = next(
+            (
+                obj
+                for obj in _visible_objects(request)
+                if obj.get("visible") is True
+                and obj.get("objectType") == "CoffeeMachine"
+            ),
+            None,
+        )
+
+        if request.target_lock is not None:
+            return self._target_lock_decision(request)
 
         if stage == "controlled_distraction":
             return self._decision(
                 {"action": "RotateRight"},
                 reason_code="controlled_distraction",
                 rationale="Rotate away until the initially observed Book leaves view.",
+            )
+
+        phase5_distraction_actions = {
+            "controlled_distraction_1": ("RotateRight", "rotate_away"),
+            "controlled_distraction_2": ("LookDown", "change_camera_horizon"),
+            "controlled_distraction_3": ("LookUp", "restore_camera_horizon"),
+            "controlled_distraction_v2_1": ("RotateRight", "half_turn_1"),
+            "controlled_distraction_v2_2": ("RotateRight", "half_turn_2"),
+            "controlled_distraction_v2_3": ("LookDown", "k2_hidden_observation"),
+            "controlled_distraction_v2_4": ("LookUp", "restore_camera_horizon"),
+            "controlled_distraction_v3_1": ("RotateRight", "half_turn_1"),
+            "controlled_distraction_v3_2": ("RotateRight", "half_turn_2"),
+            "controlled_distraction_v3_3": ("Pass", "k2_hidden_observation"),
+        }
+        if stage in phase5_distraction_actions:
+            action_name, reason_suffix = phase5_distraction_actions[stage]
+            return self._decision(
+                {"action": action_name},
+                reason_code=f"controlled_distraction_{reason_suffix}",
+                rationale=(
+                    "Execute the frozen shared distraction sequence before "
+                    "target reacquisition."
+                ),
+            )
+        if stage.startswith("controlled_distraction_v4_"):
+            action_name = stage.rsplit("_", 1)[-1]
+            if action_name not in {"RotateRight", "LookDown", "LookUp", "Pass"}:
+                return self._decision(
+                    {"action": "Pass"},
+                    reason_code="invalid_controlled_distraction_v4_stage",
+                    rationale="Fail closed on an invalid distraction action stage.",
+                )
+            return self._decision(
+                {"action": action_name},
+                reason_code="controlled_distraction_v4_planner_pose_alignment",
+                rationale=(
+                    "Execute the frozen half-turn and planner-pose absolute-"
+                    "horizon distraction sequence."
+                ),
+            )
+
+        if stage == "toggle_coffee_machine":
+            if request.shared_search is not None:
+                return self._shared_search_decision(
+                    request, target_type="CoffeeMachine"
+                )
+            if visible_coffee_machine is not None:
+                approach = self._approach_visible_target(
+                    request, visible_coffee_machine, target_type="CoffeeMachine"
+                )
+                if approach is not None:
+                    return approach
+                return self._decision(
+                    {
+                        "action": "ToggleObjectOn",
+                        "objectId": str(visible_coffee_machine["objectId"]),
+                    },
+                    target_object_type="CoffeeMachine",
+                    reason_code="visible_ordered_subgoal_interaction",
+                    rationale=(
+                        "The ordered CoffeeMachine subgoal is currently visible "
+                        "and must be completed before Cup pickup."
+                    ),
+                )
+            return self._decision(
+                {"action": "RotateRight"},
+                target_object_type="CoffeeMachine",
+                reason_code="systematic_subgoal_search",
+                rationale=(
+                    "Search clockwise for the CoffeeMachine using the shared "
+                    "observation-only policy."
+                ),
+            )
+
+        if stage == "pickup_cup" and visible_cup is not None:
+            approach = self._approach_visible_target(
+                request, visible_cup, target_type="Cup"
+            )
+            if approach is not None:
+                return approach
+            return self._decision(
+                {"action": "PickupObject", "objectId": str(visible_cup["objectId"])},
+                target_object_type="Cup",
+                reason_code="visible_target_interaction",
+                rationale=(
+                    "The CoffeeMachine subgoal is complete and the reacquired Cup "
+                    "is currently visible."
+                ),
+            )
+
+        if stage == "reacquire_cup":
+            if request.retrieved_memory:
+                return self._memory_navigation(
+                    request, request.retrieved_memory[0], target_type="Cup"
+                )
+            if request.shared_search is not None:
+                return self._shared_search_decision(request, target_type="Cup")
+            return self._decision(
+                {"action": "RotateRight"},
+                target_object_type="Cup",
+                reason_code="systematic_search",
+                rationale=(
+                    "No Cup memory is available, so continue the shared clockwise scan."
+                ),
             )
 
         if stage == "pickup_book" and visible_book is not None:
@@ -120,6 +258,8 @@ class ThorBookReacquirePlanner:
             if request.retrieved_memory:
                 record = request.retrieved_memory[0]
                 return self._memory_navigation(request, record)
+            if request.shared_search is not None:
+                return self._shared_search_decision(request, target_type="Book")
             return self._decision(
                 {"action": "RotateRight"},
                 target_object_type="Book",
@@ -133,11 +273,107 @@ class ThorBookReacquirePlanner:
             rationale=f"No executable task action is defined for stage {stage!r}.",
         )
 
+    def _shared_search_decision(
+        self,
+        request: PlannerRequest,
+        *,
+        target_type: str,
+    ) -> PlannerDecision:
+        directive = request.shared_search or {}
+        raw_action = directive.get("action", {})
+        action = dict(raw_action) if isinstance(raw_action, Mapping) else {}
+        phase = str(directive.get("phase", ""))
+        subgoal_route = directive.get("policy") == "frozen_task_subgoal_route"
+        if phase == "route_entry_alignment":
+            reason_code = (
+                "shared_subgoal_route_entry_alignment"
+                if subgoal_route
+                else "shared_search_route_entry_alignment"
+            )
+            rationale = (
+                "Align with the precommitted route-entry heading using shared "
+                "action-only control state."
+            )
+        elif phase == "route_entry_recovery":
+            reason_code = (
+                "shared_subgoal_route_entry_recovery"
+                if subgoal_route
+                else "shared_search_route_entry_recovery"
+            )
+            rationale = (
+                "Reverse the bounded successful pose-action trace to restore the "
+                "shared route entry without target or evaluator coordinates."
+            )
+        elif phase == "route_action_stabilization":
+            reason_code = (
+                "shared_subgoal_route_action_stabilization"
+                if subgoal_route
+                else "shared_search_route_action_stabilization"
+            )
+            rationale = (
+                "Execute the fixed one-step stabilization after a rejected "
+                "frozen route action, without inspecting target or obstacle state."
+            )
+        elif phase == "route_action_retry":
+            reason_code = (
+                "shared_subgoal_route_action_retry"
+                if subgoal_route
+                else "shared_search_route_action_retry"
+            )
+            rationale = (
+                "Retry the exact rejected frozen route action once after the "
+                "fixed stabilization step."
+            )
+        else:
+            reason_code = (
+                "shared_subgoal_navigation"
+                if subgoal_route
+                else "shared_search_coverage"
+            )
+            rationale = (
+                "Execute the next primitive action in the precommitted shared "
+                + (
+                    "task-subgoal navigation route."
+                    if subgoal_route
+                    else "target-independent coverage route."
+                )
+            )
+        return self._decision(
+            action,
+            target_object_type=target_type,
+            reason_code=reason_code,
+            rationale=rationale,
+        )
+
+    def _target_lock_decision(self, request: PlannerRequest) -> PlannerDecision:
+        directive = request.target_lock or {}
+        raw_action = directive.get("action", {})
+        action = dict(raw_action) if isinstance(raw_action, Mapping) else {}
+        phase = str(directive.get("phase", ""))
+        return self._decision(
+            action,
+            target_object_type=str(directive.get("target_object_type", "")) or None,
+            reason_code=f"target_lock_{phase}",
+            rationale=(
+                "Execute the next action from the shared planner-safe target-lock "
+                "and bounded local-recovery policy."
+            ),
+        )
+
     def _approach_visible_book(
         self, request: PlannerRequest, book: Mapping[str, Any]
     ) -> PlannerDecision | None:
+        return self._approach_visible_target(request, book, target_type="Book")
+
+    def _approach_visible_target(
+        self,
+        request: PlannerRequest,
+        target: Mapping[str, Any],
+        *,
+        target_type: str,
+    ) -> PlannerDecision | None:
         current_position = _agent_vector(request.observation, "position")
-        object_position = book.get("position")
+        object_position = target.get("position")
         if not current_position or not isinstance(object_position, Mapping):
             return None
         dx = _number(object_position, "x") - _number(current_position, "x")
@@ -148,33 +384,45 @@ class ThorBookReacquirePlanner:
         current_yaw = _number(current_rotation, "y")
         target_yaw = math.degrees(math.atan2(dx, dz)) % 360.0
         delta = _angle_delta(target_yaw, current_yaw)
-        if abs(delta) > self.rotation_tolerance_degrees:
+        if abs(delta) > self.visible_target_rotation_tolerance_degrees:
             action = "RotateRight" if delta > 0 else "RotateLeft"
             return self._decision(
                 {"action": action},
-                target_object_type="Book",
+                target_object_type=target_type,
                 reason_code="orient_to_visible_target",
-                rationale="Rotate toward the currently visible Book before approaching it.",
+                rationale=(
+                    f"Rotate toward the currently visible {target_type} before "
+                    "approaching it."
+                ),
             )
         return self._decision(
             {"action": "MoveAhead"},
-            target_object_type="Book",
+            target_object_type=target_type,
             reason_code="approach_visible_target",
-            rationale="Move closer to the currently visible Book before pickup.",
+            rationale=(
+                f"Move closer to the currently visible {target_type} before interaction."
+            ),
         )
 
     def _memory_navigation(
-        self, request: PlannerRequest, record: Mapping[str, Any]
+        self,
+        request: PlannerRequest,
+        record: Mapping[str, Any],
+        *,
+        target_type: str = "Book",
     ) -> PlannerDecision:
         record_id = str(record.get("record_id", ""))
         if _last_failed_move(request):
             return self._decision(
                 {"action": "RotateRight"},
-                target_object_type="Book",
+                target_object_type=target_type,
                 memory_guided=True,
                 memory_record_ids=(record_id,),
                 reason_code="memory_navigation_obstacle_recovery",
-                rationale="The last memory-guided forward move failed; rotate before retrying.",
+                rationale=(
+                    f"The last memory-guided move toward {target_type} failed; "
+                    "rotate before retrying."
+                ),
             )
 
         current_position = _agent_vector(request.observation, "position")
@@ -186,42 +434,56 @@ class ThorBookReacquirePlanner:
             if distance > self.position_tolerance:
                 current_rotation = _agent_vector(request.observation, "rotation")
                 current_yaw = _number(current_rotation, "y")
-                target_yaw = math.degrees(math.atan2(dx, dz)) % 360.0
+                target_yaw = quantize_yaw_to_action_grid(
+                    math.degrees(math.atan2(dx, dz)) % 360.0,
+                    step_degrees=self.memory_rotation_step_degrees,
+                )
                 delta = _angle_delta(target_yaw, current_yaw)
                 if abs(delta) > self.rotation_tolerance_degrees:
                     action = "RotateRight" if delta > 0 else "RotateLeft"
                     return self._decision(
                         {"action": action},
-                        target_object_type="Book",
+                        target_object_type=target_type,
                         memory_guided=True,
                         memory_record_ids=(record_id,),
                         reason_code="return_to_last_seen_position_heading",
-                        rationale="Rotate toward the camera position stored when the Book was visible.",
+                        rationale=(
+                            f"Rotate toward the camera position stored when "
+                            f"{target_type} was visible."
+                        ),
                     )
                 return self._decision(
                     {"action": "MoveAhead"},
-                    target_object_type="Book",
+                    target_object_type=target_type,
                     memory_guided=True,
                     memory_record_ids=(record_id,),
                     reason_code="return_to_last_seen_position",
-                    rationale="Move toward the camera position stored when the Book was visible.",
+                    rationale=(
+                        f"Move toward the camera position stored when {target_type} "
+                        "was visible."
+                    ),
                 )
 
         current_rotation = _agent_vector(request.observation, "rotation")
         target_rotation = record.get("last_seen_agent_rotation")
         if isinstance(target_rotation, Mapping):
-            delta = _angle_delta(
-                _number(target_rotation, "y"), _number(current_rotation, "y")
+            target_yaw = quantize_yaw_to_action_grid(
+                _number(target_rotation, "y"),
+                step_degrees=self.memory_rotation_step_degrees,
             )
+            delta = _angle_delta(target_yaw, _number(current_rotation, "y"))
             if abs(delta) > self.rotation_tolerance_degrees:
                 action = "RotateRight" if delta > 0 else "RotateLeft"
                 return self._decision(
                     {"action": action},
-                    target_object_type="Book",
+                    target_object_type=target_type,
                     memory_guided=True,
                     memory_record_ids=(record_id,),
                     reason_code="return_to_last_seen_viewpoint",
-                    rationale="Restore the camera heading from the Book's last visible observation.",
+                    rationale=(
+                        f"Restore the camera heading from {target_type}'s last "
+                        "visible observation."
+                    ),
                 )
 
         agent = request.observation.get("agent", {})
@@ -238,20 +500,26 @@ class ThorBookReacquirePlanner:
                 action = "LookDown" if horizon_delta > 0 else "LookUp"
                 return self._decision(
                     {"action": action},
-                    target_object_type="Book",
+                    target_object_type=target_type,
                     memory_guided=True,
                     memory_record_ids=(record_id,),
                     reason_code="restore_last_seen_camera_horizon",
-                    rationale="Restore the camera horizon from the Book's last visible observation.",
+                    rationale=(
+                        f"Restore the camera horizon from {target_type}'s last "
+                        "visible observation."
+                    ),
                 )
 
         return self._decision(
             {"action": "RotateRight"},
-            target_object_type="Book",
+            target_object_type=target_type,
             memory_guided=True,
             memory_record_ids=(record_id,),
             reason_code="search_near_last_seen_viewpoint",
-            rationale="The last-seen viewpoint was reached but the Book is not visible; scan locally.",
+            rationale=(
+                f"The last-seen viewpoint was reached but {target_type} is not "
+                "visible; scan locally."
+            ),
         )
 
     def _decision(
@@ -316,6 +584,27 @@ def validate_planner_decision(
         errors.append("missing_reason_code")
     if not decision.rationale.strip():
         errors.append("missing_rationale")
+    if request.shared_search is not None:
+        expected = request.shared_search.get("action")
+        if not isinstance(expected, Mapping) or dict(decision.action) != dict(expected):
+            errors.append("decision_diverges_from_shared_search_directive")
+        if decision.memory_guided or decision.memory_record_ids:
+            errors.append("shared_search_decision_cannot_be_memory_guided")
+        expected_reason_prefix = (
+            "shared_subgoal_"
+            if request.shared_search.get("policy") == "frozen_task_subgoal_route"
+            else "shared_search_"
+        )
+        if not decision.reason_code.startswith(expected_reason_prefix):
+            errors.append("shared_search_reason_code_missing")
+    if request.target_lock is not None:
+        expected = request.target_lock.get("action")
+        if decision.action != expected:
+            errors.append("decision_diverges_from_target_lock_directive")
+        if decision.memory_guided:
+            errors.append("target_lock_decision_cannot_be_memory_guided")
+        if not decision.reason_code.startswith("target_lock_"):
+            errors.append("target_lock_reason_code_missing")
     return not errors, tuple(errors)
 
 
@@ -482,11 +771,16 @@ def build_structured_planner(
     *,
     model: str = "gpt-5.6",
     base_url: str | None = None,
+    memory_rotation_step_degrees: float = (
+        MEMORY_NAVIGATION_ROTATION_STEP_DEGREES
+    ),
 ) -> StructuredPlanner:
     """Build the requested planner without making an API call."""
 
     if name == "deterministic":
-        return ThorBookReacquirePlanner()
+        return ThorBookReacquirePlanner(
+            memory_rotation_step_degrees=memory_rotation_step_degrees
+        )
     if name == "openai_compatible":
         return OpenAICompatiblePlanner(model=model, base_url=base_url)
     raise ValueError(f"unsupported Phase 4 planner: {name}")

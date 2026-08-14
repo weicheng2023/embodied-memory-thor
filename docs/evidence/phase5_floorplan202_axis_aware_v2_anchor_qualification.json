@@ -1,0 +1,34 @@
+{
+  "claim": "FloorPlan202 qualification-v2 candidate-1 diagnostic and full anchor requalification; not a memory comparison",
+  "code_revision": "a2b3629544bcdc76028668a506eca72ed49a85e0",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan202",
+  "qualification_version": "phase5-anchor-qualification-v2",
+  "geometry_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+  "coverage_route_digest": "cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae",
+  "coverage_route_action_count": 227,
+  "diagnostic": {
+    "candidate_order": 1,
+    "physical_placement_passed": true,
+    "fallback_passed": true,
+    "discovery_step": 26,
+    "pickup_step": 27,
+    "passed": true,
+    "anchor_frozen": false
+  },
+  "qualification": {
+    "candidate_trial_count": 1,
+    "physical_placement_passed": true,
+    "fallback_passed": true,
+    "fresh_reset_replay_passed": true,
+    "reset_restoration_passed": true,
+    "selected_anchor_id": "FloorPlan202_R1_stale_Book_anchor_001",
+    "private_registry_digest": "501510add9ac14ab3947b96a15e1e56c219d30241cd2ba1a5f51ba2587f85225",
+    "passed": true
+  },
+  "coordinates_exposed": false,
+  "images_saved": false,
+  "memory_agents_run": false,
+  "next_gate": "FloorPlan301 candidate-1 diagnostic under qualification v2"
+}

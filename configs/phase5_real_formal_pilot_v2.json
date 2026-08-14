@@ -1,0 +1,98 @@
+{
+  "manifest_schema_version": "phase5-real-thor-manifest-v2",
+  "protocol_version": "phase5-real-thor-pilot-v2",
+  "metric_schema_version": "phase5-real-thor-metrics-v3",
+  "run_purpose": "phase5_real_thor_formal_pilot_v2",
+  "episode_count": 54,
+  "configuration_count_per_panel": 6,
+  "variants": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "execution_order": "panel order, then declared configuration order, then declared variant order",
+  "max_steps_per_episode": 2048,
+  "controller_settings": {
+    "width": 300,
+    "height": 300,
+    "quality": "Low",
+    "gridSize": 0.25,
+    "snapToGrid": true,
+    "rotateStepDegrees": 90,
+    "fieldOfView": 90,
+    "renderDepthImage": false,
+    "renderInstanceSegmentation": false
+  },
+  "output_policy": {
+    "mode": "formal",
+    "save_frames": false,
+    "trace_html": false,
+    "visualize": false,
+    "save_evaluator_debug": false,
+    "included_in_formal_aggregate": true
+  },
+  "panels": [
+    {
+      "panel": "r1_stable",
+      "task": "thor_book_reacquire_k2",
+      "condition": "stable",
+      "runtime_set": "phase5-r1-frozen-six-anchor-set-v1",
+      "configuration_ids": [
+        "FloorPlan202_R1_fixed_start_001",
+        "FloorPlan302_R1_fixed_start_001",
+        "FloorPlan303_R1_fixed_start_001",
+        "FloorPlan305_R1_fixed_start_001",
+        "FloorPlan306_R1_fixed_start_001",
+        "FloorPlan307_R1_fixed_start_001"
+      ]
+    },
+    {
+      "panel": "r2_stable",
+      "task": "thor_cup_after_coffee_subgoal",
+      "condition": "stable",
+      "runtime_set": "phase5-r2-frozen-runtime-set-v2",
+      "configuration_ids": [
+        "FloorPlan3_R2_fixed_start_001",
+        "FloorPlan4_R2_fixed_start_001",
+        "FloorPlan6_R2_fixed_start_001",
+        "FloorPlan7_R2_fixed_start_001",
+        "FloorPlan10_R2_fixed_start_001",
+        "FloorPlan12_R2_fixed_start_001"
+      ]
+    },
+    {
+      "panel": "r1_stale",
+      "task": "thor_book_reacquire_k2",
+      "condition": "stale_r1",
+      "runtime_set": "phase5-r1-frozen-six-anchor-set-v1",
+      "configuration_ids": [
+        "FloorPlan202_R1_fixed_start_001",
+        "FloorPlan302_R1_fixed_start_001",
+        "FloorPlan303_R1_fixed_start_001",
+        "FloorPlan305_R1_fixed_start_001",
+        "FloorPlan306_R1_fixed_start_001",
+        "FloorPlan307_R1_fixed_start_001"
+      ]
+    }
+  ],
+  "private_runtime_policy": "private setup, target identity and relocation coordinates are joined locally by opaque configuration_id and never serialized into the public manifest",
+  "integrity_stop_policy": "stop on leakage, missing metric, setup/intervention failure, route contract failure, invalid planner action, dirty/unpushed code, or incomplete runtime join; retain all partial output and never resume selectively",
+  "outcome_policy": "task success/failure is an experimental outcome when integrity remains valid; every valid cell stays in the aggregate",
+  "formal_execution_authorized": false,
+  "readiness_only_authorized": true,
+  "historical_artifacts_frozen": {
+    "scripts/build_phase5_manifest.py": "42572184d298838fec639664b9b421c8a30599b6a1aedf498fbb1e2d806f628e",
+    "src/embodied_memory_thor/phase5/protocol.py": "1ce9e75cc263047e71252ac20309923c01c9a4c3298a2bf9a35e0558df264b6a",
+    "configs/phase5_r1_frozen_anchor_set_v1.json": "f280c46897b6e6fa720003eadf9cdd4d25e60f483661f0e6518d46b705fa8f07",
+    "configs/phase5_search_routes.json": "69b80d5fe93060466c2841157e40793c1992821569a915cceb694d7717e9d384",
+    "docs/evidence/phase5_r1_frozen_six_anchor_set_v1.json": "bd277a9462e4846225b13a9175625d26b19be25b987e0ca01dd2e2686dc54ba5",
+    "docs/evidence/phase5_r1_production_integration_probe_v2.json": "3fc9e37212ee9002e43a666f7a241b1aab6fbe294fedc0d68f74ee22a8e849ee",
+    "configs/phase5_r2_frozen_runtime_v2.json": "96dbfcf4af09314ba25ecd463870bff6573c4e102d985ed290af43f2e3e70027",
+    "configs/phase5_r2_search_routes_v2.json": "985ac054f091a0f02cf772ebf20721df01efaf356b5bb79575d5fdc86f0e6f3e",
+    "docs/evidence/phase5_r2_production_probe_v4.json": "2fa9b35be25fa87264228e554830df3e445b770cd913e97d5553e86ed39bb640",
+    "src/embodied_memory_thor/phase5/frozen_r1.py": "4837533c6e1e67bc58d30ce1c1f220f8708e83dce89bfa1ddd23db6a081d663e",
+    "src/embodied_memory_thor/phase5/frozen_r2_v2.py": "2e042f64d152105e9fa6bfb50e0613a8510c5cd9e2a66618c42f642b3fffced8",
+    "src/embodied_memory_thor/phase4/runner.py": "18f51f66bfd2657ded5506bb455cdd3073c8809966424c731aa4ce4e9addd62f",
+    "src/embodied_memory_thor/phase5/search.py": "f8b3e4b991c288577c00ae31c102c9f1607675386d163fb52eec83f62b92817d"
+  }
+}

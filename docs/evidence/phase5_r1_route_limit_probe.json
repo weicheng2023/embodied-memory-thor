@@ -1,0 +1,63 @@
+{
+  "probe_version": "phase5-r1-route-limit-probe-v1",
+  "claim_boundary": "coordinate-free target-independent route-length QA; not anchor, task, or memory qualification",
+  "code_revision": "12978dbbae23c30d747ac7144efb6c6a3f2777e7",
+  "working_tree_dirty": false,
+  "route_builder": "phase5-target-independent-spaced-waypoints-v2",
+  "frozen_action_limit": 240,
+  "images_saved": false,
+  "memory_agents_run": false,
+  "passed_count": 1,
+  "all_six_passed": false,
+  "rows": [
+    {
+      "scene": "FloorPlan201",
+      "reachable_node_count": 234,
+      "scan_waypoint_count": 29,
+      "action_count": 330,
+      "within_limit": false,
+      "route_digest": "0a4e4c6fb2931477126f37ff61bfe6252f4b02cfa71454e121a7e70faaeffd6d"
+    },
+    {
+      "scene": "FloorPlan202",
+      "reachable_node_count": 180,
+      "scan_waypoint_count": 22,
+      "action_count": 225,
+      "within_limit": true,
+      "route_digest": "ae83584fcc3fcbee674a5c7fb16e40a0c5df28204c499ef0b386589bcba846f6"
+    },
+    {
+      "scene": "FloorPlan203",
+      "reachable_node_count": 593,
+      "scan_waypoint_count": 61,
+      "action_count": 630,
+      "within_limit": false,
+      "route_digest": "7e0b168f62d9288d86285c1e90ba5c503ebcd27bb1a8bea393ef582d26506ef4"
+    },
+    {
+      "scene": "FloorPlan209",
+      "reachable_node_count": 342,
+      "scan_waypoint_count": 37,
+      "action_count": 368,
+      "within_limit": false,
+      "route_digest": "26e98fc27b9168dc6271c19ad73613a5a84efdeffb79dcb877dd2e9aac82cb64"
+    },
+    {
+      "scene": "FloorPlan213",
+      "reachable_node_count": 318,
+      "scan_waypoint_count": 34,
+      "action_count": 369,
+      "within_limit": false,
+      "route_digest": "03157d27067de7777d7a1157f2268b6702e98955408837930af5b1e311187ac9"
+    },
+    {
+      "scene": "FloorPlan224",
+      "reachable_node_count": 311,
+      "scan_waypoint_count": 33,
+      "action_count": 386,
+      "within_limit": false,
+      "route_digest": "da120f8247b8b58a83bbfebc8634c89151cedc78f9723091b4826312e8e0bb3f"
+    }
+  ],
+  "stop_reason": "five of the first six presence candidates exceed the pre-existing 240-action fallback limit; no relocation-anchor trial was started"
+}

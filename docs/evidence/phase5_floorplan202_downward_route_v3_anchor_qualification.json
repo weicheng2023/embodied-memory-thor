@@ -1,0 +1,36 @@
+{
+  "evidence_version": "phase5-floorplan202-downward-route-v3-anchor-qualification-v1",
+  "claim_boundary": "one real relocation-anchor qualification under a scene-bound relative-horizon route; not a memory comparison",
+  "scene": "FloorPlan202",
+  "configuration_id": "FloorPlan202_R1_fixed_start_001",
+  "code_revision": "6a83736d45b6b66b0b0d16dca418df43289c8000",
+  "working_tree_dirty": false,
+  "ai2thor_version": "5.0.0",
+  "script_version": "phase5-anchor-batch-v7",
+  "images_saved": false,
+  "memory_agents_run": false,
+  "route": {
+    "version": "phase5-target-independent-downward-scan-v3",
+    "action_count": 227,
+    "action_limit": 240,
+    "scan_adjustment": "one relative LookDown before the unchanged v2 route and one LookUp after route exhaustion",
+    "digest": "44aca36a89a7c8556a30a42a898d81105c7c47509059658e8952beabbe583a2a"
+  },
+  "result": {
+    "passed": true,
+    "candidate_trial_count": 1,
+    "selected_candidate_order": 1,
+    "anchor_count": 1,
+    "anchor_id": "FloorPlan202_R1_stale_Book_anchor_001",
+    "physical_placement_passed": true,
+    "route_discovery_step": 26,
+    "pickup_step": 27,
+    "failed_action_count_before_pickup": 0,
+    "picked_after_target_lock": true,
+    "fresh_reset_replay_passed": true,
+    "reset_restoration_passed": true,
+    "private_registry_digest": "c7c16ee29d9d53d37cfba4ac3d2e30ab7ed3726fbbaaf3919a8d078ab2547471"
+  },
+  "interpretation": "the earliest previously never-visible candidate became visible early under the relative downward adjustment and completed every anchor gate",
+  "cross_scene_stop_reason": "frozen starts have different initial camera horizons, so one relative LookDown does not define one common absolute scan horizon and must not be copied to later scenes without a new target-independent alignment protocol"
+}

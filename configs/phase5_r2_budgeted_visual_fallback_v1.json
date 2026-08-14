@@ -1,0 +1,65 @@
+{
+  "policy_version": "phase5-r2-budgeted-visual-fallback-v1",
+  "viewpoint_selection_policy": "deterministic-grid-binning-v1",
+  "grid_size_meters": 0.25,
+  "bin_size_steps": 3,
+  "action_limit": 2048,
+  "scan_template": {
+    "horizons_degrees": [0.0, 30.0],
+    "cardinal_observations_per_horizon": 4,
+    "fixed_for_every_viewpoint": true
+  },
+  "allowed_inputs": [
+    "scene_reachable_positions",
+    "fixed_policy_parameters",
+    "start_position",
+    "start_yaw",
+    "start_camera_horizon",
+    "public_route_construction_information"
+  ],
+  "forbidden_inputs": [
+    "Cup_coordinates",
+    "Cup_object_id",
+    "CoffeeMachine_coordinates",
+    "CoffeeMachine_object_id",
+    "anchor",
+    "candidate_success_or_failure",
+    "memory_records",
+    "memory_provider",
+    "memory_variant"
+  ],
+  "shared_variant_contract": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "construction_diagnostic_scene_order": [
+    "FloorPlan6",
+    "FloorPlan7",
+    "FloorPlan8",
+    "FloorPlan10",
+    "FloorPlan13",
+    "FloorPlan16"
+  ],
+  "construction_failure_classification": "budgeted_visual_fallback_construction_ineligible",
+  "construction_pass_classification": "budgeted_visual_fallback_construction_passed",
+  "stop_after_first_construction_pass": true,
+  "route_execution_allowed": false,
+  "qualification_allowed": false,
+  "memory_variants_allowed": false,
+  "images_allowed": false,
+  "formal_statistics_allowed": false,
+  "floorplan17_or_later_allowed": false,
+  "historical_artifacts_frozen": {
+    "docs/evidence/phase5_floorplan6_r2_qualification_v4.json": "14aa340d949c96a20ad39d4a05d9814f44735af3b0ae3105aade643326e34ed1",
+    "docs/evidence/phase5_floorplan7_r2_qualification_v4.json": "6e04fbef1d247957aa9197140c7bc9dcf77b260fa0b523c38327758a5ea81a76",
+    "docs/evidence/phase5_floorplan8_r2_qualification_v4.json": "9d1d4e5e33f91fe504c09d985b6f7f87e4d89cff4b0737c30508e16a68a1546c",
+    "docs/evidence/phase5_floorplan10_r2_qualification_v4.json": "8ec6e0f2e43b89b9f10e81bbf74896522c8245ae7e67f47200bcb803b63b69ff",
+    "docs/evidence/phase5_floorplan13_r2_qualification_v5.json": "3fd0653661824b5a75c9855fcad394dbee1ba715336d46ed65598d961e4c890f",
+    "docs/evidence/phase5_floorplan16_r2_qualification_v5.json": "80dfbecdd6f49258e7793cb77023d20a03f3cc49b4a463a272c5b730e2dcf424",
+    "docs/evidence/phase5_floorplan3_r2_v2_qualification.json": "980ec6738ab80f20bf4aa617fd91ce89b43c7f6ec7ea2c489035f5a906a49a93",
+    "docs/evidence/phase5_floorplan4_r2_v2_qualification.json": "5373cbea07bab8ae99cb80893b2afe037fffb7a502fbc70c779cac3e671bb2ec",
+    "docs/evidence/phase5_floorplan12_r2_qualification_v4.json": "778166d69a2c2dea27e94d81be8bd72d300386cdd306d2726363e00ebed9fb12",
+    "configs/phase5_r2_floorplan12_qualified_configuration_v1.json": "417ec499d2513c474263ff53fdbe456efce7b7069ab4899d5f9b20f822dce2e9"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "claim": "FloorPlan301 qualification-v2 candidate-1 diagnostic stopped before placement because no geometry-safe candidate exists under the frozen support and margin rules",
+  "code_revision": "a2b3629544bcdc76028668a506eca72ed49a85e0",
+  "working_tree_dirty": false,
+  "scene": "FloorPlan301",
+  "configuration_id": "FloorPlan301_R1_fixed_start_001",
+  "qualification_version": "phase5-anchor-qualification-v2",
+  "geometry_version": "phase5-axis-aware-rectangular-footprint-v2",
+  "orientation_policy": "preserve_current_world_orientation_and_validate_native_placement",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "route_digest": "09e3d64b7adb1afe2df76c573211a60caad4435ab4e1f84433d1d168191cd30b",
+  "route_action_count": 108,
+  "route_action_limit": 240,
+  "support_query_success": true,
+  "support_type": "Desk",
+  "support_coordinate_count": 882,
+  "accepted_geometry_candidate_count": 0,
+  "geometry_rejection_count": 882,
+  "geometry_rejection_reason_counts": {
+    "book_footprint_crosses_support_boundary": 882
+  },
+  "candidate_trial_count": 0,
+  "placement_actions_run": false,
+  "fallback_actions_run": false,
+  "anchor_frozen": false,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "coordinates_exposed": false,
+  "passed": false,
+  "stop_reason": "the Book footprint in its preserved orientation does not fit the only admitted Desk support with the frozen safety margin",
+  "next_decision": "change the declared support set or safety protocol before any new real trial; do not continue to FloorPlan302"
+}

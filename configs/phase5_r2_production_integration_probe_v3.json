@@ -1,0 +1,43 @@
+{
+  "probe_version": "phase5-r2-six-runtime-integration-probe-v3",
+  "runtime_set_version": "phase5-r2-frozen-runtime-set-v2",
+  "task": "thor_cup_after_coffee_subgoal",
+  "panel": "r2_stable",
+  "condition": "stable",
+  "configuration_id": "FloorPlan6_R2_fixed_start_001",
+  "scene": "FloorPlan6",
+  "private_configuration_set_digest": "38686730158f305a84f866a78b06354f02cd2a4ccb59fb19aeaf0b8494d7457f",
+  "source_qualification_digest": "2bc3fa3c20f380f26cd2c7a4e174ec804f875ad9e23921f3e1c59abf5b3e7b6f",
+  "subgoal_route_id": "FloorPlan6_R2_fixed_start_001_subgoal_v1",
+  "subgoal_route_action_sequence_digest": "595df275e66e70b590a13c81e16e92bd10736b484deb964e0aaefb5f7141f592",
+  "fallback_route_id": "FloorPlan6_R2_fixed_start_001_fallback_budgeted_visual_v1",
+  "fallback_route_action_sequence_digest": "23a37ebe6f357a2c1310b9338ce668d4e030dee1f271558efed2b60b78c55358",
+  "memory_navigation_policy": "phase5-memory-navigation-v2",
+  "memory_rotation_step_degrees": 90.0,
+  "memory_nonprogress_action_budget": 3,
+  "memory_progress_epsilon_meters": 0.05,
+  "variants": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "max_steps": 140,
+  "mode": "formal",
+  "save_frames": false,
+  "trace_html": false,
+  "visualize": false,
+  "save_evaluator_debug": false,
+  "included_in_formal_aggregate": false,
+  "run_purpose": "phase5_r2_production_integration_probe",
+  "expected_episode_evidence_status": "excluded_engineering_probe",
+  "run_order_policy": "fixed declared variant order; stop immediately on first episode or integrity failure",
+  "episode_reuse_from_v2": false,
+  "claim_boundary": "one runtime-v2 R2 production integration triplet; not a formal memory comparison",
+  "historical_artifacts_frozen": {
+    "configs/phase5_r2_frozen_runtime_v2.json": "96dbfcf4af09314ba25ecd463870bff6573c4e102d985ed290af43f2e3e70027",
+    "configs/phase5_r2_search_routes_v2.json": "985ac054f091a0f02cf772ebf20721df01efaf356b5bb79575d5fdc86f0e6f3e",
+    "docs/evidence/phase5_r2_runtime_freeze_v2.json": "4e80290ac255578ff082151639cf4d8a8e0c943333251255ea99733446241152",
+    "src/embodied_memory_thor/phase5/memory_navigation.py": "cafe267309e6555c20b78ed498aaeed6d25b7a2b4143ece05149332b928e4f58",
+    "scripts/run_phase5_r2_production_probe.py": "4ddefd429e32b64807885b7f64df9cebff159272a5b7b86d48e81bf796abf31c"
+  }
+}

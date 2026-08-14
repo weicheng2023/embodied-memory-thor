@@ -1,0 +1,34 @@
+{
+  "diagnostic_version": "phase5-r2-floorplan5-paired-horizon-v1",
+  "scene": "FloorPlan5",
+  "source_revision": "c26402ba365ba7af6fcfdbf5174181cc1c638c76",
+  "source_candidate_plan": "outputs/phase5_r2_qualification_v3/floorplan5_c26402b/evaluator_only_candidate_plan.json",
+  "source_qualification": "outputs/phase5_r2_qualification_v3/floorplan5_c26402b/evaluator_only_qualification.json",
+  "source_candidate_plan_digest": "9d003961b107ec8f516ad11087f6e8bed77983a8028dd4e752fab0d30ea035a4",
+  "candidate_order": 2,
+  "start_pose_digest": "26b1f1572fee1afb863f2eb2f441f51a09ff90424f5a9f0cd09dc5ce9ac6ef84",
+  "destination_pose_digest": "6e13e9dca385b1a2aa1606b68f2f3f7f0a2f929674d9e632269d8b0bf0c393ec",
+  "subgoal_route_digest": "21e42b48599862986b8f5b4227eaea73e0df793d727c84d48537e1416606ac6a",
+  "subgoal_action_count": 6,
+  "control_fallback_route_digest": "00e3a4ebb2b48a1eed763e15ad05cc7eb63f7879373354a7cc6f180fd1397b50",
+  "control_fallback_action_count": 162,
+  "control_scan_horizon_degrees": 0.0,
+  "treatment_scan_horizon_degrees": 30.0,
+  "treatment_construction": "remove only the leading absolute-horizon alignment LookUp and trailing horizon restore LookDown from the control route; retain the intervening 160 actions byte-for-byte",
+  "treatment_fallback_action_count": 160,
+  "paired_order": [
+    "control_0_degrees",
+    "treatment_downward_30_degrees"
+  ],
+  "fresh_reset_per_arm": true,
+  "same_start_subgoal_toggle_and_spatial_fallback": true,
+  "memory_agents_run": false,
+  "images_saved": false,
+  "formal_use_allowed": false,
+  "decision_rule": {
+    "control_fails_treatment_succeeds": "attribute FloorPlan5 fallback failure to insufficient vertical scan coverage; precommit a general matched downward fallback revision before qualification retry",
+    "both_fail": "downward horizon is insufficient; stop and inspect target visibility/coverage without entering FloorPlan6",
+    "control_succeeds": "visibility is non-deterministic across reset; do not adopt horizon change from this pair",
+    "integrity_failure": "stop without interpretation"
+  }
+}

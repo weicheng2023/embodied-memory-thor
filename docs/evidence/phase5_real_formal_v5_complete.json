@@ -1,0 +1,56 @@
+{
+  "evidence_version": "phase5-real-thor-formal-v5-complete-result-v1",
+  "executor_version": "phase5-real-thor-formal-executor-v5",
+  "code_revision": "069dab5ec79074f9f1143968691b716590747d49",
+  "working_tree_dirty_at_launch": false,
+  "head_matched_upstream_at_launch": true,
+  "matrix_complete": true,
+  "integrity_valid": true,
+  "included_in_formal_aggregate": true,
+  "expected_episode_count": 54,
+  "completed_episode_count": 54,
+  "task_success_count": 54,
+  "task_failure_count": 0,
+  "integrity_error_count": 0,
+  "panel_results": [
+    {
+      "panel": "r1_stable",
+      "configuration_count": 6,
+      "variant_count": 3,
+      "episode_count": 18,
+      "task_success_count": 18,
+      "integrity_error_count": 0
+    },
+    {
+      "panel": "r2_stable",
+      "configuration_count": 6,
+      "variant_count": 3,
+      "episode_count": 18,
+      "task_success_count": 18,
+      "integrity_error_count": 0
+    },
+    {
+      "panel": "r1_stale",
+      "configuration_count": 6,
+      "variant_count": 3,
+      "episode_count": 18,
+      "task_success_count": 18,
+      "integrity_error_count": 0
+    }
+  ],
+  "manifest_digest": "f8add32d0f14c4dee6d388f523970402f86e3a0ada771f340722585f5a30ecdd",
+  "result_digest": "bde2f1b417505bf247ab514d7debe271782ea2e79978d6f40ef684db16fadccd",
+  "artifact_sha256": {
+    "formal_manifest.json": "583a78c6b784fd60072dca0a2cefe76a2b82ccc06b2cd6c0a09527d03df4c412",
+    "readiness.json": "83e2e20856a9d5fa47d01897dfe015c0922e7ed7426c1f20c9996d8769e8d089",
+    "formal_progress.json": "bf869f467e6d44f04e53461bf61a26bb2e02e412f8a66ce48dd2f5e92eccb916",
+    "formal_summary.json": "25c4682984327cea4c8b8c695a14b2d55e74a359fda0a63a050b89d7f5c51ac6"
+  },
+  "prior_episode_reuse": false,
+  "formal_images_saved": false,
+  "formal_gui_used": false,
+  "claim_boundary": "complete integrity-valid fixed 54-episode real AI2-THOR matrix; this record freezes completion and artifact identity before descriptive aggregation and does not itself claim a memory advantage",
+  "analysis_contract": "six matched configurations per panel; descriptive paired differences, means, medians, ranges, and improvement/tie/regression counts only; no significance or broad-generalization claim",
+  "analysis_computed_in_this_record": false,
+  "next_gate": "run deterministic offline descriptive aggregation against the hash-frozen formal_summary.json and publish panel-separated results"
+}

@@ -1,0 +1,42 @@
+{
+  "evidence_version": "phase5-real-thor-formal-readiness-v2-result-v1",
+  "readiness_version": "phase5-real-thor-formal-readiness-v2",
+  "executor_version": "phase5-real-thor-formal-executor-v2",
+  "code_revision": "eba1c1f89a249bbd9948b73fef2542912bdee809",
+  "working_tree_dirty": false,
+  "head_matched_upstream": true,
+  "readiness_passed": true,
+  "episode_count": 54,
+  "panel_count": 3,
+  "matched_cell_count": 18,
+  "unique_runtime_count": 12,
+  "private_runtime_join_passed": true,
+  "private_runtime_material_serialized": false,
+  "public_manifest_contains_start_pose": false,
+  "public_manifest_contains_target_or_anchor": false,
+  "public_manifest_contains_object_identity": false,
+  "public_manifest_contains_evaluator_native_action": false,
+  "manifest_digest": "441aad54e3d499773dd902e61575cd155edb94555e0d04effb6726b64ab03515",
+  "source_formal_manifest_sha256": "97f964dc3a0554e7991876888f102cb2f5b03c2fd6d3a9ded56c07e09713bb7d",
+  "source_readiness_sha256": "f91214e74d818c092dc4e59b2c5afd291f871b0820cfc7ebe5370f3af26d12c8",
+  "readiness_base_config_sha256": "ccbaefd79cfd139638671bf5f537f247782b3b7acd3208890d1273b0e030d475",
+  "runtime_sets": [
+    {
+      "runtime_set": "phase5-r1-frozen-six-anchor-set-v1",
+      "configuration_count": 6,
+      "route_count": 6,
+      "private_join_count": 6
+    },
+    {
+      "runtime_set": "phase5-r2-frozen-runtime-set-v2",
+      "configuration_count": 6,
+      "route_count": 12,
+      "private_join_count": 6
+    }
+  ],
+  "formal_execution_authorized_during_readiness": false,
+  "thor_started": false,
+  "memory_episode_started": false,
+  "formal_statistic_computed": false,
+  "next_gate": "create a separately versioned authorization overlay that hash-binds this readiness evidence and the immutable readiness-only base config; full 54-cell execution must restart from cell 1 on one clean pushed revision"
+}

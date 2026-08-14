@@ -1,0 +1,65 @@
+{
+  "protocol_version": "phase5-r1-route-execution-gate-v1",
+  "target_qualified_scene_count": 6,
+  "qualified_scene_count_before_gate": 3,
+  "qualified_scenes_before_gate": [
+    "FloorPlan202",
+    "FloorPlan302",
+    "FloorPlan303"
+  ],
+  "native_qualification_ineligible_scenes": [
+    {
+      "scene": "FloorPlan301",
+      "classification": "balanced_native_candidate_prefix_exhausted_without_anchor",
+      "evidence": "docs/evidence/phase5_floorplan301_native_qualification_v5.json"
+    }
+  ],
+  "route_execution_ineligible_scenes": [
+    {
+      "scene": "FloorPlan304",
+      "classification": "route_execution_ineligible",
+      "evidence": "docs/evidence/phase5_floorplan304_route_execution_ineligible_v1.json"
+    }
+  ],
+  "remaining_route_construction_eligible_scene_order": [
+    "FloorPlan305",
+    "FloorPlan306",
+    "FloorPlan307",
+    "FloorPlan308",
+    "FloorPlan310",
+    "FloorPlan312",
+    "FloorPlan313",
+    "FloorPlan314",
+    "FloorPlan315",
+    "FloorPlan316",
+    "FloorPlan317",
+    "FloorPlan318",
+    "FloorPlan320",
+    "FloorPlan321",
+    "FloorPlan322",
+    "FloorPlan326",
+    "FloorPlan327",
+    "FloorPlan328",
+    "FloorPlan329",
+    "FloorPlan330"
+  ],
+  "per_scene_gate_order": [
+    "absolute_horizon_route_construction",
+    "fresh_reset_baseline_route_execution",
+    "native_anchor_qualification"
+  ],
+  "baseline_pre_route_pass_count": 4,
+  "baseline_direct_route_replay_without_planner": true,
+  "route_execution_pass_requires_every_action_success": true,
+  "reset_restoration_required": true,
+  "route_execution_ineligible_skip_rule": "skip only when the frozen route has an ordinary action failure in a fresh-reset no-placement baseline, route contract and reset restoration remain valid, and no fatal error occurs",
+  "route_construction_failure_skip_rule": "a deterministic over-limit or unsupported-route result may be recorded and skipped; contract mismatch, reset failure, launch failure, or other integrity/runtime errors must stop",
+  "native_gate": "native qualification is prohibited unless public baseline route-execution evidence passes and matches scene, route digest, and action count",
+  "support_queries_allowed_during_route_gates": false,
+  "placement_allowed_during_route_gates": false,
+  "memory_agents_allowed": false,
+  "images_allowed": false,
+  "obstacle_recovery_policy_enabled": false,
+  "stop_condition": "stop after six distinct R1 scenes have fully qualified anchors",
+  "claim_boundary": "scene eligibility and anchor qualification only; not a memory-agent comparison or formal episode"
+}

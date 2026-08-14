@@ -1,0 +1,44 @@
+{
+  "protocol_version": "phase5-shared-route-action-recovery-v1",
+  "predecessor_stop_evidence": "docs/evidence/phase5_real_formal_pilot_v4_invalidated_stop.json",
+  "applies_to_route_roles": [
+    "target_independent_fallback",
+    "task_subgoal_navigation"
+  ],
+  "applies_to_memory_variants": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "stabilization_action": "Pass",
+  "exact_failed_action_retry_limit": 1,
+  "episode_recovery_attempt_limit": 4,
+  "episode_recovery_action_limit": 8,
+  "episode_max_steps_unchanged": 2048,
+  "allowed_recovery_inputs": [
+    "failed ordinary frozen-route action",
+    "ordinary action success boolean",
+    "fixed policy constants"
+  ],
+  "forbidden_recovery_inputs": [
+    "memory records or memory variant",
+    "target or obstacle identity",
+    "target, object, support or anchor coordinates",
+    "candidate outcome",
+    "reachable graph",
+    "evaluator metadata or hidden state"
+  ],
+  "cursor_rule": "do not advance on initial rejection; advance exactly once only after successful exact retry",
+  "terminal_failure_handoff": "failed stabilization or failed exact retry stops the episode without ordinary planner fallthrough",
+  "public_directive_fields": [
+    "action",
+    "action_index",
+    "action_sequence_digest",
+    "phase",
+    "policy",
+    "route_role",
+    "route_id"
+  ],
+  "formal_execution_authorized": false,
+  "next_gate": "offline determinism, privacy, bounded-termination and full regression, then exactly one excluded FloorPlan10 R2 no-memory isolation replay"
+}
