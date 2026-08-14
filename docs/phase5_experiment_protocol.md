@@ -2315,3 +2315,41 @@ formal aggregation, saves no image/debug trace, retains the 140-step cap and
 must exercise at least one object-memory entry-recovery action without a route
 entry mismatch. A pass authorizes pre-registration of the next dry-run gate;
 it is still not a memory-improvement claim.
+
+### R2 runtime-v2 excluded integration probe v4 result
+
+After focused 24/24 and full 302/302 offline gates, clean pushed revision
+`6deb0aa` reran the complete FloorPlan6 triplet from fresh resets. The retained
+run passed all episode and information-flow audits. No-memory and K=2 each
+completed in 60 steps with 13 subgoal and 45 fallback-coverage actions; K=2
+eviction was reproduced. Both direct baselines recorded and executed zero
+entry-recovery actions.
+
+Object memory executed 14 memory-guided actions, then 14 exact inverse entry-
+recovery actions, reached the original route entry with zero pending recovery,
+and completed the same 45-action fallback prefix. It succeeded in 88 steps.
+Thus the successor fixes the v3 route-transition defect, but this particular
+scene is a clear object-memory regression rather than a positive memory result.
+The result is excluded from formal aggregation and must be reported as such.
+
+One host launch was denied before Python and one outer-command timeout ended a
+partial triplet. The partial directory is retained under ignored outputs; no
+episode from it or from v3 was reused. The evidence-bearing triplet is the
+complete fresh run bound to `6deb0aa`. Public evidence is
+`docs/evidence/phase5_r2_production_probe_v4.json`.
+
+This v4 triplet satisfies the original Phase 5B requirement of one qualified
+configuration under all three variants. Repeating all six R2 configurations as
+another excluded dry run would duplicate the 18-cell formal panel and create an
+unnecessary outcome-inspection stage. Therefore the next gate is Phase 5C
+manifest readiness, not a second dry-run matrix.
+
+The old generic `phase5-manifest-v1` builder is not suitable for execution: it
+serializes raw `start_pose` fields into the public manifest and is not joined to
+the now-frozen R1 evaluator setup/anchor registry or R2 runtime set v2 and its
+12 action-only routes. Before any formal episode, a separately versioned
+privacy-preserving real-runtime manifest must bind all 54 cells to opaque
+configuration IDs, frozen public digests and ignored evaluator-only registries,
+include the entry-recovery metrics in its required schema, fix one clean code
+revision and fail closed on any incomplete 3-variant cell. No formal run is
+authorized until that offline successor and its executor pass full regression.

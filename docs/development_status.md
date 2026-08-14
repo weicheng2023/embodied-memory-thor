@@ -960,3 +960,21 @@ FloorPlan6 triplet with unchanged runtime/routes/task/start/checker/140-step
 cap. Focused recovery and v3/v4 gates pass 24/24; full regression remains the
 pre-push gate and passes 302/302. No formal result or multi-configuration run
 is authorized yet.
+
+Clean pushed `6deb0aa` probe v4 passed the complete fresh FloorPlan6 triplet.
+No-memory and K=2 were unchanged at 60 steps with zero entry-recovery actions;
+object memory executed 14 memory actions, 14 inverse entry-recovery actions and
+the same 45 fallback actions, succeeding in 88 steps. Every information audit
+passed, no route-entry mismatch remained, and no v3/partial episode was reused.
+This is successful integration repair but a negative single-scene memory
+outcome, explicitly excluded from formal aggregation.
+
+The original one-configuration Phase 5B dry run is now complete. A redundant
+six-configuration excluded dry run will not be run. The next engineering task
+is a real-runtime formal-manifest successor: the old v1 builder publicly embeds
+raw start poses and does not bind the frozen R1 anchor/setup registry or R2
+runtime v2/action-only routes. Formal execution remains prohibited until a
+privacy-preserving 54-cell manifest plus executor and audits are precommitted,
+offline-tested, committed and pushed.
+Probe-v4 result-evidence gates pass 6/6 and the full repository regression
+passes 303/303.

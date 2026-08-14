@@ -18,6 +18,9 @@ POLICY = ROOT / "configs" / "phase5_shared_search_entry_recovery_v1.json"
 STOP_EVIDENCE = (
     ROOT / "docs" / "evidence" / "phase5_r2_production_probe_v3_stop.json"
 )
+PASS_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_r2_production_probe_v4.json"
+)
 
 
 def _module() -> object:
@@ -150,7 +153,7 @@ def test_v4_audit_requires_baseline_parity_and_exercised_object_recovery() -> No
 def test_public_probe_material_contains_no_private_route_state() -> None:
     text = "\n".join(
         path.read_text(encoding="utf-8")
-        for path in (CONFIG, POLICY, STOP_EVIDENCE)
+        for path in (CONFIG, POLICY, STOP_EVIDENCE, PASS_EVIDENCE)
     )
     for forbidden in (
         '"x":',
@@ -162,3 +165,26 @@ def test_public_probe_material_contains_no_private_route_state() -> None:
         "reachable_positions",
     ):
         assert forbidden not in text
+
+
+def test_v4_public_result_is_complete_excluded_and_reports_regression() -> None:
+    evidence = json.loads(PASS_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["classification"] == (
+        "excluded_integration_probe_passed_with_entry_recovery"
+    )
+    assert evidence["included_in_formal_aggregate"] is False
+    assert evidence["episode_reuse_from_v3"] is False
+    assert evidence["completed_variant_count"] == 3
+    assert evidence["shared_search_route_entry_mismatch_count_all_variants"] == 0
+    assert evidence[
+        "shared_search_entry_recovery_record_failure_count_all_variants"
+    ] == 0
+    rows = {row["variant"]: row for row in evidence["rows"]}
+    assert rows["no_memory"]["steps"] == rows["short_memory_k2"]["steps"] == 60
+    assert rows["no_memory"]["shared_search_entry_recovery_action_count"] == 0
+    assert rows["short_memory_k2"]["shared_search_entry_recovery_action_count"] == 0
+    assert rows["object_memory"]["shared_search_entry_recovery_action_count"] == 14
+    assert rows["object_memory"]["shared_search_coverage_action_count"] == 45
+    assert rows["object_memory"]["steps"] == 88
+    assert rows["object_memory"]["steps"] > rows["no_memory"]["steps"]
+    assert evidence["not_a_memory_improvement_result"] is True
