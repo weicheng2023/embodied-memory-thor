@@ -1,0 +1,72 @@
+{
+  "analysis_version": "phase5-real-thor-formal-descriptive-analysis-v1",
+  "source_executor_version": "phase5-real-thor-formal-executor-v5",
+  "source_code_revision": "069dab5ec79074f9f1143968691b716590747d49",
+  "source_summary_sha256": "25c4682984327cea4c8b8c695a14b2d55e74a359fda0a63a050b89d7f5c51ac6",
+  "completion_evidence_path": "docs/evidence/phase5_real_formal_v5_complete.json",
+  "completion_evidence_sha256": "5c997c3638b87c615db72d7b014695329cabf336d78766ccc571dd1a2eed0963",
+  "expected_manifest_digest": "f8add32d0f14c4dee6d388f523970402f86e3a0ada771f340722585f5a30ecdd",
+  "expected_result_digest": "bde2f1b417505bf247ab514d7debe271782ea2e79978d6f40ef684db16fadccd",
+  "expected_episode_count": 54,
+  "panel_order": [
+    "r1_stable",
+    "r2_stable",
+    "r1_stale"
+  ],
+  "configuration_order": {
+    "r1_stable": [
+      "FloorPlan202_R1_fixed_start_001",
+      "FloorPlan302_R1_fixed_start_001",
+      "FloorPlan303_R1_fixed_start_001",
+      "FloorPlan305_R1_fixed_start_001",
+      "FloorPlan306_R1_fixed_start_001",
+      "FloorPlan307_R1_fixed_start_001"
+    ],
+    "r2_stable": [
+      "FloorPlan3_R2_fixed_start_001",
+      "FloorPlan4_R2_fixed_start_001",
+      "FloorPlan6_R2_fixed_start_001",
+      "FloorPlan7_R2_fixed_start_001",
+      "FloorPlan12_R2_fixed_start_001",
+      "FloorPlan17_R2_fixed_start_001"
+    ],
+    "r1_stale": [
+      "FloorPlan202_R1_fixed_start_001",
+      "FloorPlan302_R1_fixed_start_001",
+      "FloorPlan303_R1_fixed_start_001",
+      "FloorPlan305_R1_fixed_start_001",
+      "FloorPlan306_R1_fixed_start_001",
+      "FloorPlan307_R1_fixed_start_001"
+    ]
+  },
+  "variant_order": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "performance_metrics": [
+    "steps",
+    "target_reacquisition_action_count",
+    "translation_action_count",
+    "translation_distance_meters",
+    "search_rotation_count",
+    "repeated_viewpoint_visit_count"
+  ],
+  "paired_comparisons": [
+    ["object_memory", "no_memory"],
+    ["object_memory", "short_memory_k2"],
+    ["short_memory_k2", "no_memory"]
+  ],
+  "difference_definition": "first_variant_minus_second_variant",
+  "performance_direction": "lower_is_better",
+  "panel_pooling_allowed": false,
+  "significance_testing_allowed": false,
+  "descriptive_outputs": [
+    "paired_differences",
+    "mean",
+    "median",
+    "range",
+    "improvement_tie_regression_counts"
+  ],
+  "claim_boundary": "six matched real AI2-THOR configurations per panel; descriptive evidence only, with no statistical-significance or broad-generalization claim"
+}
