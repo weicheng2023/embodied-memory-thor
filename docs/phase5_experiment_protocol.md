@@ -2897,3 +2897,26 @@ authorize design of fresh formal-v5 readiness; the dry-run rows themselves are
 not reusable and do not constitute a benchmark or superiority result. Focused
 tests pass 19/19 and the full repository regression passes 400 tests plus 70
 subtests.
+
+#### R2 runtime-v3 six-configuration dry-run result
+
+Clean pushed revision `6cd45e1` completed all 18 excluded cells. Every task
+succeeded, every information-flow audit passed, K=2 eviction occurred in all
+six configurations and object-memory retrieval/guidance occurred in all six.
+No frozen-route action recovery or terminal target-lock recovery was used. One
+legal native action rejection occurred in the FloorPlan7 object-memory cell;
+it remained an integrity-valid performance event and the task succeeded.
+
+Descriptively, no-memory and K=2 had identical steps in every configuration
+and mean 28.5. Object memory had mean 32.0: it was faster in FloorPlan4, tied
+in FloorPlan17 and slower in four configurations. FloorPlan6 required 14 shared
+entry-recovery actions after memory-guided departure. These excluded rows are
+useful negative engineering evidence: memory guidance can avoid fallback yet
+still cost more navigation. They are not a formal comparison and must not be
+used to claim either benefit or harm.
+
+Public evidence is
+`docs/evidence/phase5_r2_runtime_v3_six_configuration_dry_run_v1.json`. A fresh
+formal-v5 readiness design is now allowed, replacing only R2 runtime-v2 with
+runtime-v3 while rerunning the complete 54-cell matrix from cell 1. No dry-run
+or earlier formal cell may be reused.
