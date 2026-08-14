@@ -2425,3 +2425,35 @@ build a new manifest bound to its current clean pushed revision, repeat all 12
 private joins, create a new output directory and begin at episode 1. No resume
 or dry-run episode is accepted. Offline overlay gates must pass with the full
 repository regression before the 54-cell command is launched.
+
+### Formal v2 invalidation and Book-distraction successor
+
+The clean `ed092cf` formal-v2 execution stopped after 8 of 54 cells and is
+excluded in full. The first six FloorPlan202/302 R1-stable cells succeeded.
+Both executed FloorPlan303 variants then produced the same task failure after
+one successful `RotateRight`: the Book was still visible. Evaluator setup,
+native action execution and the information boundary passed. This identifies a
+shared task-template coverage defect, not a memory-variant effect. The K=2 row
+also exposed an audit defect: eviction was required even though the common
+failure occurred before reacquisition. Public stop evidence is
+`docs/evidence/phase5_real_formal_pilot_v2_invalidated_stop.json`. No cell from
+the partial matrix may be resumed or reused.
+
+`phase5-book-distraction-v2` is the pre-registered successor. Every R1 variant
+executes exactly the same target-independent template:
+`RotateRight -> RotateRight -> LookDown -> LookUp`. The first turn is allowed
+to retain visibility; after the fixed half-turn and the two camera observations,
+the Book must be hidden and K=2 must be ready to have evicted observation 0.
+The sequence cannot inspect Book identity/coordinates, memory, anchor/support,
+candidate outcome, reachable graph or evaluator state. It has four evaluated
+actions and does not change the 2048 formal episode ceiling.
+
+Before a new formal protocol is written, the successor must pass offline gates
+and one excluded FloorPlan303 isolation gate. That real gate runs all variants
+only for the four fixed distraction actions, expects `max_steps_exceeded` after
+the template rather than task success, requires the Book-hidden/reacquisition
+stage and information boundary, saves no images/debug metadata and contributes
+no formal result. Only a clean pushed pass permits a versioned full-matrix
+successor. Its formal K=2 audit must require eviction only after the episode has
+actually reached Book/Cup reacquisition; a common earlier task outcome remains
+an outcome unless another integrity rule fails.

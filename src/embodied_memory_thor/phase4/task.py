@@ -6,6 +6,10 @@ from copy import deepcopy
 from typing import Any, Mapping
 
 
+PHASE5_BOOK_DISTRACTION_POLICY_V1 = "phase5-book-distraction-v1"
+PHASE5_BOOK_DISTRACTION_POLICY_V2 = "phase5-book-distraction-v2"
+
+
 class BookReacquireProgress:
     """Track declared task milestones without retaining hidden object state."""
 
@@ -16,6 +20,9 @@ class BookReacquireProgress:
         distraction_actions: tuple[str, ...] = ("RotateRight",),
         max_distraction_turns: int = 4,
         require_hidden_throughout: bool = False,
+        require_hidden_at_completion: bool = False,
+        distraction_stage_prefix: str | None = None,
+        distraction_policy: str = "legacy-book-distraction",
     ) -> None:
         if not distraction_actions:
             raise ValueError("at least one distraction action is required")
@@ -23,6 +30,9 @@ class BookReacquireProgress:
         self.distraction_actions = distraction_actions
         self.max_distraction_turns = max_distraction_turns
         self.require_hidden_throughout = require_hidden_throughout
+        self.require_hidden_at_completion = require_hidden_at_completion
+        self.distraction_stage_prefix = distraction_stage_prefix
+        self.distraction_policy = distraction_policy
         self.initial_book_id: str | None = None
         self.initial_book_observed_step: int | None = None
         self.distraction_turns = 0
@@ -36,12 +46,32 @@ class BookReacquireProgress:
 
     @classmethod
     def phase5_k2(cls) -> "BookReacquireProgress":
-        """Build the frozen R1 controller that evicts observation 0 from K=2."""
+        """Build the historical R1 v1 controller."""
 
         return cls(
             task_name="thor_book_reacquire_k2",
             distraction_actions=("RotateRight", "LookDown", "LookUp"),
             require_hidden_throughout=True,
+            distraction_stage_prefix="controlled_distraction",
+            distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V1,
+        )
+
+    @classmethod
+    def phase5_k2_v2(cls) -> "BookReacquireProgress":
+        """Build the fixed half-turn successor without target-conditioned actions."""
+
+        return cls(
+            task_name="thor_book_reacquire_k2",
+            distraction_actions=(
+                "RotateRight",
+                "RotateRight",
+                "LookDown",
+                "LookUp",
+            ),
+            require_hidden_throughout=False,
+            require_hidden_at_completion=True,
+            distraction_stage_prefix="controlled_distraction_v2",
+            distraction_policy=PHASE5_BOOK_DISTRACTION_POLICY_V2,
         )
 
     @staticmethod
@@ -90,6 +120,11 @@ class BookReacquireProgress:
         if self.distraction_transition_count < len(self.distraction_actions):
             if self.distraction_turns >= self.max_distraction_turns:
                 return "distraction_failed"
+            if self.distraction_stage_prefix is not None:
+                return (
+                    f"{self.distraction_stage_prefix}_"
+                    f"{self.distraction_transition_count + 1}"
+                )
             if self.task_name == "thor_book_reacquire":
                 return "controlled_distraction"
             return f"controlled_distraction_{self.distraction_transition_count + 1}"
@@ -167,6 +202,14 @@ class BookReacquireProgress:
                 f"book_visible_during_distraction:transition:"
                 f"{self.distraction_transition_count}"
             )
+        if (
+            self.require_hidden_at_completion
+            and self.distraction_transition_count >= len(self.distraction_actions)
+            and success
+            and not self._distraction_error
+            and visible
+        ):
+            self._distraction_error = "book_visible_after_distraction"
 
         if (
             success
@@ -179,6 +222,7 @@ class BookReacquireProgress:
         return deepcopy(
             {
                 "task_name": self.task_name,
+                "distraction_policy": self.distraction_policy,
                 "stage": self.stage,
                 "initial_book_id": self.initial_book_id,
                 "initial_book_observed_step": self.initial_book_observed_step,

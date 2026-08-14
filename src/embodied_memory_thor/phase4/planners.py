@@ -143,6 +143,10 @@ class ThorBookReacquirePlanner:
             "controlled_distraction_1": ("RotateRight", "rotate_away"),
             "controlled_distraction_2": ("LookDown", "change_camera_horizon"),
             "controlled_distraction_3": ("LookUp", "restore_camera_horizon"),
+            "controlled_distraction_v2_1": ("RotateRight", "half_turn_1"),
+            "controlled_distraction_v2_2": ("RotateRight", "half_turn_2"),
+            "controlled_distraction_v2_3": ("LookDown", "k2_hidden_observation"),
+            "controlled_distraction_v2_4": ("LookUp", "restore_camera_horizon"),
         }
         if stage in phase5_distraction_actions:
             action_name, reason_suffix = phase5_distraction_actions[stage]

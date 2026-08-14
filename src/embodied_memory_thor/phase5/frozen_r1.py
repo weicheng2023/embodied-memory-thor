@@ -170,10 +170,13 @@ class FrozenBookRelocation:
     ) -> Mapping[str, Any] | None:
         if self.applied:
             return None
+        supported_trigger = (
+            (task_stage == "controlled_distraction_3" and step == 3)
+            or (task_stage == "controlled_distraction_v2_4" and step == 4)
+        )
         if not (
             task_name == "thor_book_reacquire_k2"
-            and task_stage == "controlled_distraction_3"
-            and step == 3
+            and supported_trigger
             and agent_action_success
             and agent_action.get("action") == "LookUp"
         ):
@@ -241,7 +244,11 @@ class FrozenBookRelocation:
             "configuration_id": self.configuration.configuration_id,
             "anchor_id": self.configuration.anchor_id,
             "trigger_step": step,
-            "trigger_stage": "controlled_distraction_3",
+            "trigger_stage": (
+                "controlled_distraction_v2_4"
+                if step == 4
+                else "controlled_distraction_3"
+            ),
             "included_in_planner_metrics": False,
             "planner_visible": False,
             "native_action": deepcopy(dict(action)),

@@ -6,6 +6,8 @@ import json
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from embodied_memory_thor.phase5.search import (
     SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT,
     SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
@@ -36,7 +38,8 @@ def test_probe_v4_is_fresh_excluded_and_policy_bound() -> None:
     module = _module()
     predecessor = module._predecessor()  # type: ignore[attr-defined]
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
-    module.validate_probe_config(config, predecessor)  # type: ignore[attr-defined]
+    with pytest.raises(ValueError, match="historical artifact changed"):
+        module.validate_probe_config(config, predecessor)  # type: ignore[attr-defined]
     assert config["variants"] == [
         "no_memory",
         "short_memory_k2",
@@ -80,8 +83,14 @@ def test_entry_recovery_policy_is_shared_bounded_and_target_free() -> None:
 
 def test_probe_v4_freezes_runtime_predecessor_and_remediation_sources() -> None:
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    changed = []
     for relative, expected in config["historical_artifacts_frozen"].items():
-        assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
+        if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != expected:
+            changed.append(relative)
+    assert changed == [
+        "src/embodied_memory_thor/phase4/planners.py",
+        "src/embodied_memory_thor/phase4/runner.py",
+    ]
     evidence = json.loads(STOP_EVIDENCE.read_text(encoding="utf-8"))
     assert evidence["classification"] == (
         "excluded_integration_probe_failed_shared_search_entry_contract"

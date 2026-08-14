@@ -41,6 +41,8 @@ from embodied_memory_thor.phase4.spatial_memory import (
 from embodied_memory_thor.phase4.task import (
     BookReacquireProgress,
     CupAfterCoffeeProgress,
+    PHASE5_BOOK_DISTRACTION_POLICY_V1,
+    PHASE5_BOOK_DISTRACTION_POLICY_V2,
 )
 from embodied_memory_thor.phase4.trace import (
     LiveFrameViewer,
@@ -164,6 +166,7 @@ class ThorEpisodeConfig:
     scene: str = "FloorPlan1"
     planner: str = "deterministic"
     memory: str = "object_memory"
+    book_distraction_policy: str = PHASE5_BOOK_DISTRACTION_POLICY_V1
     subgoal_route_id: str | None = None
     search_route_id: str | None = None
     condition: str = "stable"
@@ -202,6 +205,18 @@ class ThorEpisodeConfig:
             raise ValueError(f"unsupported planner: {self.planner}")
         if self.memory not in {"no_memory", "short_memory_k2", "object_memory"}:
             raise ValueError(f"unsupported memory mode: {self.memory}")
+        if self.book_distraction_policy not in {
+            PHASE5_BOOK_DISTRACTION_POLICY_V1,
+            PHASE5_BOOK_DISTRACTION_POLICY_V2,
+        }:
+            raise ValueError("unsupported Book distraction policy")
+        if (
+            self.task != "thor_book_reacquire_k2"
+            and self.book_distraction_policy != PHASE5_BOOK_DISTRACTION_POLICY_V1
+        ):
+            raise ValueError(
+                "Book distraction successor applies only to the Phase 5 R1 task"
+            )
         if self.search_route_id is not None:
             if not self.search_route_id.strip():
                 raise ValueError("search_route_id cannot be empty")
@@ -343,6 +358,7 @@ class ThorEpisodeRunner:
             "scene": config.scene,
             "planner": config.planner,
             "memory": config.memory,
+            "book_distraction_policy": config.book_distraction_policy,
             "subgoal_route": (
                 self.subgoal_route.public_reference()
                 if self.subgoal_route is not None
@@ -471,7 +487,12 @@ class ThorEpisodeRunner:
         writer.write_manifest(manifest)
 
         if config.task == "thor_book_reacquire_k2":
-            progress = BookReacquireProgress.phase5_k2()
+            progress = (
+                BookReacquireProgress.phase5_k2_v2()
+                if config.book_distraction_policy
+                == PHASE5_BOOK_DISTRACTION_POLICY_V2
+                else BookReacquireProgress.phase5_k2()
+            )
         elif config.task == "thor_cup_after_coffee_subgoal":
             progress = CupAfterCoffeeProgress()
         else:
@@ -1177,6 +1198,7 @@ class ThorEpisodeRunner:
             "scene": config.scene,
             "planner": config.planner,
             "memory": config.memory,
+            "book_distraction_policy": config.book_distraction_policy,
             "condition": config.condition,
             "mode": config.mode,
             "included_in_formal_aggregate": config.included_in_formal_aggregate,

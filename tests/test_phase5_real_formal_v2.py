@@ -51,7 +51,9 @@ def _manifest() -> dict:
 
 def test_precommit_is_readiness_only_and_hash_freezes_prerequisites() -> None:
     config = _config()
-    validate_precommit(config, root=ROOT)
+    validate_precommit(config, root=ROOT, check_hashes=False)
+    with pytest.raises(FormalManifestError, match="historical_artifact"):
+        validate_precommit(config, root=ROOT)
     assert config["formal_execution_authorized"] is False
     assert config["readiness_only_authorized"] is True
     assert config["episode_count"] == 54
@@ -238,7 +240,7 @@ def test_execute_gate_fails_before_creating_output() -> None:
     module = _module()
     with tempfile.TemporaryDirectory() as temporary_dir:
         output = Path(temporary_dir) / "formal"
-        with pytest.raises(ValueError, match="not authorized"):
+        with pytest.raises(ValueError, match="invalid formal precommit"):
             module.prepare_run(  # type: ignore[attr-defined]
                 config_path=CONFIG,
                 output_dir=output,
@@ -251,7 +253,9 @@ def test_authorization_overlay_changes_only_the_execution_gate() -> None:
     module = _module()
     base = _config()
     effective = module.load_config_document(EXECUTION_CONFIG)  # type: ignore[attr-defined]
-    validate_precommit(effective, root=ROOT)
+    validate_precommit(effective, root=ROOT, check_hashes=False)
+    with pytest.raises(FormalManifestError, match="historical_artifact"):
+        validate_precommit(effective, root=ROOT)
     assert base["formal_execution_authorized"] is False
     assert effective["formal_execution_authorized"] is True
     assert effective["authorization"]["matrix_contract_override_allowed"] is False
