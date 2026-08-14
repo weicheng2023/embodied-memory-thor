@@ -24,6 +24,9 @@ REAL_METRIC_SCHEMA_VERSION_V4 = "phase5-real-thor-metrics-v4"
 REAL_MANIFEST_SCHEMA_VERSION_V4 = "phase5-real-thor-manifest-v4"
 REAL_PROTOCOL_VERSION_V4 = "phase5-real-thor-pilot-v4"
 REAL_METRIC_SCHEMA_VERSION_V5 = "phase5-real-thor-metrics-v5"
+REAL_MANIFEST_SCHEMA_VERSION_V5 = "phase5-real-thor-manifest-v5"
+REAL_PROTOCOL_VERSION_V5 = "phase5-real-thor-pilot-v5"
+REAL_METRIC_SCHEMA_VERSION_V6 = "phase5-real-thor-metrics-v6"
 REAL_PANEL_ORDER = ("r1_stable", "r2_stable", "r1_stale")
 REAL_EPISODE_COUNT = 54
 REAL_CONFIGURATION_COUNT_PER_PANEL = 6
@@ -68,6 +71,21 @@ REAL_REQUIRED_METRICS_V5 = tuple(
             "target_lock_interaction_recovery_action_count",
             "target_lock_interaction_recovery_attempt_count",
             "target_lock_terminal_failure_count",
+        )
+    )
+)
+REAL_REQUIRED_METRICS_V6 = tuple(
+    dict.fromkeys(
+        REAL_REQUIRED_METRICS_V5
+        + (
+            "shared_route_action_recovery_policy",
+            "shared_route_action_recovery_attempt_limit",
+            "shared_route_action_recovery_action_limit",
+            "shared_route_action_recovery_attempt_count",
+            "shared_route_action_recovery_action_count",
+            "shared_route_action_recovered_failure_count",
+            "shared_route_action_recovery_terminal_failure_count",
+            "shared_route_action_recovery_pending_action_count",
         )
     )
 )
@@ -116,11 +134,19 @@ def _contract_versions(config: Mapping[str, Any]) -> tuple[str, str, str]:
             REAL_PROTOCOL_VERSION_V4,
             REAL_METRIC_SCHEMA_VERSION_V5,
         )
+    if protocol == REAL_PROTOCOL_VERSION_V5:
+        return (
+            REAL_MANIFEST_SCHEMA_VERSION_V5,
+            REAL_PROTOCOL_VERSION_V5,
+            REAL_METRIC_SCHEMA_VERSION_V6,
+        )
     raise FormalManifestError("unsupported real formal protocol version")
 
 
 def required_metrics_for(config: Mapping[str, Any]) -> tuple[str, ...]:
     metric_version = str(config.get("metric_schema_version", ""))
+    if metric_version == REAL_METRIC_SCHEMA_VERSION_V6:
+        return REAL_REQUIRED_METRICS_V6
     if metric_version == REAL_METRIC_SCHEMA_VERSION_V5:
         return REAL_REQUIRED_METRICS_V5
     if metric_version == REAL_METRIC_SCHEMA_VERSION_V4:
@@ -186,14 +212,22 @@ def validate_precommit(
         errors.append("variants")
     if config.get("readiness_only_authorized") is not True:
         errors.append("readiness_only_authorized")
-    if protocol_version in {REAL_PROTOCOL_VERSION_V3, REAL_PROTOCOL_VERSION_V4} and config.get(
+    if protocol_version in {
+        REAL_PROTOCOL_VERSION_V3,
+        REAL_PROTOCOL_VERSION_V4,
+        REAL_PROTOCOL_VERSION_V5,
+    } and config.get(
         "book_distraction_policy"
     ) != "phase5-book-distraction-v4":
         errors.append("book_distraction_policy")
-    if protocol_version == REAL_PROTOCOL_VERSION_V4 and config.get(
+    if protocol_version in {REAL_PROTOCOL_VERSION_V4, REAL_PROTOCOL_VERSION_V5} and config.get(
         "target_lock_policy"
     ) != "phase5-shared-target-lock-v2":
         errors.append("target_lock_policy")
+    if protocol_version == REAL_PROTOCOL_VERSION_V5 and config.get(
+        "route_action_recovery_policy"
+    ) != "phase5-shared-route-action-recovery-v1":
+        errors.append("route_action_recovery_policy")
 
     output = config.get("output_policy", {})
     if not isinstance(output, Mapping):
@@ -276,8 +310,12 @@ def collect_public_runtime_bindings(
         (project_root / "configs" / "phase5_r1_frozen_anchor_set_v1.json")
         .read_text(encoding="utf-8")
     )
-    r2_set = json.loads(
+    r2_set_v2 = json.loads(
         (project_root / "configs" / "phase5_r2_frozen_runtime_v2.json")
+        .read_text(encoding="utf-8")
+    )
+    r2_set_v3 = json.loads(
+        (project_root / "configs" / "phase5_r2_frozen_runtime_v3.json")
         .read_text(encoding="utf-8")
     )
     r1_rows = {
@@ -285,9 +323,14 @@ def collect_public_runtime_bindings(
         for row in r1_set.get("scenes", [])
         if isinstance(row, Mapping)
     }
-    r2_rows = {
+    r2_rows_v2 = {
         str(row["configuration_id"]): row
-        for row in r2_set.get("configurations", [])
+        for row in r2_set_v2.get("configurations", [])
+        if isinstance(row, Mapping)
+    }
+    r2_rows_v3 = {
+        str(row["configuration_id"]): row
+        for row in r2_set_v3.get("configurations", [])
         if isinstance(row, Mapping)
     }
     bindings: dict[str, dict[str, Any]] = {}
@@ -316,15 +359,35 @@ def collect_public_runtime_bindings(
                     ),
                 }
             elif runtime_set == "phase5-r2-frozen-runtime-set-v2":
-                if key not in r2_rows:
+                if key not in r2_rows_v2:
                     raise FormalManifestError(f"missing public R2 runtime: {key}")
-                row = r2_rows[key]
+                row = r2_rows_v2[key]
                 bindings[key] = {
                     "runtime_set": runtime_set,
                     "configuration_id": key,
                     "scene": str(row["scene"]),
                     "private_set_digest": str(
-                        r2_set["private_configuration_set_digest"]
+                        r2_set_v2["private_configuration_set_digest"]
+                    ),
+                    "subgoal_route_id": str(row["subgoal_route_id"]),
+                    "subgoal_route_action_sequence_digest": str(
+                        row["subgoal_route_action_sequence_digest"]
+                    ),
+                    "search_route_id": str(row["fallback_route_id"]),
+                    "search_route_action_sequence_digest": str(
+                        row["fallback_route_action_sequence_digest"]
+                    ),
+                }
+            elif runtime_set == "phase5-r2-frozen-runtime-set-v3":
+                if key not in r2_rows_v3:
+                    raise FormalManifestError(f"missing public R2 runtime-v3: {key}")
+                row = r2_rows_v3[key]
+                bindings[key] = {
+                    "runtime_set": runtime_set,
+                    "configuration_id": key,
+                    "scene": str(row["scene"]),
+                    "private_set_digest": str(
+                        r2_set_v3["private_configuration_set_digest"]
                     ),
                     "subgoal_route_id": str(row["subgoal_route_id"]),
                     "subgoal_route_action_sequence_digest": str(
@@ -385,9 +448,16 @@ def build_public_manifest(
                     and config.get("book_distraction_policy") is not None
                     else "phase5-book-distraction-v1"
                 )
-                if config.get("protocol_version") == REAL_PROTOCOL_VERSION_V4:
+                if config.get("protocol_version") in {
+                    REAL_PROTOCOL_VERSION_V4,
+                    REAL_PROTOCOL_VERSION_V5,
+                }:
                     episode["target_lock_policy"] = str(
                         config["target_lock_policy"]
+                    )
+                if config.get("protocol_version") == REAL_PROTOCOL_VERSION_V5:
+                    episode["route_action_recovery_policy"] = str(
+                        config["route_action_recovery_policy"]
                     )
                 if "subgoal_route_id" in binding:
                     episode["subgoal_route_id"] = str(binding["subgoal_route_id"])
@@ -534,6 +604,18 @@ def compact_result_row(
         ),
         "shared_search_entry_recovery_action_count": summary.get(
             "shared_search_entry_recovery_action_count"
+        ),
+        "shared_route_action_recovery_attempt_count": summary.get(
+            "shared_route_action_recovery_attempt_count"
+        ),
+        "shared_route_action_recovery_action_count": summary.get(
+            "shared_route_action_recovery_action_count"
+        ),
+        "shared_route_action_recovered_failure_count": summary.get(
+            "shared_route_action_recovered_failure_count"
+        ),
+        "shared_route_action_recovery_terminal_failure_count": summary.get(
+            "shared_route_action_recovery_terminal_failure_count"
         ),
         "shared_search_entry_alignment_policy": summary.get(
             "shared_search_entry_alignment_policy"

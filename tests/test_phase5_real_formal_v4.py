@@ -87,6 +87,8 @@ def test_v4_precommit_is_readiness_only_and_hash_binds_recovery_gate() -> None:
         "src/embodied_memory_thor/phase4/planners.py",
         "src/embodied_memory_thor/phase4/contracts.py",
         "src/embodied_memory_thor/phase5/search.py",
+        "src/embodied_memory_thor/phase5/formal_v2.py",
+        "scripts/run_phase5_real_formal_pilot_v2.py",
     ]
 
 

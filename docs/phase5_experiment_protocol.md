@@ -2920,3 +2920,27 @@ Public evidence is
 formal-v5 readiness design is now allowed, replacing only R2 runtime-v2 with
 runtime-v3 while rerunning the complete 54-cell matrix from cell 1. No dry-run
 or earlier formal cell may be reused.
+
+#### Fresh formal-v5 readiness-only precommit
+
+Formal-v5 reconstructs the complete 54-cell matrix from cell 1. Both R1 panels
+retain their six matched runtime-v1 configurations; R2 now uses runtime-v3 in
+the fixed FloorPlan3, 4, 6, 7, 12, 17 order. The three memory variants,
+controller settings, 2048 ceiling, target-lock-v2, distraction-v4, no-image
+policy and configuration-major order are unchanged. No old formal, integration
+or dry-run episode may be reused.
+
+Manifest-v5 uses metric schema v6 with 72 required fields. It retains all 64
+v5 fields and additionally requires the shared route-action recovery policy,
+attempt/action limits, attempt/action/recovered counts and terminal/pending
+counts. A bounded successful route-action recovery is recorded as agent
+performance. Terminal or pending recovery, route-controlled action failure,
+planner invalidity, leakage, setup/intervention failure or incomplete private
+join remains fail-closed. Legal native THOR rejection remains performance.
+
+The readiness base has execution disabled and hash-binds runtime-v3, the
+FloorPlan10 stop, replacement/dry-run evidence and current runner/planner/
+search/formal sources. Offline tests pass 22/22; the full repository regression
+passes 405 tests plus 70 subtests. The next action is one no-THOR readiness-only
+run on a clean pushed commit, which must reconstruct 54 public cells, 72 metrics
+and 12 private joins without serializing private state.

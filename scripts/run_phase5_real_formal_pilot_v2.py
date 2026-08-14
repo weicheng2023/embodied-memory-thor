@@ -38,6 +38,9 @@ from embodied_memory_thor.phase5.frozen_r1 import (  # noqa: E402
 from embodied_memory_thor.phase5.frozen_r2_v2 import (  # noqa: E402
     load_frozen_r2_runtime_v2,
 )
+from embodied_memory_thor.phase5.frozen_r2_v3 import (  # noqa: E402
+    load_frozen_r2_runtime_v3,
+)
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
@@ -46,6 +49,7 @@ EXPECTED_FORMAL_EVIDENCE_STATUS = "formal_acceptance_candidate"
 FORMAL_EXECUTOR_VERSION = "phase5-real-thor-formal-executor-v2"
 FORMAL_EXECUTOR_VERSION_V3 = "phase5-real-thor-formal-executor-v3"
 FORMAL_EXECUTOR_VERSION_V4 = "phase5-real-thor-formal-executor-v4"
+FORMAL_EXECUTOR_VERSION_V5 = "phase5-real-thor-formal-executor-v5"
 FORBIDDEN_ORDINARY_KEYS = {
     "anchor_id",
     "candidate_order",
@@ -68,6 +72,8 @@ def _write_json(path: Path, value: Any) -> None:
 
 def _executor_version(config: Mapping[str, Any]) -> str:
     protocol = config.get("protocol_version")
+    if protocol == "phase5-real-thor-pilot-v5":
+        return FORMAL_EXECUTOR_VERSION_V5
     if protocol == "phase5-real-thor-pilot-v4":
         return FORMAL_EXECUTOR_VERSION_V4
     if protocol == "phase5-real-thor-pilot-v3":
@@ -207,6 +213,14 @@ def _load_runtime(episode: Mapping[str, Any]) -> tuple[Any, Any, Any, Any]:
             runtime.subgoal_route,
             None,
         )
+    if runtime_set == "phase5-r2-frozen-runtime-set-v3":
+        runtime = load_frozen_r2_runtime_v3(configuration_id)
+        return (
+            runtime.configuration,
+            runtime.fallback_route,
+            runtime.subgoal_route,
+            None,
+        )
     raise ValueError(f"unsupported formal runtime set: {runtime_set}")
 
 
@@ -266,12 +280,16 @@ def build_readiness(
         seen.add(configuration_id)
     readiness = {
         "readiness_version": (
-            "phase5-real-thor-formal-readiness-v4"
-            if config.get("protocol_version") == "phase5-real-thor-pilot-v4"
+            "phase5-real-thor-formal-readiness-v5"
+            if config.get("protocol_version") == "phase5-real-thor-pilot-v5"
             else (
-                "phase5-real-thor-formal-readiness-v3"
-                if config.get("protocol_version") == "phase5-real-thor-pilot-v3"
-                else "phase5-real-thor-formal-readiness-v2"
+                "phase5-real-thor-formal-readiness-v4"
+                if config.get("protocol_version") == "phase5-real-thor-pilot-v4"
+                else (
+                    "phase5-real-thor-formal-readiness-v3"
+                    if config.get("protocol_version") == "phase5-real-thor-pilot-v3"
+                    else "phase5-real-thor-formal-readiness-v2"
+                )
             )
         ),
         "executor_version": _executor_version(config),
@@ -345,6 +363,7 @@ def audit_episode(
     if episode.get("metric_schema_version") in {
         "phase5-real-thor-metrics-v4",
         "phase5-real-thor-metrics-v5",
+        "phase5-real-thor-metrics-v6",
     }:
         if summary.get("book_distraction_policy") != episode.get(
             "book_distraction_policy"
@@ -356,7 +375,10 @@ def audit_episode(
             errors.append("entry_alignment_policy")
         if summary.get("shared_search_entry_alignment_action_limit") != 4:
             errors.append("entry_alignment_action_limit")
-    if episode.get("metric_schema_version") == "phase5-real-thor-metrics-v5":
+    if episode.get("metric_schema_version") in {
+        "phase5-real-thor-metrics-v5",
+        "phase5-real-thor-metrics-v6",
+    }:
         if summary.get("target_lock_policy") != episode.get("target_lock_policy"):
             errors.append("target_lock_policy")
         if summary.get("target_lock_interaction_recovery_action_limit") != 4:
@@ -365,6 +387,19 @@ def audit_episode(
             errors.append("target_lock_interaction_recovery_retry_limit")
         if summary.get("target_lock_canonical_pickup_horizon_degrees") != -30.0:
             errors.append("target_lock_canonical_pickup_horizon")
+    if episode.get("metric_schema_version") == "phase5-real-thor-metrics-v6":
+        if summary.get("shared_route_action_recovery_policy") != episode.get(
+            "route_action_recovery_policy"
+        ):
+            errors.append("route_action_recovery_policy")
+        if summary.get("shared_route_action_recovery_attempt_limit") != 4:
+            errors.append("route_action_recovery_attempt_limit")
+        if summary.get("shared_route_action_recovery_action_limit") != 8:
+            errors.append("route_action_recovery_action_limit")
+        if summary.get("shared_route_action_recovery_terminal_failure_count") != 0:
+            errors.append("route_action_recovery_terminal_failure")
+        if summary.get("shared_route_action_recovery_pending_action_count") != 0:
+            errors.append("route_action_recovery_pending_action")
     integrity_counters = [
         "shared_search_route_entry_mismatch_count",
         "shared_search_action_failure_count",
@@ -374,7 +409,10 @@ def audit_episode(
     ]
     integrity_counters.append(
         "invalid_planner_decision_count"
-        if episode.get("metric_schema_version") == "phase5-real-thor-metrics-v5"
+        if episode.get("metric_schema_version") in {
+            "phase5-real-thor-metrics-v5",
+            "phase5-real-thor-metrics-v6",
+        }
         else "invalid_action_count"
     )
     for key in integrity_counters:
