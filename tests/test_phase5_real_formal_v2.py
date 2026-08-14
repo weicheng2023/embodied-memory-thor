@@ -23,6 +23,7 @@ from embodied_memory_thor.phase5.formal_v2 import (
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "phase5_real_formal_pilot_v2.json"
+EXECUTION_CONFIG = ROOT / "configs" / "phase5_real_formal_execution_v2.json"
 
 
 def _module() -> object:
@@ -244,3 +245,54 @@ def test_execute_gate_fails_before_creating_output() -> None:
                 execute_requested=True,
             )
         assert not output.exists()
+
+
+def test_authorization_overlay_changes_only_the_execution_gate() -> None:
+    module = _module()
+    base = _config()
+    effective = module.load_config_document(EXECUTION_CONFIG)  # type: ignore[attr-defined]
+    validate_precommit(effective, root=ROOT)
+    assert base["formal_execution_authorized"] is False
+    assert effective["formal_execution_authorized"] is True
+    assert effective["authorization"]["matrix_contract_override_allowed"] is False
+    for key in (
+        "manifest_schema_version",
+        "protocol_version",
+        "metric_schema_version",
+        "episode_count",
+        "configuration_count_per_panel",
+        "variants",
+        "execution_order",
+        "max_steps_per_episode",
+        "controller_settings",
+        "output_policy",
+        "panels",
+        "private_runtime_policy",
+        "integrity_stop_policy",
+        "outcome_policy",
+        "historical_artifacts_frozen",
+    ):
+        assert effective[key] == base[key]
+    serialized = EXECUTION_CONFIG.read_text(encoding="utf-8")
+    for forbidden in (
+        '"start_pose"',
+        '"target_point"',
+        '"anchor_id"',
+        '"objectId"',
+        "Book|",
+        "Cup|",
+        "CoffeeMachine|",
+        "TeleportFull",
+    ):
+        assert forbidden not in serialized
+
+
+def test_authorization_overlay_fails_closed_on_any_matrix_field() -> None:
+    module = _module()
+    raw = json.loads(EXECUTION_CONFIG.read_text(encoding="utf-8"))
+    raw["max_steps_per_episode"] = 9999
+    with tempfile.TemporaryDirectory() as temporary_dir:
+        path = Path(temporary_dir) / "bad_overlay.json"
+        path.write_text(json.dumps(raw), encoding="utf-8")
+        with pytest.raises(ValueError, match="unexpected fields"):
+            module.load_config_document(path)  # type: ignore[attr-defined]

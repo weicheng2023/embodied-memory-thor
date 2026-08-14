@@ -7,6 +7,7 @@ import argparse
 import json
 import subprocess
 import sys
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -102,6 +103,77 @@ def _walk_forbidden(value: Any, path: str = "") -> list[str]:
         for index, item in enumerate(value):
             violations.extend(_walk_forbidden(item, f"{path}[{index}]"))
     return violations
+
+
+def _project_file(relative: str) -> Path:
+    path = (PROJECT_ROOT / relative).resolve()
+    try:
+        path.relative_to(PROJECT_ROOT.resolve())
+    except ValueError as exc:
+        raise ValueError("authorization source is outside the project") from exc
+    return path
+
+
+def load_config_document(config_path: Path) -> dict[str, Any]:
+    """Load an immutable readiness base or its narrowly scoped authorization."""
+
+    raw = json.loads(config_path.read_text(encoding="utf-8"))
+    if not isinstance(raw, Mapping):
+        raise ValueError("formal config must be a mapping")
+    if "base_config" not in raw:
+        return dict(raw)
+    allowed = {
+        "authorization_version",
+        "base_config",
+        "base_config_sha256",
+        "readiness_evidence",
+        "readiness_evidence_sha256",
+        "readiness_code_revision",
+        "readiness_manifest_digest",
+        "formal_execution_authorized",
+        "authorization_scope",
+        "matrix_contract_override_allowed",
+    }
+    if set(map(str, raw)) != allowed:
+        raise ValueError("authorization overlay has unexpected fields")
+    if raw.get("authorization_version") != (
+        "phase5-real-thor-formal-execution-authorization-v2"
+    ):
+        raise ValueError("formal authorization version mismatch")
+    if raw.get("formal_execution_authorized") is not True:
+        raise ValueError("formal authorization must explicitly enable execution")
+    if raw.get("matrix_contract_override_allowed") is not False:
+        raise ValueError("formal authorization cannot override the matrix contract")
+
+    base_path = _project_file(str(raw["base_config"]))
+    if sha256_file(base_path) != str(raw["base_config_sha256"]):
+        raise ValueError("formal readiness base config changed")
+    base = json.loads(base_path.read_text(encoding="utf-8"))
+    if base.get("formal_execution_authorized") is not False:
+        raise ValueError("formal readiness base must remain execution-disabled")
+
+    evidence_path = _project_file(str(raw["readiness_evidence"]))
+    if sha256_file(evidence_path) != str(raw["readiness_evidence_sha256"]):
+        raise ValueError("formal readiness evidence changed")
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    if (
+        evidence.get("readiness_passed") is not True
+        or evidence.get("code_revision") != raw.get("readiness_code_revision")
+        or evidence.get("manifest_digest") != raw.get("readiness_manifest_digest")
+        or evidence.get("formal_execution_authorized_during_readiness") is not False
+    ):
+        raise ValueError("formal readiness evidence does not authorize execution")
+    effective = deepcopy(dict(base))
+    effective["formal_execution_authorized"] = True
+    effective["authorization"] = {
+        "authorization_version": raw["authorization_version"],
+        "base_config_sha256": raw["base_config_sha256"],
+        "readiness_evidence_sha256": raw["readiness_evidence_sha256"],
+        "readiness_code_revision": raw["readiness_code_revision"],
+        "readiness_manifest_digest": raw["readiness_manifest_digest"],
+        "matrix_contract_override_allowed": False,
+    }
+    return effective
 
 
 def _load_runtime(episode: Mapping[str, Any]) -> tuple[Any, Any, Any, Any]:
@@ -330,7 +402,7 @@ def prepare_run(
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     if output_dir.exists():
         raise ValueError("formal/readiness output directory already exists")
-    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config = load_config_document(config_path)
     validate_precommit(config, root=PROJECT_ROOT)
     if execute_requested and config.get("formal_execution_authorized") is not True:
         raise ValueError("formal execution is not authorized by the precommit")

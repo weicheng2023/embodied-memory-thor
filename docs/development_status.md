@@ -988,3 +988,15 @@ Its initial authorization is readiness-only: `--execute` must fail before
 creating output. Offline gates currently pass 7/7; full regression and a clean
 push are required before the 12-runtime readiness join may run. Full regression
 passes 310/310. No formal episode has run.
+
+No-THOR readiness on clean `eba1c1f` passed: 54/54 public cells, 12/12 private
+runtime joins and 18/18 action-only routes were validated; no private runtime
+material was serialized. Manifest digest is `441aad54...03515`. The base config
+remained execution-disabled. The next change is a hash-bound authorization
+overlay only; it must not change the matrix contract. No formal episode has run.
+
+The separate execution-authorization overlay now hash-binds the immutable base
+and readiness evidence and can change only the boolean execution gate plus
+provenance. Any matrix field is rejected. Focused formal-v2 gates pass 9/9.
+Full regression passes 312/312; commit and push remain before a fresh internal
+readiness check and episode 1. No formal episode has run.

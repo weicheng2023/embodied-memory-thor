@@ -2390,3 +2390,38 @@ configuration and route join, and serialize no private material. Only a later
 tracked authorization after successful readiness evidence may enable the
 complete 54-episode command. Formal images, GUI, evaluator debug and desktop
 screenshots remain disabled.
+
+#### Formal v2 readiness result
+
+Clean pushed revision `eba1c1f` built the 54-cell public manifest and joined all
+12 private runtimes without starting THOR. The six R1 configurations resolved
+to six action-only routes; the six R2 configurations resolved to six subgoal
+and six fallback routes. The manifest contains 18 matched three-variant cells,
+and its digest is `441aad54...03515`. Private runtime material was not
+serialized. The readiness-only base retained
+`formal_execution_authorized=false` throughout.
+
+Formal execution may now be enabled only by a separate minimal authorization
+overlay that hash-binds the immutable readiness base and this public evidence.
+The overlay may not alter panels, configuration/variant order, controller,
+2048 limit, metrics, output policy, runtime sources or stop rules. Execution
+must still re-run readiness internally on its own clean pushed revision before
+cell 1 and must start a fresh output directory; the no-THOR readiness artifact
+is never treated as an episode or result.
+
+#### Formal v2 execution authorization overlay
+
+`phase5-real-thor-formal-execution-authorization-v2` is a minimal overlay, not
+a second matrix configuration. It hash-binds readiness base
+`ccbaefd7...d475`, public readiness evidence `c7590163...4221`, readiness code
+revision `eba1c1f` and manifest digest `441aad54...03515`. Its field whitelist
+contains no panel, configuration, variant, task, route, controller, metric,
+limit, output or stop-policy override. Any additional field or hash mismatch
+fails before output creation.
+
+The effective config changes only `formal_execution_authorized` from false to
+true and records the authorization provenance. The execution command must still
+build a new manifest bound to its current clean pushed revision, repeat all 12
+private joins, create a new output directory and begin at episode 1. No resume
+or dry-run episode is accepted. Offline overlay gates must pass with the full
+repository regression before the 54-cell command is launched.
