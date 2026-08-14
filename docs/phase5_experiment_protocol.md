@@ -2171,3 +2171,36 @@ input. Historical v1/v4 configs/evidence and the FloorPlan12 qualified public
 configuration are hash-frozen in `configs/phase5_r2_qualification_v5.json`.
 The first real successor gate is a fresh FloorPlan13 standalone audit from a
 clean pushed revision; only if it passes may FloorPlan13 qualifier v5 run.
+
+### R2 budgeted visual fallback v1 precommit
+
+R2 remains 3/6 after FloorPlan5--16. The repeated blocker in FloorPlan6, 7,
+8, 10, 13 and 16 is construction of the exhaustive visual fallback above the
+unchanged 2048-action limit. Those outcomes and the qualified FloorPlan3, 4
+and 12 evidence remain immutable.
+
+`phase5-r2-budgeted-visual-fallback-v1` is a separately versioned successor.
+It partitions the fresh reachable grid into fixed 3-by-3 grid-step bins,
+retains exactly one deterministically selected reachable viewpoint in every
+occupied bin, and joins viewpoints by deterministic graph shortest paths. At
+each viewpoint it performs the same fixed four-cardinal scan at absolute 0 and
++30 degrees. Selection and ordering use only the reachable grid, fixed policy
+parameters and starting pose. They accept no Cup or CoffeeMachine coordinate
+or identity, anchor, candidate outcome, memory record/provider, or variant.
+The route is one common construction for no-memory, K=2 and object-memory.
+
+The 2048 limit is not raised. Exact construction above the limit is classified
+`budgeted_visual_fallback_construction_ineligible`; it is never truncated or
+adapted using object visibility. Bin coverage is a nominal geometric sampling
+summary and makes no line-of-sight claim. Public evidence contains only policy
+metadata, action/viewpoint counts, route digest, coordinate-free coverage
+summary and classification. Reachable graphs, starting coordinates and the
+complete route remain evaluator-only ignored output.
+
+Before any real diagnostic, offline gates must prove input-order determinism,
+the target-free signature and serialization, fixed scan template, action cap,
+shared-variant contract and frozen historical hashes, followed by the full
+repository regression and a clean pushed commit. Real work is construction
+only, ordered FloorPlan6, 7, 8, 10, 13, 16. It performs no route execution,
+qualification, memory variant, image or formal statistic. Processing stops at
+the first construction pass; FloorPlan17 and later remain prohibited.

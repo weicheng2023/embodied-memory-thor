@@ -852,3 +852,14 @@ pre-registers deterministic even-rank selection of 256 poses across the full
 ordered set before outcomes and requires explicit restoration after query
 errors. Offline acceptance and a clean push are required before any FloorPlan13
 retry; no memory variant or formal aggregate is allowed.
+
+The next registered gate is now the construction-only
+`phase5-r2-budgeted-visual-fallback-v1` successor. It uses deterministic fixed
+3-by-3 grid binning and fixed 0/+30-degree four-way scans, retains the 2048
+cap, and has no target, identity, outcome, memory or variant input. Historical
+exhaustive-fallback and FloorPlan3/4/12 qualification artifacts are hash-frozen.
+After offline regression and a clean push, only FloorPlan6, 7, 8, 10, 13 and
+16 may receive route-construction diagnostics in that order. The first pass
+ends the batch before qualification; FloorPlan17 remains blocked.
+Focused successor tests pass 9/9 and the complete offline regression passes
+273/273. No THOR scene has been opened under this successor yet.

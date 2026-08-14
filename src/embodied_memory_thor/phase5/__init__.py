@@ -22,6 +22,14 @@ from .anchors import (
     public_anchor_reference,
 )
 from .interventions import EvaluatorIntervention
+from .budgeted_fallback import (
+    BUDGETED_VISUAL_FALLBACK_ACTION_LIMIT,
+    BUDGETED_VISUAL_FALLBACK_BIN_SIZE_STEPS,
+    BUDGETED_VISUAL_FALLBACK_POLICY_VERSION,
+    BUDGETED_VISUAL_FALLBACK_SELECTION_POLICY,
+    BudgetedVisualFallbackConstructionError,
+    build_target_independent_budgeted_visual_fallback_route,
+)
 from .protocol import (
     PHASE5_METRIC_SCHEMA_VERSION,
     PHASE5_PROTOCOL_VERSION,
@@ -64,6 +72,11 @@ __all__ = [
     "ANCHOR_REGISTRY_VERSION",
     "BOOK_SUPPORT_TYPE_ORDER",
     "BOOK_SUPPORT_TYPES",
+    "BUDGETED_VISUAL_FALLBACK_ACTION_LIMIT",
+    "BUDGETED_VISUAL_FALLBACK_BIN_SIZE_STEPS",
+    "BUDGETED_VISUAL_FALLBACK_POLICY_VERSION",
+    "BUDGETED_VISUAL_FALLBACK_SELECTION_POLICY",
+    "BudgetedVisualFallbackConstructionError",
     "NATIVE_FIRST_CANDIDATE_POLICY_VERSION",
     "NATIVE_CANDIDATE_POLICY_VERSION",
     "EvaluatorIntervention",
@@ -93,6 +106,7 @@ __all__ = [
     "normalize_absolute_horizon_degrees",
     "build_type_balanced_native_candidate_plan",
     "build_target_independent_coverage_route",
+    "build_target_independent_budgeted_visual_fallback_route",
     "build_target_independent_visual_fallback_route",
     "audit_start_pose_stability",
     "attempt_reset_restoration",
