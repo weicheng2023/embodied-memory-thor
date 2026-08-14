@@ -2974,3 +2974,25 @@ exist; selective resume and all prior-row reuse remain prohibited. Focused
 authorization/readiness compatibility tests pass 20/20 and the full repository
 regression passes 410 tests plus 70 subtests. The next action is one complete
 fresh formal-v5 run beginning at cell 1.
+
+#### Formal-v5 complete-matrix result freeze
+
+Clean pushed revision `069dab5` completed the one authorized fresh formal-v5
+matrix. All 54/54 episodes ran, all 54 tasks succeeded, all three 18-episode
+panels are complete, and no row has an integrity error. The executor therefore
+set `matrix_complete=true`, `integrity_valid=true` and
+`included_in_formal_aggregate=true`. No prior episode was reused and the formal
+no-image/no-GUI policy remained active.
+
+The public completion record is
+`docs/evidence/phase5_real_formal_v5_complete.json`. It freezes manifest digest
+`f8add32d...ecdd`, result digest `bde2f1b4...ccd` and the SHA-256 hashes of the
+ignored raw manifest, readiness, progress and summary artifacts before result
+aggregation. This checkpoint establishes a complete valid dataset, not a
+memory-advantage conclusion.
+
+The next gate is deterministic offline descriptive aggregation of the frozen
+`formal_summary.json`. In accordance with the original evidence boundary, the
+three panels stay separate and each six-configuration matched comparison reports
+paired differences, means, medians, ranges and improvement/tie/regression counts.
+No significance test or broad-generalization claim is authorized.
