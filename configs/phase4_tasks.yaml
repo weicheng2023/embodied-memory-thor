@@ -1,0 +1,12 @@
+tasks:
+  thor_book_reacquire:
+    task_name: thor_book_reacquire
+    natural_language_instruction: Observe the book, turn away until it leaves view, then reacquire and pick it up.
+    required_objects:
+      - Book
+    goal_conditions:
+      - type: object_state
+        object_type: Book
+        field: isPickedUp
+        equals: true
+    max_steps: 12
