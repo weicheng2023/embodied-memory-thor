@@ -875,3 +875,10 @@ authorized order is FloorPlan6, 7, 8, 10, 13, 16, with no memory variants,
 images, formal aggregate or FloorPlan17+. Focused precommit tests pass 28/28;
 the full offline regression passes 281/281. A clean push is the remaining
 real-run gate.
+
+The first clean FloorPlan6 v6 attempt reached a successful candidate-1 native
+trial and fresh-reset replay with restoration passed, but the adapter then
+raised a `TypeError` while freezing its public route because its wrapper omitted
+v5's positional helper argument. The run is not counted as qualified and its
+episode will not be reused. The wrapper signature and regression test are being
+corrected before a separately clean fresh-reset retry; no later scene ran.

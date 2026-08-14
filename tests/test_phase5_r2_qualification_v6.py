@@ -152,7 +152,7 @@ def test_v6_public_route_uses_distinct_budgeted_route_id() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     patched = module._patch_v5(module._v5_module(), config)  # type: ignore[attr-defined]
     public = patched._public_route(
-        legacy=patched._legacy(),
+        patched._legacy(),
         route_id="FloorPlan6_R2_fixed_start_001_fallback_visual_v1",
         scene="FloorPlan6",
         source_digest="d" * 64,

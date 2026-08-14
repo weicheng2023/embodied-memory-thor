@@ -141,12 +141,12 @@ def _patch_v5(module: Any, config: Mapping[str, Any]) -> Any:
     module.classify_candidate_batch = classify_candidate_batch
     original_public_route = module._public_route
 
-    def public_route(**kwargs: Any) -> dict[str, Any]:
+    def public_route(legacy: Any, **kwargs: Any) -> dict[str, Any]:
         if kwargs.get("role") == "target_independent_fallback":
             kwargs["route_id"] = str(kwargs["route_id"]).replace(
                 "fallback_visual_v1", "fallback_budgeted_visual_v1"
             )
-        return original_public_route(**kwargs)
+        return original_public_route(legacy, **kwargs)
 
     module._public_route = public_route
     original_summary = module.build_public_summary
