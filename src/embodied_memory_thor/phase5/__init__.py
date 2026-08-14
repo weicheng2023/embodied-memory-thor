@@ -40,10 +40,14 @@ from .search import (
 )
 from .r2_stability import (
     REQUIRED_PRECONDITIONS as R2_STABILITY_REQUIRED_PRECONDITIONS,
+    STABILITY_OVERBOUND_SELECTION_POLICY,
+    STABILITY_POSE_BUDGET,
     STABILITY_POLICY_VERSION,
     STABILITY_TRIALS_PER_POSE,
     StabilityQueryError,
+    attempt_reset_restoration,
     audit_start_pose_stability,
+    select_stability_pose_budget,
 )
 from .target_lock import (
     TARGET_LOCK_APPROACH_ACTION_BUDGET,
@@ -73,6 +77,8 @@ __all__ = [
     "SearchRouteError",
     "R2_STABILITY_REQUIRED_PRECONDITIONS",
     "STABILITY_POLICY_VERSION",
+    "STABILITY_POSE_BUDGET",
+    "STABILITY_OVERBOUND_SELECTION_POLICY",
     "STABILITY_TRIALS_PER_POSE",
     "StabilityQueryError",
     "SharedTargetLockPolicy",
@@ -89,9 +95,11 @@ __all__ = [
     "build_target_independent_coverage_route",
     "build_target_independent_visual_fallback_route",
     "audit_start_pose_stability",
+    "attempt_reset_restoration",
     "build_formal_manifest",
     "public_anchor_reference",
     "load_frozen_search_route",
     "select_first_passing",
+    "select_stability_pose_budget",
     "validate_formal_manifest",
 ]

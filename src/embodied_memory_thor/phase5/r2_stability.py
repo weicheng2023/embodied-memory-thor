@@ -8,8 +8,10 @@ from embodied_memory_thor.phase5.anchors import stable_digest
 from embodied_memory_thor.phase5.r2 import normalize_interactable_pose, pose_sort_key
 
 
-STABILITY_POLICY_VERSION = "phase5-r2-start-visibility-stability-v1"
+STABILITY_POLICY_VERSION = "phase5-r2-start-visibility-stability-v2"
 STABILITY_TRIALS_PER_POSE = 3
+STABILITY_POSE_BUDGET = 256
+STABILITY_OVERBOUND_SELECTION_POLICY = "deterministic-even-rank-v1"
 REQUIRED_PRECONDITIONS = (
     "teleport_success",
     "cup_exists",
@@ -23,6 +25,60 @@ REQUIRED_PRECONDITIONS = (
 
 class StabilityQueryError(RuntimeError):
     """The evaluator-only repeated pose query failed and cannot be skipped."""
+
+
+def select_stability_pose_budget(
+    poses: Sequence[Mapping[str, Any]],
+    *,
+    pose_budget: int = STABILITY_POSE_BUDGET,
+) -> tuple[tuple[dict[str, Any], ...], dict[str, Any], dict[str, Any]]:
+    """Freeze an outcome-independent, rank-balanced pose subset when needed.
+
+    The input is already in deterministic ``pose_sort_key`` order.  If it is
+    over budget, systematic integer ranks span the complete ordered range,
+    including both endpoints.  Selection happens before any stability trial
+    and never reads visibility, route, interaction, or task outcomes.
+    """
+
+    if pose_budget <= 0:
+        raise ValueError("stability pose budget must be positive")
+    normalized = tuple(dict(pose) for pose in poses)
+    observed_count = len(normalized)
+    if observed_count <= pose_budget:
+        selected_indexes = tuple(range(observed_count))
+    elif pose_budget == 1:
+        selected_indexes = (0,)
+    else:
+        selected_indexes = tuple(
+            rank * (observed_count - 1) // (pose_budget - 1)
+            for rank in range(pose_budget)
+        )
+        if len(set(selected_indexes)) != pose_budget:
+            raise AssertionError("over-bound stability selection ranks are not unique")
+    selected = tuple(normalized[index] for index in selected_indexes)
+    selected_ranks = tuple(index + 1 for index in selected_indexes)
+    digest_payload = {
+        "policy": STABILITY_OVERBOUND_SELECTION_POLICY,
+        "pose_budget": pose_budget,
+        "observed_pose_count": observed_count,
+        "selected_pose_ranks": selected_ranks,
+    }
+    public = {
+        "selection_policy": STABILITY_OVERBOUND_SELECTION_POLICY,
+        "pose_budget": pose_budget,
+        "observed_pose_count": observed_count,
+        "selected_pose_count": len(selected),
+        "omitted_pose_count": observed_count - len(selected),
+        "selection_applied": observed_count > pose_budget,
+        "selection_before_trial_outcomes": True,
+        "selection_digest": stable_digest(digest_payload),
+    }
+    private = {
+        **public,
+        "selected_pose_ranks": selected_ranks,
+        "selected_pose_digests": tuple(stable_digest(pose) for pose in selected),
+    }
+    return selected, public, private
 
 
 def _objects(metadata: Mapping[str, Any]) -> list[Mapping[str, Any]]:
@@ -220,17 +276,56 @@ def audit_start_pose_stability(
 
 
 def reset_restoration(
-    env: Any, *, scene: str, cup_id: str, machine_id: str
-) -> dict[str, bool]:
+    env: Any,
+    *,
+    scene: str,
+    cup_id: str | None,
+    machine_id: str | None,
+) -> dict[str, Any]:
+    """Reset and audit every identity that was known before success or error."""
+
     metadata = _reset(env, scene)
-    cup = _object(metadata, cup_id)
-    machine = _object(metadata, machine_id)
+    cup = _object(metadata, cup_id) if cup_id is not None else None
+    machine = _object(metadata, machine_id) if machine_id is not None else None
     inventory = metadata.get("inventoryObjects", [])
     result = {
-        "cup_exists": cup is not None,
-        "cup_pickupable": bool(cup and cup.get("pickupable") is True),
-        "coffee_machine_exists": machine is not None,
-        "coffee_machine_off": bool(machine and machine.get("isToggled") is not True),
+        "scene_reset_observed": bool(metadata),
         "inventory_empty": isinstance(inventory, list) and not inventory,
     }
+    if cup_id is not None:
+        result.update({
+            "cup_exists": cup is not None,
+            "cup_pickupable": bool(cup and cup.get("pickupable") is True),
+        })
+    if machine_id is not None:
+        result.update({
+            "coffee_machine_exists": machine is not None,
+            "coffee_machine_off": bool(
+                machine and machine.get("isToggled") is not True
+            ),
+        })
     return {"passed": all(result.values()), **result}
+
+
+def attempt_reset_restoration(
+    env: Any,
+    *,
+    scene: str,
+    cup_id: str | None,
+    machine_id: str | None,
+) -> dict[str, Any]:
+    """Never bypass a restoration report when an evaluator query raises."""
+
+    try:
+        return reset_restoration(
+            env,
+            scene=scene,
+            cup_id=cup_id,
+            machine_id=machine_id,
+        )
+    except Exception as exc:
+        return {
+            "passed": False,
+            "restoration_attempted": True,
+            "restoration_error": f"{type(exc).__name__}: {exc}",
+        }

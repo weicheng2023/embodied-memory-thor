@@ -13,9 +13,14 @@ from typing import Any, Mapping
 
 from embodied_memory_thor.phase5.anchors import stable_digest
 from embodied_memory_thor.phase5.r2_stability import (
+    STABILITY_OVERBOUND_SELECTION_POLICY,
+    STABILITY_POSE_BUDGET,
     STABILITY_POLICY_VERSION,
     StabilityQueryError,
+    attempt_reset_restoration,
     audit_start_pose_stability,
+    reset_restoration,
+    select_stability_pose_budget,
 )
 
 
@@ -38,7 +43,17 @@ class _StabilityEnv:
 
     def reset(self, scene: str) -> Any:
         self.reset_count += 1
-        self.metadata = {"sceneName": scene}
+        self.metadata = {
+            "sceneName": scene,
+            "inventoryObjects": [],
+            "objects": [
+                {"objectId": "Cup|private", "pickupable": True},
+                {
+                    "objectId": "CoffeeMachine|private",
+                    "isToggled": False,
+                },
+            ],
+        }
         return SimpleNamespace(metadata=self.metadata)
 
     def get_evaluator_state(self) -> Mapping[str, Any]:
@@ -110,6 +125,52 @@ class Phase5R2StabilityV4Tests(unittest.TestCase):
                 poses=POSES,
             )
 
+    def test_v2_overbound_selection_is_deterministic_even_rank_and_pretrial(self) -> None:
+        poses = [
+            {"x": float(index), "y": 0.9, "z": 0.0, "rotation": 0.0,
+             "horizon": 0.0, "standing": True}
+            for index in range(260)
+        ]
+        selected, public, private = select_stability_pose_budget(poses)
+        repeated, repeated_public, repeated_private = select_stability_pose_budget(poses)
+        self.assertEqual(STABILITY_POLICY_VERSION, "phase5-r2-start-visibility-stability-v2")
+        self.assertEqual(STABILITY_POSE_BUDGET, 256)
+        self.assertEqual(len(selected), 256)
+        self.assertEqual(selected[0], poses[0])
+        self.assertEqual(selected[-1], poses[-1])
+        self.assertEqual(selected, repeated)
+        self.assertEqual(public, repeated_public)
+        self.assertEqual(private, repeated_private)
+        self.assertEqual(len(set(private["selected_pose_ranks"])), 256)
+        self.assertEqual(tuple(sorted(private["selected_pose_ranks"])), private["selected_pose_ranks"])
+        self.assertEqual(public["selection_policy"], STABILITY_OVERBOUND_SELECTION_POLICY)
+        self.assertEqual(public["observed_pose_count"], 260)
+        self.assertEqual(public["selected_pose_count"], 256)
+        self.assertEqual(public["omitted_pose_count"], 4)
+        self.assertTrue(public["selection_applied"])
+        self.assertTrue(public["selection_before_trial_outcomes"])
+        serialized_public = json.dumps(public, sort_keys=True)
+        for forbidden in ('"x"', '"y"', '"z"', "selected_pose_ranks"):
+            self.assertNotIn(forbidden, serialized_public)
+
+    def test_v2_under_budget_keeps_complete_order(self) -> None:
+        selected, public, private = select_stability_pose_budget(POSES)
+        self.assertEqual(selected, tuple(POSES))
+        self.assertFalse(public["selection_applied"])
+        self.assertEqual(public["selected_pose_count"], len(POSES))
+        self.assertEqual(private["selected_pose_ranks"], (1, 2, 3))
+
+    def test_query_failure_can_be_followed_by_full_restoration_audit(self) -> None:
+        restoration = attempt_reset_restoration(
+            _StabilityEnv({"0": 3, "1": 3, "2": 3}),
+            scene="FloorPlanFixture",
+            cup_id="Cup|private",
+            machine_id="CoffeeMachine|private",
+        )
+        self.assertTrue(restoration["passed"])
+        self.assertTrue(restoration["scene_reset_observed"])
+        self.assertTrue(restoration["inventory_empty"])
+
     def test_public_stability_summary_has_no_private_pose_or_identity(self) -> None:
         module = self._script("audit_phase5_r2_start_stability.py")
         summary = module.build_public_summary(
@@ -124,6 +185,16 @@ class Phase5R2StabilityV4Tests(unittest.TestCase):
             }],
             cup_audit=[{"cup_order": 1, "selected": True}],
             restoration={"passed": True},
+            pose_selection={
+                "observed_pose_count": 3,
+                "selected_pose_count": 3,
+                "omitted_pose_count": 0,
+                "pose_budget": 256,
+                "selection_policy": STABILITY_OVERBOUND_SELECTION_POLICY,
+                "selection_applied": False,
+                "selection_before_trial_outcomes": True,
+                "selection_digest": "c" * 64,
+            },
             git_state={"code_revision": "b" * 40, "working_tree_dirty": False, "head_pushed": True},
             output_dir=Path("outputs/private"),
         )
@@ -137,7 +208,7 @@ class Phase5R2StabilityV4Tests(unittest.TestCase):
         self.assertFalse(summary["memory_agents_run"])
 
     def test_v4_pairing_is_rank_balanced_and_outcome_independent(self) -> None:
-        module = self._script("qualify_phase5_r2_v4.py")
+        module = self._script("qualify_phase5_r2_v5.py")
         pairs = module._candidate_pairs(POSES, list(reversed(POSES)))
         self.assertEqual(len(pairs), 9)
         self.assertEqual([(row[0], row[1]) for row in pairs[:5]], [
@@ -146,8 +217,20 @@ class Phase5R2StabilityV4Tests(unittest.TestCase):
         self.assertNotIn("trial", module._candidate_pairs.__code__.co_varnames)
         self.assertNotIn("outcome", module._candidate_pairs.__code__.co_varnames)
 
+    def test_audit_and_qualifier_share_the_same_v2_pose_selector(self) -> None:
+        audit_module = self._script("audit_phase5_r2_start_stability.py")
+        qualifier_module = self._script("qualify_phase5_r2_v5.py")
+        self.assertIs(
+            audit_module.select_stability_pose_budget,
+            select_stability_pose_budget,
+        )
+        self.assertIs(
+            qualifier_module.select_stability_pose_budget,
+            select_stability_pose_budget,
+        )
+
     def test_v4_registered_classification_and_public_summary_are_safe(self) -> None:
-        module = self._script("qualify_phase5_r2_v4.py")
+        module = self._script("qualify_phase5_r2_v5.py")
         self.assertEqual(
             module.classify_candidate_batch([{
                 "first_trial": {"reason": "target_not_rediscovered_before_fallback_exhaustion"}
@@ -167,6 +250,16 @@ class Phase5R2StabilityV4Tests(unittest.TestCase):
             classification="scene_start_visibility_unstable_no_stable_pose",
             failure_reason="fixture",
             restoration={"passed": True},
+            pose_selection={
+                "observed_pose_count": 3,
+                "selected_pose_count": 3,
+                "omitted_pose_count": 0,
+                "pose_budget": 256,
+                "selection_policy": STABILITY_OVERBOUND_SELECTION_POLICY,
+                "selection_applied": False,
+                "selection_before_trial_outcomes": True,
+                "selection_digest": "c" * 64,
+            },
         )
         self.assertTrue(summary["scene_skip_allowed"])
         self.assertFalse(summary["fallback_target_or_anchor_input_used"])
@@ -181,6 +274,25 @@ class Phase5R2StabilityV4Tests(unittest.TestCase):
         self.assertEqual(config["fallback_action_limit"], 2048)
         self.assertTrue(config["candidate_freeze_before_task_outcomes"])
         self.assertFalse(config["memory_agents_run"])
+        for relative, expected in config["historical_artifacts_frozen"].items():
+            actual = hashlib.sha256((root / relative).read_bytes()).hexdigest()
+            self.assertEqual(actual, expected, relative)
+
+    def test_v5_config_registers_overbound_policy_and_freezes_v4(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        config = json.loads(
+            (root / "configs" / "phase5_r2_qualification_v5.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(config["qualification_version"], "phase5-r2-native-qualification-v5")
+        self.assertEqual(config["start_stability_pose_budget"], 256)
+        self.assertEqual(
+            config["start_stability_overbound_selection_policy"],
+            STABILITY_OVERBOUND_SELECTION_POLICY,
+        )
+        self.assertTrue(config["start_stability_selection_before_outcomes"])
+        self.assertTrue(config["query_failure_restoration_required"])
         for relative, expected in config["historical_artifacts_frozen"].items():
             actual = hashlib.sha256((root / relative).read_bytes()).hexdigest()
             self.assertEqual(actual, expected, relative)

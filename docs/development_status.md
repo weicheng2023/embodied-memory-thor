@@ -843,3 +843,12 @@ but Cup was never visible and target lock never entered. A candidate-2 paired
 0-degree versus +30-degree downward diagnostic is now precommitted; it changes
 only the two horizon-boundary actions. FloorPlan6 and memory agents remain
 blocked.
+
+FloorPlan12 later qualified under R2 v4, bringing R2 to 3/6. FloorPlan13
+stopped before trials because its 260 standing poses exceeded the v1
+implementation guard of 256 and early-exit restoration was not established.
+The separately versioned start-stability v2 / qualifier v5 successor now
+pre-registers deterministic even-rank selection of 256 poses across the full
+ordered set before outcomes and requires explicit restoration after query
+errors. Offline acceptance and a clean push are required before any FloorPlan13
+retry; no memory variant or formal aggregate is allowed.

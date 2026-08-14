@@ -19,19 +19,23 @@ if str(SRC_ROOT) not in sys.path:
 from embodied_memory_thor.env import ThorEnv  # noqa: E402
 from embodied_memory_thor.phase5.r2_stability import (  # noqa: E402
     REQUIRED_PRECONDITIONS,
+    STABILITY_OVERBOUND_SELECTION_POLICY,
+    STABILITY_POSE_BUDGET,
     STABILITY_POLICY_VERSION,
     STABILITY_TRIALS_PER_POSE,
     StabilityQueryError,
+    attempt_reset_restoration,
     audit_start_pose_stability,
     first_coffee_machine_id,
     reset_restoration,
     select_first_standing_cup,
+    select_stability_pose_budget,
 )
 from embodied_memory_thor.utils.serialization import to_jsonable  # noqa: E402
 
 
 BOUNDARY = "EVALUATOR-ONLY R2 START STABILITY - NEVER PLANNER INPUT"
-DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase5_r2_start_visibility_stability_v1.json"
+DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "phase5_r2_start_visibility_stability_v2.json"
 CONTROLLER_SETTINGS = {
     "width": 300,
     "height": 300,
@@ -43,9 +47,6 @@ CONTROLLER_SETTINGS = {
     "renderDepthImage": False,
     "renderInstanceSegmentation": False,
 }
-MAX_STANDING_POSES = 256
-
-
 def _write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -83,6 +84,13 @@ def validate_config(config: Mapping[str, Any]) -> None:
         raise ValueError("R2 stability trial count mismatch")
     if tuple(config.get("required_preconditions", [])) != REQUIRED_PRECONDITIONS:
         raise ValueError("R2 stability precondition schema mismatch")
+    if int(config.get("pose_budget", 0)) != STABILITY_POSE_BUDGET:
+        raise ValueError("R2 stability pose budget mismatch")
+    if (
+        config.get("overbound_selection_policy")
+        != STABILITY_OVERBOUND_SELECTION_POLICY
+    ):
+        raise ValueError("R2 stability over-bound selection policy mismatch")
     if config.get("memory_agents_run") is not False:
         raise ValueError("stability audit cannot run memory agents")
     if config.get("images_saved") is not False:
@@ -96,6 +104,7 @@ def build_public_summary(
     audit: Sequence[Mapping[str, Any]],
     cup_audit: Sequence[Mapping[str, Any]],
     restoration: Mapping[str, Any],
+    pose_selection: Mapping[str, Any],
     git_state: Mapping[str, Any],
     output_dir: Path,
     failure_reason: str = "",
@@ -136,7 +145,26 @@ def build_public_summary(
             (row["cup_order"] for row in cup_audit if row.get("selected") is True),
             None,
         ),
-        "standing_pose_count": len(poses),
+        "standing_pose_count": int(
+            pose_selection.get("observed_pose_count", len(poses))
+        ),
+        "selected_pose_count": int(
+            pose_selection.get("selected_pose_count", len(poses))
+        ),
+        "omitted_pose_count": int(pose_selection.get("omitted_pose_count", 0)),
+        "pose_budget": int(
+            pose_selection.get("pose_budget", STABILITY_POSE_BUDGET)
+        ),
+        "overbound_selection_policy": pose_selection.get(
+            "selection_policy", STABILITY_OVERBOUND_SELECTION_POLICY
+        ),
+        "overbound_selection_applied": pose_selection.get(
+            "selection_applied", False
+        ) is True,
+        "pose_selection_before_trial_outcomes": pose_selection.get(
+            "selection_before_trial_outcomes", True
+        ) is True,
+        "pose_selection_digest": pose_selection.get("selection_digest"),
         "pose_trials_run": sum(len(row.get("trials", [])) for row in audit),
         "stable_pose_count": len(stable),
         "unstable_pose_count": unstable_count,
@@ -185,14 +213,17 @@ def main(argv: list[str] | None = None) -> int:
     poses: Sequence[Mapping[str, Any]] = ()
     cup_audit: list[dict[str, Any]] = []
     audit: list[dict[str, Any]] = []
+    pose_selection_public: Mapping[str, Any] = {}
+    pose_selection_private: Mapping[str, Any] = {}
     restoration: Mapping[str, Any] = {"passed": False}
     failure_reason = ""
     env = ThorEnv(controller_kwargs=CONTROLLER_SETTINGS)
     try:
         machine_id = first_coffee_machine_id(env, scene=args.scene)
         cup_id, poses, cup_audit = select_first_standing_cup(env, scene=args.scene)
-        if len(poses) > MAX_STANDING_POSES:
-            raise StabilityQueryError("standing pose count exceeds registered bound")
+        poses, pose_selection_public, pose_selection_private = (
+            select_stability_pose_budget(poses)
+        )
         if cup_id is not None:
             _, audit = audit_start_pose_stability(
                 env,
@@ -210,6 +241,12 @@ def main(argv: list[str] | None = None) -> int:
             restoration = {"passed": True, "scope": "scene reset; no standing Cup selected"}
     except StabilityQueryError as exc:
         failure_reason = f"{type(exc).__name__}: {exc}"
+        restoration = attempt_reset_restoration(
+            env,
+            scene=args.scene,
+            cup_id=cup_id,
+            machine_id=machine_id,
+        )
     finally:
         env.close()
 
@@ -222,6 +259,7 @@ def main(argv: list[str] | None = None) -> int:
         "coffee_machine_object_id": machine_id,
         "cup_selection_audit": cup_audit,
         "poses": list(poses),
+        "pose_selection": dict(pose_selection_private),
         "pose_audit": audit,
         "reset_restoration": restoration,
         "failure_reason": failure_reason,
@@ -233,6 +271,7 @@ def main(argv: list[str] | None = None) -> int:
         audit=audit,
         cup_audit=cup_audit,
         restoration=restoration,
+        pose_selection=pose_selection_public,
         git_state=git_state,
         output_dir=output_dir,
         failure_reason=failure_reason,

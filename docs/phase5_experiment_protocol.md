@@ -2139,3 +2139,35 @@ precommit. Qualification v4 produces evaluator-private drafts under ignored
 outputs; each passing scene is published only as coordinate-free actions and
 digests in its own later evidence commit. No memory variant or formal aggregate
 is authorized by this revision.
+
+### R2 over-bound start stability and qualification v5 precommit
+
+FloorPlan13 stopped under v1 after its selected Cup returned 260 normalized
+standing poses, above the implementation guard of 256. The stop is retained as
+evidence; v1/v4 results are not reinterpreted or pooled with the successor.
+
+`phase5-r2-start-visibility-stability-v2` pre-registers a 256-pose audit budget.
+When the deterministic `pose_sort_key` order contains at most 256 poses, the
+complete order is retained. When it contains more, the evaluator freezes 256
+unique integer ranks spread evenly across the complete ordered range, including
+both endpoints. The rank set is determined only by observed count and budget,
+before any visibility, route, interaction, or task outcome. It is not a silent
+prefix truncation and the cap is not raised. Public output exposes only
+observed/selected/omitted counts, policy and selection digest; selected ranks,
+pose digests, coordinates and identities remain evaluator-only ignored data.
+
+The three-reset/seven-precondition rule is unchanged for every selected pose.
+Any pose-query error remains a hard stop, but both the standalone gate and the
+qualifier must perform and report an explicit fresh-reset restoration audit
+before closing the environment. Failure to establish restoration remains a
+hard stop.
+
+`phase5-r2-native-qualification-v5` uses exactly the same common selector and
+otherwise preserves v4's outcome-independent first-12 pairing, 240-action
+subgoal bound, target-independent exhaustive visual fallback, fixed 2048 bound,
+native replay, restoration, privacy boundary and registered scene exclusions.
+It adds no target, anchor, support, identity or coordinate field to planner
+input. Historical v1/v4 configs/evidence and the FloorPlan12 qualified public
+configuration are hash-frozen in `configs/phase5_r2_qualification_v5.json`.
+The first real successor gate is a fresh FloorPlan13 standalone audit from a
+clean pushed revision; only if it passes may FloorPlan13 qualifier v5 run.
