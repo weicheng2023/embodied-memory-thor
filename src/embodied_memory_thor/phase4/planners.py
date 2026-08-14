@@ -271,6 +271,16 @@ class ThorBookReacquirePlanner:
                 "Align with the precommitted route-entry heading using shared "
                 "action-only control state."
             )
+        elif phase == "route_entry_recovery":
+            reason_code = (
+                "shared_subgoal_route_entry_recovery"
+                if subgoal_route
+                else "shared_search_route_entry_recovery"
+            )
+            rationale = (
+                "Reverse the bounded successful pose-action trace to restore the "
+                "shared route entry without target or evaluator coordinates."
+            )
         else:
             reason_code = (
                 "shared_subgoal_navigation"

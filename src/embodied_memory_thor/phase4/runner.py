@@ -61,6 +61,8 @@ from embodied_memory_thor.phase5.memory_navigation import (
 from embodied_memory_thor.phase5.search import (
     FrozenSearchRoute,
     FrozenSearchRouteState,
+    SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT,
+    SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
     SearchRouteError,
     load_frozen_search_route,
 )
@@ -404,6 +406,17 @@ class ThorEpisodeRunner:
                 "target_object_history_retained": False,
                 "route_coordinates_in_planner_input": False,
                 "route_action_failure_policy": "invalidate_episode",
+                "entry_recovery_policy": (
+                    SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION
+                ),
+                "entry_recovery_action_limit": (
+                    SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT
+                ),
+                "entry_recovery_input": (
+                    "successful planner action names only; no target, memory, "
+                    "anchor, support, candidate outcome, or route coordinates"
+                ),
+                "same_entry_recovery_for_all_memory_variants": True,
             }
         if self.subgoal_route is not None:
             manifest["shared_subgoal_policy"] = {
@@ -492,6 +505,8 @@ class ThorEpisodeRunner:
         intervention_failure_count = 0
         planner_call_count = 0
         shared_search_alignment_action_count = 0
+        shared_search_entry_recovery_action_count = 0
+        shared_search_entry_recovery_record_failure_count = 0
         shared_search_coverage_action_count = 0
         shared_search_route_entry_mismatch_count = 0
         shared_search_route_exhausted_count = 0
@@ -789,6 +804,28 @@ class ThorEpisodeRunner:
                 execution = self.executor.execute(self.env, decision.action)
                 action_latency = perf_counter() - action_started
                 action_latencies.append(action_latency)
+                if (
+                    search_route_state is not None
+                    and search_route_state.coverage_cursor == 0
+                    and shared_search is None
+                    and request.task_stage
+                    in {
+                        "reacquire_book",
+                        "pickup_book",
+                        "reacquire_cup",
+                        "pickup_cup",
+                    }
+                ):
+                    try:
+                        search_route_state.record_entry_departure_action(
+                            action=execution.action,
+                            success=execution.success,
+                        )
+                    except SearchRouteError as exc:
+                        shared_search_entry_recovery_record_failure_count += 1
+                        failure_reason = (
+                            f"shared_search_entry_recovery_unavailable:{exc}"
+                        )
                 if shared_search is not None and active_route_state is not None:
                     if active_route_kind == "subgoal":
                         if shared_search.get("phase") == "route_entry_alignment":
@@ -798,6 +835,8 @@ class ThorEpisodeRunner:
                     else:
                         if shared_search.get("phase") == "route_entry_alignment":
                             shared_search_alignment_action_count += 1
+                        elif shared_search.get("phase") == "route_entry_recovery":
+                            shared_search_entry_recovery_action_count += 1
                         elif shared_search.get("phase") == "coverage":
                             shared_search_coverage_action_count += 1
                     try:
@@ -1177,6 +1216,28 @@ class ThorEpisodeRunner:
             ),
             "shared_search_alignment_action_count": (
                 shared_search_alignment_action_count
+            ),
+            "shared_search_entry_recovery_policy": (
+                SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION
+            ),
+            "shared_search_entry_recovery_action_limit": (
+                SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT
+            ),
+            "shared_search_entry_departure_action_count": (
+                search_route_state.entry_departure_action_count
+                if search_route_state is not None
+                else 0
+            ),
+            "shared_search_entry_recovery_action_count": (
+                shared_search_entry_recovery_action_count
+            ),
+            "shared_search_entry_recovery_pending_action_count": (
+                search_route_state.entry_recovery_pending_action_count
+                if search_route_state is not None
+                else 0
+            ),
+            "shared_search_entry_recovery_record_failure_count": (
+                shared_search_entry_recovery_record_failure_count
             ),
             "shared_search_coverage_action_count": (
                 shared_search_coverage_action_count

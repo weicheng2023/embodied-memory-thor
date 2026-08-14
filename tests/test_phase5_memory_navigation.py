@@ -258,6 +258,115 @@ class Phase5MemoryNavigationTests(unittest.TestCase):
         self.assertEqual(summary["shared_search_coverage_action_count"], 3)
         self.assertEqual(summary["shared_search_alignment_action_count"], 0)
 
+    def test_runner_backtracks_memory_departure_before_shared_fallback(self) -> None:
+        class _MovingCupCoffeeThorEnv(_CupCoffeeThorEnv):
+            def step(self, action_dict: dict) -> object:
+                action = str(action_dict.get("action", ""))
+                if action == "MoveAhead":
+                    self.z += 0.25
+                    self.last_event = self._event(
+                        last_action=action, success=True
+                    )
+                    return self.last_event
+                if action == "MoveBack":
+                    self.z -= 0.25
+                    self.last_event = self._event(
+                        last_action=action, success=True
+                    )
+                    return self.last_event
+                return super().step(action_dict)
+
+        class _MoveThenStallPlanner:
+            name = "move_then_stall_memory_fixture"
+
+            def __init__(self) -> None:
+                self.reference = ThorBookReacquirePlanner()
+                self.memory_action_count = 0
+
+            def plan(self, request: PlannerRequest) -> PlannerDecision:
+                if request.task_stage == "reacquire_cup" and request.retrieved_memory:
+                    record_id = str(request.retrieved_memory[0]["record_id"])
+                    self.memory_action_count += 1
+                    action = (
+                        {"action": "MoveAhead"}
+                        if self.memory_action_count == 1
+                        else {"action": "Pass"}
+                    )
+                    return PlannerDecision(
+                        action=action,
+                        target_object_type="Cup",
+                        memory_guided=True,
+                        memory_record_ids=(record_id,),
+                        reason_code="move_then_stall_memory_fixture",
+                        rationale=(
+                            "Exercise route-entry recovery after a successful "
+                            "memory-guided departure."
+                        ),
+                        planner_name=self.name,
+                    )
+                return self.reference.plan(request)
+
+        subgoal = _route(
+            "FloorPlan1_R2_subgoal_entry_recovery_fixture",
+            "R",
+            role="task_subgoal_navigation",
+            goal_used=True,
+        )
+        fallback = _route(
+            "FloorPlan1_R2_fallback_entry_recovery_fixture",
+            "RRR",
+            role="target_independent_fallback",
+            goal_used=False,
+        )
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            output_dir = Path(temporary_dir) / "entry_recovery"
+            summary = ThorEpisodeRunner(
+                ThorEpisodeConfig(
+                    task="thor_cup_after_coffee_subgoal",
+                    scene="FloorPlan1",
+                    planner="deterministic",
+                    memory="object_memory",
+                    subgoal_route_id=subgoal.route_id,
+                    search_route_id=fallback.route_id,
+                    max_steps=14,
+                    output_dir=output_dir,
+                    save_frames=False,
+                    trace_html=False,
+                ),
+                env=_MovingCupCoffeeThorEnv(),
+                planner=_MoveThenStallPlanner(),
+                subgoal_route=subgoal,
+                search_route=fallback,
+            ).run()
+            trace = [
+                json.loads(line)
+                for line in (output_dir / "episode.jsonl")
+                .read_text(encoding="utf-8")
+                .splitlines()
+            ]
+        self.assertTrue(summary["success"], summary["failure_reason"])
+        self.assertTrue(summary["information_boundary_passed"])
+        self.assertEqual(summary["memory_navigation"]["escape_count"], 1)
+        self.assertEqual(summary["shared_search_entry_departure_action_count"], 1)
+        self.assertEqual(summary["shared_search_entry_recovery_action_count"], 1)
+        self.assertEqual(
+            summary["shared_search_entry_recovery_pending_action_count"], 0
+        )
+        self.assertEqual(
+            summary["shared_search_entry_recovery_record_failure_count"], 0
+        )
+        self.assertEqual(summary["shared_search_coverage_action_count"], 3)
+        recovery = [
+            row for row in trace
+            if row["planner_decision"]["reason_code"]
+            == "shared_search_route_entry_recovery"
+        ]
+        self.assertEqual(len(recovery), 1)
+        self.assertEqual(recovery[0]["planner_decision"]["action"], {"action": "MoveBack"})
+        ordinary = json.dumps(recovery, sort_keys=True)
+        for forbidden in ("target_point", "anchor_id", "support_id"):
+            self.assertNotIn(forbidden, ordinary)
+
 
 if __name__ == "__main__":
     unittest.main()

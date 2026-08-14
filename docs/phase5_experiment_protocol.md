@@ -2273,3 +2273,45 @@ loader to v2. It reruns all episodes, saves no images/evaluator debug, exposes
 no private setup in ordinary logs and is explicitly excluded from formal
 aggregation. A pass is integration evidence only; it authorizes planning a
 six-configuration dry run but is not itself a memory-effect result.
+
+### R2 runtime-v2 probe v3 stop and shared-search entry recovery v1
+
+The clean pushed `64cd8bf` v3 probe completed all three declared variants.
+No-memory and K=2 both passed in 60 steps with the same 13 subgoal and 45
+fallback-coverage actions; K=2 eviction was observed. Object memory executed
+14 memory-guided actions, then the bounded memory-navigation guard suppressed
+the record. The frozen fallback correctly refused to begin because those
+actions had moved the agent away from the fallback entry captured immediately
+after the ordered subgoal. Its failure was
+`shared_search_unavailable:search route entry position mismatch`. All three
+information-boundary audits passed. This is an excluded integration failure,
+not a THOR failure, information leak, or memory-effect result. The v3 episodes
+are not reusable. Public stop evidence is
+`docs/evidence/phase5_r2_production_probe_v3_stop.json`.
+
+`phase5-shared-search-entry-recovery-v1` is the separately registered
+successor. Every variant receives the same mechanism. Before fallback coverage
+has begun, it records only the names of successful pose-changing planner
+actions. If fallback later becomes necessary, it reverses their order and maps
+each to a fixed inverse: left/right rotations, up/down looks and ahead/back
+translations. `Pass`, pickup and toggle do not change pose and are ignored.
+The original fallback action sequence, digest and entry pose remain unchanged.
+
+The recovery input contains no target or CoffeeMachine coordinate/identity,
+anchor, support, candidate result, memory-record content, reachable graph or
+evaluator-only metadata. The planner sees only one action-only shared-search
+directive at a time. Recording is capped at 64 reversible actions. An
+unsupported pose action, cap overflow, failed inverse, residual entry mismatch
+or divergence from the directive invalidates the episode. The direct baselines
+therefore receive the exact same policy but execute zero recovery actions when
+they have not left the entry.
+
+Offline gates must prove deterministic inversion, fixed cap, action-only
+planner input, no-memory/K=2 zero-action parity, object-memory recovery after a
+forced departure, unchanged v2 runtime/routes and unchanged v3 stop evidence.
+Only after focused/full regression and a clean push may probe v4 rerun exactly
+the complete FloorPlan6 triplet. V4 reuses no v3 episode, remains excluded from
+formal aggregation, saves no image/debug trace, retains the 140-step cap and
+must exercise at least one object-memory entry-recovery action without a route
+entry mismatch. A pass authorizes pre-registration of the next dry-run gate;
+it is still not a memory-improvement claim.

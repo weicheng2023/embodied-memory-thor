@@ -14,6 +14,10 @@ from typing import Any, Mapping
 SEARCH_ROUTE_SCHEMA_VERSION = "phase5-search-route-v1"
 TARGET_INDEPENDENT_FALLBACK_ROLE = "target_independent_fallback"
 TASK_SUBGOAL_NAVIGATION_ROLE = "task_subgoal_navigation"
+SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION = (
+    "phase5-shared-search-entry-recovery-v1"
+)
+SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT = 64
 DEFAULT_SEARCH_ROUTES_PATH = (
     Path(__file__).resolve().parents[3] / "configs" / "phase5_search_routes.json"
 )
@@ -24,6 +28,20 @@ _CODE_TO_ACTION = {
     "L": "RotateLeft",
     "R": "RotateRight",
     "U": "LookUp",
+}
+
+_ENTRY_RECOVERY_INVERSE_ACTION = {
+    "LookDown": "LookUp",
+    "LookUp": "LookDown",
+    "MoveAhead": "MoveBack",
+    "MoveBack": "MoveAhead",
+    "RotateLeft": "RotateRight",
+    "RotateRight": "RotateLeft",
+}
+_ENTRY_RECOVERY_NON_POSE_ACTIONS = {
+    "Pass",
+    "PickupObject",
+    "ToggleObjectOn",
 }
 
 
@@ -213,19 +231,28 @@ def load_frozen_search_route(
 
 
 class FrozenSearchRouteState:
-    """Align to observation-0 pose, then expose the frozen route one action at a time."""
+    """Recover and align to the captured entry pose, then expose a frozen route."""
 
     def __init__(
         self,
         route: FrozenSearchRoute,
         *,
         initial_observation: Mapping[str, Any],
+        entry_recovery_action_limit: int = (
+            SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT
+        ),
     ) -> None:
         route.validate()
+        if entry_recovery_action_limit < 1:
+            raise SearchRouteError("entry recovery action limit must be positive")
         self.route = route
         self._entry_pose = _agent_pose(initial_observation)
         self._coverage_cursor = 0
         self._alignment_action_count = 0
+        self._entry_recovery_action_limit = entry_recovery_action_limit
+        self._entry_recovery_inverse_actions: list[dict[str, str]] = []
+        self._entry_departure_action_count = 0
+        self._entry_recovery_action_count = 0
 
     @property
     def coverage_cursor(self) -> int:
@@ -236,8 +263,50 @@ class FrozenSearchRouteState:
         return self._alignment_action_count
 
     @property
+    def entry_departure_action_count(self) -> int:
+        return self._entry_departure_action_count
+
+    @property
+    def entry_recovery_action_count(self) -> int:
+        return self._entry_recovery_action_count
+
+    @property
+    def entry_recovery_pending_action_count(self) -> int:
+        return len(self._entry_recovery_inverse_actions)
+
+    @property
     def complete(self) -> bool:
         return self._coverage_cursor >= self.route.action_count
+
+    def record_entry_departure_action(
+        self,
+        *,
+        action: Mapping[str, Any],
+        success: bool,
+    ) -> None:
+        """Record a reversible pre-fallback pose action without target state."""
+
+        if not success:
+            return
+        if self._coverage_cursor > 0:
+            raise SearchRouteError(
+                "cannot record route-entry departure after coverage starts"
+            )
+        action_name = str(action.get("action", ""))
+        if action_name in _ENTRY_RECOVERY_NON_POSE_ACTIONS:
+            return
+        inverse = _ENTRY_RECOVERY_INVERSE_ACTION.get(action_name)
+        if inverse is None:
+            raise SearchRouteError(
+                f"route-entry departure action is not reversible: {action_name}"
+            )
+        if (
+            self._entry_departure_action_count
+            >= self._entry_recovery_action_limit
+        ):
+            raise SearchRouteError("route-entry recovery action limit exceeded")
+        self._entry_recovery_inverse_actions.append({"action": inverse})
+        self._entry_departure_action_count += 1
 
     def next_directive(self, observation: Mapping[str, Any]) -> dict[str, Any]:
         if self._coverage_cursor > 0:
@@ -250,6 +319,15 @@ class FrozenSearchRouteState:
             )
 
         current = _agent_pose(observation)
+        if self._entry_recovery_inverse_actions:
+            if self._pose_matches_entry(current):
+                self._entry_recovery_inverse_actions.clear()
+            else:
+                return self._directive(
+                    action=deepcopy(self._entry_recovery_inverse_actions[-1]),
+                    phase="route_entry_recovery",
+                    action_index=self._entry_recovery_action_count,
+                )
         dx = current["x"] - self._entry_pose["x"]
         dz = current["z"] - self._entry_pose["z"]
         position_error = math.hypot(dx, dz)
@@ -298,11 +376,36 @@ class FrozenSearchRouteState:
         if directive.get("phase") == "route_entry_alignment":
             self._alignment_action_count += 1
             return
+        if directive.get("phase") == "route_entry_recovery":
+            if not self._entry_recovery_inverse_actions:
+                raise SearchRouteError("frozen search recovery cursor mismatch")
+            if directive.get("action_index") != self._entry_recovery_action_count:
+                raise SearchRouteError("frozen search recovery cursor mismatch")
+            if dict(expected) != self._entry_recovery_inverse_actions[-1]:
+                raise SearchRouteError("frozen search recovery action mismatch")
+            self._entry_recovery_inverse_actions.pop()
+            self._entry_recovery_action_count += 1
+            return
         if directive.get("phase") != "coverage":
             raise SearchRouteError("unknown frozen search phase")
         if directive.get("action_index") != self._coverage_cursor:
             raise SearchRouteError("frozen search cursor mismatch")
         self._coverage_cursor += 1
+
+    def _pose_matches_entry(self, current: Mapping[str, float]) -> bool:
+        position_error = math.hypot(
+            current["x"] - self._entry_pose["x"],
+            current["z"] - self._entry_pose["z"],
+        )
+        horizon_error = abs(
+            current["camera_horizon"] - self._entry_pose["camera_horizon"]
+        )
+        yaw_error = abs(_angle_delta(self._entry_pose["yaw"], current["yaw"]))
+        return bool(
+            position_error <= self.route.entry_position_tolerance_meters
+            and horizon_error <= self.route.entry_angle_tolerance_degrees
+            and yaw_error <= self.route.entry_angle_tolerance_degrees
+        )
 
     def _directive(
         self,

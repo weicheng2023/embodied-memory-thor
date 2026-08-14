@@ -22,6 +22,8 @@ from embodied_memory_thor.phase4.runner import ThorEpisodeConfig, ThorEpisodeRun
 from embodied_memory_thor.phase5.search import (
     FrozenSearchRoute,
     FrozenSearchRouteState,
+    SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT,
+    SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
     SearchRouteError,
     load_frozen_search_route,
 )
@@ -238,6 +240,100 @@ class Phase5SearchRouteTests(unittest.TestCase):
         self.assertEqual(decision.reason_code, "shared_search_coverage")
         self.assertFalse(decision.memory_guided)
         self.assertTrue(validate_planner_decision(decision, request)[0])
+
+    def test_entry_recovery_reverses_pose_actions_without_private_input(self) -> None:
+        route = load_frozen_search_route(ROUTE_ID)
+        state = FrozenSearchRouteState(
+            route,
+            initial_observation=_pose_observation(yaw=90.0),
+        )
+        departures = (
+            {"action": "RotateRight"},
+            {"action": "MoveAhead"},
+            {"action": "LookDown"},
+        )
+        for action in departures:
+            state.record_entry_departure_action(action=action, success=True)
+
+        observations = (
+            _pose_observation(yaw=180.0, z=1.5, horizon=30.0),
+            _pose_observation(yaw=180.0, z=1.5, horizon=0.0),
+            _pose_observation(yaw=180.0, z=1.25, horizon=0.0),
+        )
+        expected = (
+            {"action": "LookUp"},
+            {"action": "MoveBack"},
+            {"action": "RotateLeft"},
+        )
+        for index, (observation, action) in enumerate(zip(observations, expected)):
+            directive = state.next_directive(observation)
+            self.assertEqual(directive["phase"], "route_entry_recovery")
+            self.assertEqual(directive["action_index"], index)
+            self.assertEqual(directive["action"], action)
+            request = PlannerRequest(
+                task_name="thor_book_reacquire_k2",
+                instruction="Reacquire and pick up the Book.",
+                task_stage="reacquire_book",
+                step=index + 4,
+                max_steps=240,
+                observation=observation,
+                allowed_actions=THOR_BOOK_ACTIONS,
+                retrieved_memory=(),
+                shared_search=directive,
+            )
+            audit = audit_planner_request(request)
+            self.assertTrue(audit.passed, audit.violations)
+            decision = ThorBookReacquirePlanner().plan(request)
+            self.assertEqual(decision.action, action)
+            self.assertEqual(
+                decision.reason_code,
+                "shared_search_route_entry_recovery",
+            )
+            self.assertFalse(decision.memory_guided)
+            state.record_result(directive, action=decision.action, success=True)
+            ordinary = json.dumps(request.snapshot(include_digest=False))
+            for forbidden in (
+                "target_point",
+                "anchor_id",
+                "support_id",
+                "candidate_order",
+                "reachable_positions",
+            ):
+                self.assertNotIn(forbidden, ordinary)
+
+        coverage = state.next_directive(_pose_observation(yaw=90.0))
+        self.assertEqual(coverage["phase"], "coverage")
+        self.assertEqual(coverage["action_index"], 0)
+        self.assertEqual(state.entry_departure_action_count, 3)
+        self.assertEqual(state.entry_recovery_action_count, 3)
+        self.assertEqual(state.entry_recovery_pending_action_count, 0)
+        self.assertEqual(
+            SHARED_SEARCH_ENTRY_RECOVERY_POLICY_VERSION,
+            "phase5-shared-search-entry-recovery-v1",
+        )
+
+    def test_entry_recovery_has_fixed_action_limit_and_ignores_nonpose_actions(self) -> None:
+        route = load_frozen_search_route(ROUTE_ID)
+        state = FrozenSearchRouteState(
+            route,
+            initial_observation=_pose_observation(yaw=90.0),
+            entry_recovery_action_limit=2,
+        )
+        state.record_entry_departure_action(
+            action={"action": "Pass"}, success=True
+        )
+        state.record_entry_departure_action(
+            action={"action": "RotateLeft"}, success=True
+        )
+        state.record_entry_departure_action(
+            action={"action": "MoveAhead"}, success=True
+        )
+        with self.assertRaisesRegex(SearchRouteError, "limit exceeded"):
+            state.record_entry_departure_action(
+                action={"action": "LookDown"}, success=True
+            )
+        self.assertEqual(state.entry_departure_action_count, 2)
+        self.assertEqual(SHARED_SEARCH_ENTRY_RECOVERY_ACTION_LIMIT, 64)
 
     def test_three_stale_variants_share_route_actions_and_no_private_fields(self) -> None:
         route = load_frozen_search_route(ROUTE_ID)

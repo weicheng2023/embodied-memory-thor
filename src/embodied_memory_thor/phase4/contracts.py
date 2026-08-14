@@ -258,10 +258,18 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             violations.append("shared_search_action_sequence_digest")
         phase = shared.get("phase")
         action_index = shared.get("action_index")
-        if phase not in {"route_entry_alignment", "coverage"}:
+        if phase not in {
+            "route_entry_alignment",
+            "route_entry_recovery",
+            "coverage",
+        }:
             violations.append("shared_search_phase")
         elif phase == "route_entry_alignment" and action_index is not None:
             violations.append("shared_search_alignment_index")
+        elif phase == "route_entry_recovery" and (
+            not isinstance(action_index, int) or action_index < 0
+        ):
+            violations.append("shared_search_recovery_index")
         elif phase == "coverage" and (
             not isinstance(action_index, int) or action_index < 0
         ):
@@ -273,6 +281,7 @@ def audit_planner_request(request: PlannerRequest) -> PlannerInputAudit:
             "LookDown",
             "LookUp",
             "MoveAhead",
+            "MoveBack",
             "RotateLeft",
             "RotateRight",
         }:

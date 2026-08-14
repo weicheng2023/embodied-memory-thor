@@ -1,0 +1,51 @@
+{
+  "policy_version": "phase5-shared-search-entry-recovery-v1",
+  "source_failure_evidence": "docs/evidence/phase5_r2_production_probe_v3_stop.json",
+  "scope": "restore a frozen shared-search entry after successful pre-fallback pose actions",
+  "applies_to_variants": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "recorded_input": "successful planner action names only",
+  "reversible_actions": [
+    "LookDown",
+    "LookUp",
+    "MoveAhead",
+    "MoveBack",
+    "RotateLeft",
+    "RotateRight"
+  ],
+  "ignored_non_pose_actions": [
+    "Pass",
+    "PickupObject",
+    "ToggleObjectOn"
+  ],
+  "fixed_action_limit": 64,
+  "recovery_order": "reverse successful pose-action order and invert each action",
+  "route_resume_gate": "the original frozen route entry pose and action digest remain unchanged",
+  "failure_policy": "invalidate the episode on an unsupported action, limit overflow, failed inverse action, or entry mismatch after recovery",
+  "planner_directive_fields": [
+    "action",
+    "action_index",
+    "action_sequence_digest",
+    "phase",
+    "policy",
+    "route_id",
+    "route_role"
+  ],
+  "forbidden_inputs": [
+    "target coordinates",
+    "target objectId",
+    "CoffeeMachine coordinates",
+    "CoffeeMachine objectId",
+    "anchor",
+    "support",
+    "candidate outcome",
+    "memory record content",
+    "reachable graph",
+    "evaluator-only metadata"
+  ],
+  "formal_aggregate_authorized": false,
+  "next_real_gate": "rerun only the excluded FloorPlan6 runtime-v2 triplet as probe v4 from a clean pushed revision"
+}

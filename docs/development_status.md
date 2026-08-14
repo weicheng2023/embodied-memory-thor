@@ -942,3 +942,21 @@ triplet in fixed no-memory/K2/object-memory order. It hash-freezes the runtime,
 routes, memory-navigation policy and v2 runner, and changes only the loader to
 runtime v2. Focused gates pass 8/8 and full regression passes 294/294. A clean
 push remains required before the real probe.
+
+The clean `64cd8bf` v3 probe retained successful 60-step no-memory and K=2
+episodes, each with 13 subgoal and 45 shared fallback actions; K=2 eviction and
+all information-boundary audits passed. Object memory made 14 memory-guided
+actions, its record was boundedly suppressed, and the frozen fallback then
+failed closed because the agent was no longer at its captured route entry.
+This is an excluded shared-search transition defect, not a THOR/render or
+leakage failure, and none of the v3 episodes may be reused.
+
+The registered `phase5-shared-search-entry-recovery-v1` successor reverses a
+bounded trace of successful pose-action names before shared fallback. It is
+identical for all variants, capped at 64, action-only, and consumes no target,
+memory-record, anchor/support, outcome, graph or evaluator coordinates. Direct
+baselines execute zero recovery actions. Probe v4 is a fresh excluded
+FloorPlan6 triplet with unchanged runtime/routes/task/start/checker/140-step
+cap. Focused recovery and v3/v4 gates pass 24/24; full regression remains the
+pre-push gate and passes 302/302. No formal result or multi-configuration run
+is authorized yet.
