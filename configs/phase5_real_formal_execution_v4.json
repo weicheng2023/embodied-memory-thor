@@ -1,0 +1,14 @@
+{
+  "authorization_version": "phase5-real-thor-formal-execution-authorization-v4",
+  "authorization_executor": "scripts/run_phase5_real_formal_execution_v4.py",
+  "authorization_executor_sha256": "6b9f3c1346d080d3dd575946f5032a7bfb8bf1ea377017691715a004bb45655b",
+  "base_config": "configs/phase5_real_formal_pilot_v4.json",
+  "base_config_sha256": "bbeab3ba202827bf4d5f61513589208a08d66535c1cbbbc9ba874e4851777716",
+  "readiness_evidence": "docs/evidence/phase5_real_formal_readiness_v4.json",
+  "readiness_evidence_sha256": "bdc56bfdf9d651b87f3f157e1976ee27533a8b1a62033153d238839b8b841089",
+  "readiness_code_revision": "2a18ea5cb2766947281d2d28421e1d994e8fd823",
+  "readiness_manifest_digest": "51ef356eaa1e989eff385e7e4095741c1c88699410db734d00c8a5aa046b641d",
+  "formal_execution_authorized": true,
+  "authorization_scope": "one complete fresh 54-cell formal-v4 run from cell 1 on one clean pushed revision; no resume, selective rerun, image, GUI or evaluator-debug output",
+  "matrix_contract_override_allowed": false
+}

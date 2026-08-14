@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import tempfile
+from copy import deepcopy
 from pathlib import Path
 
 from embodied_memory_thor.phase5.formal_v2 import (
@@ -20,6 +21,10 @@ from embodied_memory_thor.phase5.formal_v2 import (
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "phase5_real_formal_pilot_v4.json"
+AUTHORIZATION = ROOT / "configs" / "phase5_real_formal_execution_v4.json"
+READINESS_EVIDENCE = (
+    ROOT / "docs" / "evidence" / "phase5_real_formal_readiness_v4.json"
+)
 
 
 def _config() -> dict:
@@ -38,6 +43,15 @@ def _manifest() -> dict:
 def _executor() -> object:
     path = ROOT / "scripts" / "run_phase5_real_formal_pilot_v2.py"
     spec = importlib.util.spec_from_file_location("phase5_formal_v4_shared", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _authorization_executor() -> object:
+    path = ROOT / "scripts" / "run_phase5_real_formal_execution_v4.py"
+    spec = importlib.util.spec_from_file_location("phase5_formal_v4_authorized", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -196,3 +210,67 @@ def test_v4_terminal_target_lock_failure_is_a_task_outcome() -> None:
             expected_code_revision="f" * 40,
         )
     assert errors == []
+
+
+def test_v4_authorization_only_flips_execution_and_preserves_matrix() -> None:
+    base = _config()
+    effective = _authorization_executor().load_authorized_config(AUTHORIZATION)
+    assert base["formal_execution_authorized"] is False
+    assert effective["formal_execution_authorized"] is True
+    for key in (
+        "manifest_schema_version",
+        "protocol_version",
+        "metric_schema_version",
+        "episode_count",
+        "configuration_count_per_panel",
+        "variants",
+        "max_steps_per_episode",
+        "book_distraction_policy",
+        "target_lock_policy",
+        "controller_settings",
+        "output_policy",
+        "panels",
+        "historical_artifacts_frozen",
+    ):
+        assert effective[key] == base[key]
+    assert effective["authorization"]["matrix_contract_override_allowed"] is False
+    validate_precommit(effective, root=ROOT)
+
+
+def test_v4_authorization_rejects_tampered_readiness_binding() -> None:
+    executor = _authorization_executor()
+    tampered = deepcopy(json.loads(AUTHORIZATION.read_text(encoding="utf-8")))
+    tampered["readiness_manifest_digest"] = "0" * 64
+    with tempfile.TemporaryDirectory() as temporary_dir:
+        path = Path(temporary_dir) / "tampered.json"
+        path.write_text(json.dumps(tampered), encoding="utf-8")
+        try:
+            executor.load_authorized_config(path)
+        except ValueError as exc:
+            assert "does not authorize" in str(exc)
+        else:
+            raise AssertionError("tampered v4 readiness binding was accepted")
+
+
+def test_v4_readiness_evidence_is_public_and_execution_disabled() -> None:
+    evidence = json.loads(READINESS_EVIDENCE.read_text(encoding="utf-8"))
+    assert evidence["readiness_passed"] is True
+    assert evidence["episode_count"] == REAL_EPISODE_COUNT
+    assert evidence["required_metric_count"] == 64
+    assert evidence["unique_runtime_count"] == 12
+    assert evidence["private_runtime_join_passed"] is True
+    assert evidence["private_runtime_material_serialized"] is False
+    assert evidence["formal_execution_authorized_during_readiness"] is False
+    text = READINESS_EVIDENCE.read_text(encoding="utf-8")
+    for forbidden in (
+        '"start_pose"',
+        '"target_point"',
+        '"anchor_id"',
+        '"objectId"',
+        "Book|",
+        "Cup|",
+        "CoffeeMachine|",
+        "TeleportFull",
+        "PlaceObjectAtPoint",
+    ):
+        assert forbidden not in text

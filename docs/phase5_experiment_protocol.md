@@ -2687,3 +2687,25 @@ sources. Its no-THOR readiness must reconstruct 54 public cells, verify all 64
 metrics and join all 12 private runtimes on one clean pushed revision. A
 separate hash-bound authorization is required afterward; readiness itself may
 not start an episode.
+
+#### Formal v4 readiness and execution authorization
+
+Clean pushed revision `2a18ea5` passed the no-THOR v4 readiness gate: all 54
+public cells, 64 required metrics, 12 private runtime joins and 18 action-only
+routes were reconstructed. The public manifest digest is
+`51ef356e...b641d`. No private runtime material was serialized, execution
+remained false, and no THOR or memory episode started. Public evidence is
+`docs/evidence/phase5_real_formal_readiness_v4.json`.
+
+`phase5-real-thor-formal-execution-authorization-v4` separately hash-binds the
+immutable v4 base, readiness evidence/revision/digest and a thin post-readiness
+launcher. The launcher changes only the in-memory execution flag, repeats
+precommit/readiness on its current clean pushed revision, and invokes the
+already frozen v4 executor. Its whitelist cannot alter matrix/order, runtime,
+task policies, controller, 2048 ceiling, 64 metrics, output or stop rules.
+
+The authorized run must start from cell 1 in a new output directory. It may not
+resume or selectively reuse any v2/v3/partial cell. Images, GUI and evaluator
+debug remain disabled. Integrity failure stops and excludes the partial matrix;
+an integrity-valid task failure or legal native action rejection remains a
+recorded experimental outcome.
