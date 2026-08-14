@@ -1,0 +1,58 @@
+{
+  "evidence_version": "phase5-real-thor-formal-v3-invalidated-stop-v1",
+  "protocol_version": "phase5-real-thor-pilot-v3",
+  "code_revision": "983217d274fbb90a949710d029afbde2e3078a78",
+  "manifest_digest": "62928a8f9c59b2f95b63a7f2fd109d5699ee53c77bcdd09a8b194455eff66fc3",
+  "expected_episode_count": 54,
+  "completed_episode_count": 15,
+  "task_success_count": 14,
+  "task_failure_count": 1,
+  "matrix_complete": false,
+  "integrity_valid": false,
+  "included_in_formal_aggregate": false,
+  "partial_matrix_reusable": false,
+  "stop_cell": {
+    "episode_index": 15,
+    "panel": "r1_stable",
+    "configuration_id": "FloorPlan306_R1_fixed_start_001",
+    "memory": "object_memory",
+    "success": false,
+    "steps": 2048,
+    "failure_reason": "max_steps_exceeded",
+    "integrity_errors": [
+      "integrity_counter:invalid_action_count"
+    ],
+    "invalid_action_count": 2042,
+    "failed_interaction_count": 2036,
+    "target_lock_pickup_attempt_count": 7,
+    "target_lock_failed_reason": "bounded_approach_budget_exhausted",
+    "memory_guided_action_count": 2,
+    "information_boundary_passed": true,
+    "setup_completed": true,
+    "setup_failure_reason": "",
+    "intervention_count": 0,
+    "intervention_failure_count": 0,
+    "shared_search_route_entry_mismatch_count": 0,
+    "shared_search_action_failure_count": 0
+  },
+  "matched_control_observation": {
+    "same_scene_setup_and_fixed_start": true,
+    "no_memory_success": true,
+    "short_memory_k2_success": true,
+    "control_pickup_camera_horizon_degrees": -30,
+    "failed_variant_pickup_camera_horizon_degrees": 0,
+    "position_yaw_and_standing_state_matched": true
+  },
+  "failure_classification": "shared_target_lock_interaction_recovery_defect",
+  "diagnosis": [
+    "the target was visibly reacquired and the information boundary passed",
+    "the first pickup failed with the native pickup-collision category",
+    "the v1 recoverability classifier matched a stack-trace method-name substring rather than the first-line simulator reason",
+    "after the six-action approach budget failed, target-lock suppression returned control to the ordinary visible-target planner, which retried pickup until the episode limit",
+    "this is not a memory-effect result and the 15-cell partial matrix is excluded in full"
+  ],
+  "source_formal_summary_sha256": "a0eddc85b10db3584ad6611b4883da665e58f2f011b3446d1631e38701573532",
+  "source_formal_manifest_sha256": "8f8f72849704cb28b9fe70da69624ce4aeba0efb7bef3744885f9284b2b42e",
+  "source_readiness_sha256": "415b72ee5a495c2ccc2fee2e9802dfb6cd2eba47e229111e235cfa2e7b858697",
+  "next_gate": "pre-register a shared bounded target-lock interaction-recovery successor, prove it offline, and run one excluded FloorPlan306 object-memory isolation probe before any new formal protocol"
+}

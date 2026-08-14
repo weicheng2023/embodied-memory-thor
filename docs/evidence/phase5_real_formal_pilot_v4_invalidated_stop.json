@@ -1,0 +1,57 @@
+{
+  "evidence_version": "phase5-real-thor-formal-v4-invalidated-stop-v1",
+  "protocol_version": "phase5-real-thor-pilot-v4",
+  "code_revision": "b6aae91eecf5462e7763d9295c1928b739f04dcb",
+  "manifest_digest": "19afd04aa457869b29f7ce578591369579a58fbe694feb4f1efcfb35c632c9f7",
+  "expected_episode_count": 54,
+  "completed_episode_count": 31,
+  "task_success_count": 30,
+  "task_failure_count": 1,
+  "matrix_complete": false,
+  "integrity_valid": false,
+  "included_in_formal_aggregate": false,
+  "partial_matrix_reusable": false,
+  "stop_cell": {
+    "episode_index": 31,
+    "panel": "r2_stable",
+    "configuration_id": "FloorPlan10_R2_fixed_start_001",
+    "memory": "no_memory",
+    "success": false,
+    "steps": 215,
+    "failure_reason": "shared_search_action_failed:frozen search directive failed",
+    "integrity_errors": [
+      "integrity_counter:shared_search_action_failure_count"
+    ],
+    "invalid_action_count": 1,
+    "invalid_planner_decision_count": 0,
+    "shared_search_coverage_action_count": 201,
+    "shared_search_failed_action_index": 200,
+    "shared_search_failed_action": "MoveAhead",
+    "shared_search_failure_category": "scene_obstacle_blocked_translation",
+    "shared_search_action_failure_count": 1,
+    "shared_search_route_entry_mismatch_count": 0,
+    "shared_subgoal_action_failure_count": 0,
+    "information_boundary_passed": true,
+    "setup_completed": true,
+    "setup_failure_reason": ""
+  },
+  "predecessor_route_evidence": {
+    "qualification_passed": true,
+    "fresh_reset_replay_passed": true,
+    "reset_restoration_passed": true,
+    "frozen_route_action_count": 512,
+    "frozen_route_digest": "813e674ba41fa16c9b604fede496bbd2ba795da23553dbc9e872bc51cd0172f2"
+  },
+  "failure_classification": "shared_frozen_route_transient_obstacle_recovery_gap",
+  "diagnosis": [
+    "the shared subgoal route completed and the fallback route entry matched",
+    "the planner emitted the exact frozen coverage action at index 200",
+    "THOR rejected that legal MoveAhead because a scene obstacle blocked the translation",
+    "the current route executor fails immediately and has no target-independent bounded stabilization-and-retry state",
+    "this is not a memory-effect result and the 31-cell partial matrix is excluded in full"
+  ],
+  "source_formal_summary_sha256": "4c7dc8eaf4040faca22cbf636dc584eeee93b043521b866324c3399bd5cfb789",
+  "source_formal_manifest_sha256": "1e2e47edcaa647ccb0fb6c5bdd38ea2637199e3cbfaff35bbbafb9315d9a8f1c",
+  "source_readiness_sha256": "bd35b6842aaf31adb75b7469ae6dcd2762f28cda8133724f44b9e7b6ada4a57c",
+  "next_gate": "pre-register a shared target-independent bounded route-action stabilization-and-retry successor and run one excluded FloorPlan10 no-memory isolation episode before any new formal protocol"
+}

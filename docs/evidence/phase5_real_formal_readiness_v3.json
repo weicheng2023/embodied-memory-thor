@@ -1,0 +1,46 @@
+{
+  "evidence_version": "phase5-real-thor-formal-readiness-v3-result-v1",
+  "readiness_version": "phase5-real-thor-formal-readiness-v3",
+  "executor_version": "phase5-real-thor-formal-executor-v3",
+  "code_revision": "ca3158213edab027064c55d17f4c750f3fe6abb9",
+  "working_tree_dirty": false,
+  "head_matched_upstream": true,
+  "readiness_passed": true,
+  "episode_count": 54,
+  "panel_count": 3,
+  "matched_cell_count": 18,
+  "unique_runtime_count": 12,
+  "required_metric_count": 56,
+  "private_runtime_join_passed": true,
+  "private_runtime_material_serialized": false,
+  "public_manifest_contains_start_pose": false,
+  "public_manifest_contains_target_or_anchor": false,
+  "public_manifest_contains_object_identity": false,
+  "public_manifest_contains_evaluator_native_action": false,
+  "book_distraction_policy": "phase5-book-distraction-v4",
+  "shared_search_entry_alignment_policy": "phase5-shared-search-entry-alignment-v3",
+  "shared_search_entry_alignment_action_limit": 4,
+  "manifest_digest": "2fc1000056ce8bfad0f93bd532001f5d03e6ee2d650b788c5728e58af67017af",
+  "source_formal_manifest_sha256": "249d641de002ba8363716c0c8092be4787d768bb5773bdab0161d916d605229f",
+  "source_readiness_sha256": "c5fa0e185f04ab20195a8d51e1be40ac6edaa5f9b1f5785754bf9c4b2e0c319e",
+  "readiness_base_config_sha256": "e961bfb6c605aba6697cd57bf84220742c8862a1109e1e1081d3af8af0f8decf",
+  "runtime_sets": [
+    {
+      "runtime_set": "phase5-r1-frozen-six-anchor-set-v1",
+      "configuration_count": 6,
+      "route_count": 6,
+      "private_join_count": 6
+    },
+    {
+      "runtime_set": "phase5-r2-frozen-runtime-set-v2",
+      "configuration_count": 6,
+      "route_count": 12,
+      "private_join_count": 6
+    }
+  ],
+  "formal_execution_authorized_during_readiness": false,
+  "thor_started": false,
+  "memory_episode_started": false,
+  "formal_statistic_computed": false,
+  "next_gate": "use a separately versioned and hash-bound v3 authorization launcher; start one complete fresh 54-cell run from cell 1 on one clean pushed revision"
+}
