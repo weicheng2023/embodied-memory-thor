@@ -1,0 +1,40 @@
+{
+  "run_id": "20260809T133536Z",
+  "evidence_level": "E2",
+  "claim": "Live AI2-THOR integration smoke evidence; not a memory experiment.",
+  "environment": {
+    "os": "Ubuntu 22.04.5 LTS on WSL2",
+    "python": "3.10.12",
+    "ai2thor": "5.0.0",
+    "unity_build": "thor-Linux64-f0825767cd50d69f666c7f282e54abfe58f1e917",
+    "renderer": "D3D12 (AMD Radeon 780M Graphics)",
+    "accelerated": true,
+    "resolution": "300x300",
+    "quality": "Low"
+  },
+  "scenes": [
+    {
+      "scene": "FloorPlan1",
+      "object_count": 77,
+      "initial_visible_count": 4,
+      "rotation_success": true,
+      "movement_success": true,
+      "valid_interaction": "PickupObject Book",
+      "intentional_failure_observed": true,
+      "visible_change_observed": true,
+      "frame": "../assets/ai2thor_smoke/floorplan1.png"
+    },
+    {
+      "scene": "FloorPlan10",
+      "object_count": 67,
+      "initial_visible_count": 17,
+      "rotation_success": true,
+      "movement_success": true,
+      "valid_interaction": "ToggleObjectOn CoffeeMachine",
+      "intentional_failure_observed": true,
+      "visible_change_observed": true,
+      "frame": "../assets/ai2thor_smoke/floorplan10.png"
+    }
+  ],
+  "all_acceptance_gates_passed": true
+}

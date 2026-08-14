@@ -4,7 +4,7 @@ A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-T
 
 ## Status
 
-Phases 0–2R are implemented: project scaffolding, environment diagnostics, real/mock adapters, state-based evaluation, structured logging, and a controlled partially observable mock harness with audited planner/evaluator information boundaries. Memory, live AI2-THOR validation, LLM planners, and batch experiments are not yet claimed as complete.
+Phases 0–2.5 are implemented: project scaffolding, environment diagnostics, real/mock adapters, state-based evaluation, structured logging, a controlled partially observable mock harness, and a verified live AI2-THOR smoke path. Memory, LLM planners, and batch experiments are not yet claimed as complete.
 
 ## Motivation and scope
 
@@ -25,7 +25,7 @@ The project is a lightweight research preparation project. It is not a state-of-
 ## Requirements
 
 - Python 3.10 or newer
-- Windows, macOS, or Linux
+- Windows, macOS, or Linux for the mock path; live AI2-THOR is verified on Ubuntu 22.04 WSL2/WSLg rather than native Windows
 - AI2-THOR is optional during Phase 0
 - An OpenAI-compatible API key is optional and will not be needed for the mock path
 
@@ -108,6 +108,16 @@ python scripts/list_scene_objects.py --scene FloorPlan1
 
 The real-environment command reports an actionable error when AI2-THOR or Unity rendering is unavailable. The mock path remains usable in that case.
 
+## Run the verified live AI2-THOR smoke test
+
+The verified Windows-host route uses Ubuntu 22.04 on WSL2/WSLg because upstream AI2-THOR does not officially list native Windows support. Setup details and exact dependency records are in [`docs/ai2thor_wsl_setup.md`](docs/ai2thor_wsl_setup.md).
+
+```powershell
+wsl --distribution Ubuntu-22.04 --user research -- bash -lc "cd /mnt/d/path/to/embodied-memory-thor && ~/embodied-memory-thor-runtime/.venv/bin/python scripts/smoke_ai2thor.py --scenes FloorPlan1 FloorPlan10"
+```
+
+The verified run started both scenes, recorded real metadata and pose, changed visible observations through movement/rotation, completed a valid object interaction, captured an intentional failed interaction, and saved RGB frames. This is E2 integration evidence, not a memory experiment.
+
 ## Run the minimal episode
 
 Run the Phase 2 acceptance task without AI2-THOR or external APIs:
@@ -155,6 +165,7 @@ configs/tasks.yaml              Validated Phase 2 task definitions
 docs/                            Public-facing project documentation
 outputs/                         Generated run artifacts (ignored except .gitkeep)
 scripts/check_environment.py     Environment diagnostic CLI
+scripts/smoke_ai2thor.py         Live AI2-THOR E2 integration smoke CLI
 scripts/list_scene_objects.py    Real/mock scene inspection CLI
 scripts/run_episode.py           Single-episode execution and logging CLI
 src/embodied_memory_thor/        Installable Python package

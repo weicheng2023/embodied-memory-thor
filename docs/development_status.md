@@ -19,7 +19,7 @@
 - Human-readable and JSON scene-object inspection CLI
 - Unit tests for mock state transitions, parsing, and controller adaptation
 
-The real adapter is unit-tested with an injected controller-like object. A live AI2-THOR Unity runtime is not yet verified on the current machine because the optional dependency is not installed.
+The real adapter is unit-tested with an injected controller-like object and has now been exercised against a live AI2-THOR 5.0.0 Unity runtime through Ubuntu 22.04 WSL2/WSLg.
 
 ### Phase 2
 
@@ -44,7 +44,20 @@ The real adapter is unit-tested with an injected controller-like object. A live 
 - Auditable pre/post-action observations and planner-received object IDs
 - Successful CLI runs for seeds 0–2 with both planners
 
-Phase 2R remains controlled E1 harness evidence. It does not replace the planned live AI2-THOR smoke test or demonstrate a memory improvement before Phase 3.
+Phase 2R remains controlled E1 harness evidence and does not demonstrate a memory improvement before Phase 3.
+
+### Phase 2.5
+
+- Verified WSL2/WSLg setup with hardware-accelerated AMD Radeon 780M rendering
+- Isolated Python 3.10.12 and AI2-THOR 5.0.0 environment with exact dependency record
+- Reproducible `smoke_ai2thor.py` acceptance CLI
+- Live FloorPlan1 and FloorPlan10 startup
+- Real object metadata, agent pose, and visibility-change logging
+- Successful rotation, movement, Book pickup, and CoffeeMachine toggle
+- Intentional failed object interactions captured without crashing
+- Two inspected RGB frames and sanitized E2 result evidence
+
+Phase 2.5 is integration evidence only. It is not a memory experiment or a repeated simulator benchmark.
 
 ## Planned
 
