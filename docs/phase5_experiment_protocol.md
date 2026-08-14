@@ -2821,3 +2821,24 @@ coordinates or object identity. The result authorizes FloorPlan17 to replace
 FloorPlan10 in a new R2 runtime-v3 containing FloorPlan3, 4, 6, 7, 12 and 17.
 It is an excluded engineering gate, not a memory comparison or formal result;
 runtime-v2 and all prior formal artifacts remain immutable.
+
+#### R2 conservative replacement runtime-v3 freeze
+
+Runtime-v3 is a new set rather than a mutation of runtime-v2. Its fixed order
+is FloorPlan3, 4, 6, 7, 12 and 17. FloorPlan10 is absent, and FloorPlan17 is
+admitted only because both its native qualification and excluded production-
+equivalent no-memory gate passed. The freeze hash-checks those gate artifacts
+and the retained historical inputs.
+
+The generated registry contains six public runtime references and 12 action-
+only routes. The ignored evaluator-only registry has private-set digest
+`9bbbd2d4...859f`; two consecutive freezes produced identical public and
+private hashes. All six joined runtimes load, focused tests pass 19/19 and the
+full repository regression passes 388 tests plus 70 subtests. No simulator or
+memory variant ran, and runtime-v2 remains byte-frozen. Public
+evidence is `docs/evidence/phase5_r2_runtime_freeze_v3.json`.
+
+Before any new formal readiness, the next gate is one excluded FloorPlan17
+runtime-v3 triplet in fixed no-memory, K=2 and object-memory order. It must use
+the same task/start/routes/evaluator, stop on the first integrity failure, save
+no images or evaluator debug and remain outside every formal aggregate.
