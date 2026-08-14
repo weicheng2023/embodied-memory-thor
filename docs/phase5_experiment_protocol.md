@@ -2258,3 +2258,18 @@ Freezing is deterministic bookkeeping: it runs no simulator, planner, memory
 variant or formal statistic. Offline tests and a clean push of the freeze tool
 must precede generation. Generated public/private/route sets must then load all
 six configurations and preserve v1 behavior before any new triplet probe.
+
+### R2 runtime-v2 excluded integration probe v3 precommit
+
+Before any multi-configuration or formal comparison, exactly one excluded
+triplet uses `FloorPlan6_R2_fixed_start_001` from runtime set v2. The variant
+order is fixed as no-memory, K=2 short memory, object memory, and execution
+stops on the first episode or audit failure. All variants receive the same
+13-action subgoal and 403-action budgeted fallback plus the same task, start,
+success checker and 140-step cap.
+
+The probe reuses the hash-frozen v2 runner/auditor and changes only its runtime
+loader to v2. It reruns all episodes, saves no images/evaluator debug, exposes
+no private setup in ordinary logs and is explicitly excluded from formal
+aggregation. A pass is integration evidence only; it authorizes planning a
+six-configuration dry run but is not itself a memory-effect result.

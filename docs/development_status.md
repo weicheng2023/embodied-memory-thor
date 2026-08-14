@@ -936,3 +936,9 @@ configurations, 12 coordinate-free routes, and ignored private digest
 6/110, 11/110, 13/403, 11/685, 12/512 and 9/1367. Public leakage audit and v1
 preservation pass. No THOR or memory variant ran.
 Generated-runtime gates pass 11/11 and full regression passes 291/291.
+
+Runtime-v2 integration probe v3 is precommitted for one excluded FloorPlan6
+triplet in fixed no-memory/K2/object-memory order. It hash-freezes the runtime,
+routes, memory-navigation policy and v2 runner, and changes only the loader to
+runtime v2. Focused gates pass 8/8 and full regression passes 294/294. A clean
+push remains required before the real probe.
