@@ -2958,3 +2958,19 @@ separate hash-bound v5 authorization layer is now required. It may only flip
 the execution flag for this immutable base and readiness evidence; it may not
 override matrix/order/runtime/metric/output contracts. The authorized run must
 start fresh at cell 1 and cannot resume or reuse any old row.
+
+#### Formal-v5 execution authorization precommit
+
+`phase5-real-thor-formal-execution-authorization-v5` hash-binds the immutable
+formal-v5 readiness base, public readiness evidence, readiness revision and
+manifest digest, plus a thin execution launcher. The launcher changes only the
+in-memory `formal_execution_authorized` flag and adds its audit binding. It
+revalidates the complete precommit, rebuilds the 54-cell public manifest and 12
+private joins on its own clean pushed revision, then calls the shared executor.
+
+The authorization cannot override matrix, order, R1/R2 runtimes, 72 metrics,
+controller, 2048 ceiling, output or stop rules. The output directory must not
+exist; selective resume and all prior-row reuse remain prohibited. Focused
+authorization/readiness compatibility tests pass 20/20 and the full repository
+regression passes 410 tests plus 70 subtests. The next action is one complete
+fresh formal-v5 run beginning at cell 1.
