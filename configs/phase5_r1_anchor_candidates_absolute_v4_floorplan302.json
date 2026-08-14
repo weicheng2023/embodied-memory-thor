@@ -1,0 +1,22 @@
+{
+  "contract_version": "phase5-r1-anchor-candidates-absolute-v4-floorplan302-v1",
+  "selection_rule": "FloorPlan302 is the declared successor after FloorPlan301 exhausted the balanced v5 prefix without integrity failure",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "route_action_limit": 240,
+  "absolute_scan_horizon_degrees": 0.0,
+  "candidates": [
+    {
+      "candidate_order": 3,
+      "scene": "FloorPlan302",
+      "configuration_id": "FloorPlan302_R1_fixed_start_001",
+      "anchor_id": "FloorPlan302_R1_stale_Book_anchor_001",
+      "start_pose_digest": "bcb4798a308542035e15c1e9ddf760c74ffd320096e29351ca54136adc7e1d9b",
+      "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+      "coverage_scan_horizon_degrees": 0.0,
+      "absolute_scan_horizon_degrees": 0.0,
+      "coverage_route_digest": "8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a",
+      "coverage_route_action_count": 61
+    }
+  ],
+  "privacy": "only pose and route digests are public; exact poses, object IDs, reachable positions, target locations, and anchor coordinates remain evaluator-only"
+}

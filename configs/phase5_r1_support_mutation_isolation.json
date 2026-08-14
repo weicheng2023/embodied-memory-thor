@@ -1,0 +1,42 @@
+{
+  "protocol_version": "phase5-r1-support-mutation-isolation-v1",
+  "scene": "FloorPlan202",
+  "settling_pass_count": 5,
+  "baseline_followup_pass_count": 5,
+  "isolated_query_support_types": [
+    "CoffeeTable",
+    "Shelf",
+    "SideTable"
+  ],
+  "material_change_thresholds": {
+    "position_delta_meters": 0.001,
+    "rotation_component_delta_degrees": 0.1
+  },
+  "allowed_actions": [
+    "GetSpawnCoordinatesAboveReceptacle",
+    "Pass"
+  ],
+  "execution_order": [
+    "baseline_reset_settle_digest_pass_digest_reset",
+    "coffeetable_reset_settle_query_digest_reset",
+    "shelf_reset_settle_query_digest_reset",
+    "sidetable_reset_settle_query_digest_reset"
+  ],
+  "constraints": {
+    "other_scenes_allowed": false,
+    "one_receptacle_query_per_reset": true,
+    "placement_allowed": false,
+    "pickup_allowed": false,
+    "fallback_allowed": false,
+    "memory_agents_allowed": false,
+    "images_allowed": false,
+    "force_action_allowed": false
+  },
+  "classification_rule": {
+    "case_a": "baseline is materially stable and at least one isolated query produces a material object-state change",
+    "case_b": "strict digests change only through natural settling, isMoving, or sub-threshold pose jitter, with no isolated query-specific material change",
+    "no_change": "neither baseline Pass nor isolated queries change strict object-state digests",
+    "inconclusive": "a precondition, reset, or Pass fails; a failed query attempt is still assessed for its state effect and reported separately"
+  },
+  "privacy": "public evidence contains digests, counts, booleans, thresholds, aggregate deltas, and field categories only; no objectId, coordinates, exact poses, or spawn coordinates"
+}

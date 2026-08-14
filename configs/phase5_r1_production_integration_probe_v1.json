@@ -1,0 +1,27 @@
+{
+  "probe_version": "phase5-r1-production-integration-probe-v1",
+  "task": "thor_book_reacquire_k2",
+  "panel": "r1_stale",
+  "condition": "stale_r1",
+  "configuration_id": "FloorPlan202_R1_fixed_start_001",
+  "scene": "FloorPlan202",
+  "anchor_id": "FloorPlan202_R1_stale_Book_anchor_001",
+  "private_anchor_set_digest": "423cf8ef98d73b56d836edbda83563cf4ebdc0604063e1ccf9530f876f781d92",
+  "search_route_id": "FloorPlan202_R1_fixed_start_001_coverage_absolute_v4",
+  "search_route_action_sequence_digest": "a73f160b8d399281bfb1cc74840bed864580a212e0167a8d5005e64a2279d890",
+  "variants": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "max_steps": 260,
+  "mode": "formal",
+  "save_frames": false,
+  "trace_html": false,
+  "visualize": false,
+  "save_evaluator_debug": false,
+  "included_in_formal_aggregate": false,
+  "run_order_policy": "fixed declared variant order; stop immediately on the first episode or integrity failure",
+  "selection_status": "precommitted before any real memory-variant outcome; first scene in the frozen six-scene R1 set",
+  "claim_boundary": "R1 production runtime integration QA only; not Phase 5B completion, not a formal memory comparison, and not evidence for R2"
+}

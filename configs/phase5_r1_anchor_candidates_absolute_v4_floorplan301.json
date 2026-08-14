@@ -1,0 +1,22 @@
+{
+  "contract_version": "phase5-r1-anchor-candidates-absolute-v4-floorplan301-v1",
+  "selection_rule": "FloorPlan301 is the second declared route-eligible scene and may run only after FloorPlan202 v4 qualification passed",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "route_action_limit": 240,
+  "absolute_scan_horizon_degrees": 0.0,
+  "candidates": [
+    {
+      "candidate_order": 2,
+      "scene": "FloorPlan301",
+      "configuration_id": "FloorPlan301_R1_fixed_start_001",
+      "anchor_id": "FloorPlan301_R1_stale_Book_anchor_001",
+      "start_pose_digest": "a8c018d9086425866d9e09258eb709394e05f1e456f188c9409069422a4bb401",
+      "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+      "coverage_scan_horizon_degrees": 0.0,
+      "absolute_scan_horizon_degrees": 0.0,
+      "coverage_route_digest": "09e3d64b7adb1afe2df76c573211a60caad4435ab4e1f84433d1d168191cd30b",
+      "coverage_route_action_count": 108
+    }
+  ],
+  "privacy": "only pose and route digests are public; exact poses, object IDs, reachable positions, target locations, and anchor coordinates remain evaluator-only"
+}

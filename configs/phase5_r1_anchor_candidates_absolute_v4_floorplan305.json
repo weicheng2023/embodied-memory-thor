@@ -1,0 +1,26 @@
+{
+  "contract_version": "phase5-r1-anchor-candidates-absolute-v4-floorplan305-v1",
+  "selection_rule": "FloorPlan305 is the declared successor after FloorPlan304 was validly classified route-execution-ineligible",
+  "route_version": "phase5-target-independent-absolute-horizon-v4",
+  "horizon_policy_version": "phase5-absolute-horizon-tolerance-v4.1",
+  "route_action_limit": 240,
+  "absolute_scan_horizon_degrees": 0.0,
+  "candidates": [
+    {
+      "candidate_order": 6,
+      "scene": "FloorPlan305",
+      "configuration_id": "FloorPlan305_R1_fixed_start_001",
+      "anchor_id": "FloorPlan305_R1_stale_Book_anchor_001",
+      "start_pose_digest": "2c48b17eb8a77c4a489db2ffcb066fe0ee1bd0c05a18dcf1ea18bf4cf8e5bf96",
+      "coverage_route_version": "phase5-target-independent-absolute-horizon-v4",
+      "horizon_policy_version": "phase5-absolute-horizon-tolerance-v4.1",
+      "coverage_scan_horizon_degrees": 0.0,
+      "absolute_scan_horizon_degrees": 0.0,
+      "coverage_route_digest": "ee28505764f148e0e5b209810333e40cf84cd12d3259c5bc1113918da00dca09",
+      "coverage_route_action_count": 115,
+      "baseline_route_execution_required": true,
+      "baseline_route_execution_evidence": "docs/evidence/phase5_floorplan305_baseline_route_execution_v1.json"
+    }
+  ],
+  "privacy": "only pose/route digests, counts, and coordinate-free execution outcomes are public; exact poses, object IDs, reachable positions, and anchor coordinates remain evaluator-only"
+}

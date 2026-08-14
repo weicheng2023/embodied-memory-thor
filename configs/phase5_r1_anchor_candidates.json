@@ -1,0 +1,63 @@
+{
+  "contract_version": "phase5-r1-anchor-candidates-v1",
+  "selection_rule": "first six start-and-route passing scenes in the precommitted R1 presence order",
+  "route_version": "phase5-target-independent-spaced-waypoints-v2",
+  "route_action_limit": 240,
+  "candidates": [
+    {
+      "candidate_order": 1,
+      "scene": "FloorPlan202",
+      "configuration_id": "FloorPlan202_R1_fixed_start_001",
+      "anchor_id": "FloorPlan202_R1_stale_Book_anchor_001",
+      "start_pose_digest": "ad6f9e9552cded910a35e6ae3c9963200a85665535a274cf90cb36e1fda10b3d",
+      "coverage_route_digest": "ae83584fcc3fcbee674a5c7fb16e40a0c5df28204c499ef0b386589bcba846f6",
+      "coverage_route_action_count": 225
+    },
+    {
+      "candidate_order": 2,
+      "scene": "FloorPlan301",
+      "configuration_id": "FloorPlan301_R1_fixed_start_001",
+      "anchor_id": "FloorPlan301_R1_stale_Book_anchor_001",
+      "start_pose_digest": "a8c018d9086425866d9e09258eb709394e05f1e456f188c9409069422a4bb401",
+      "coverage_route_digest": "9c9857edba7439bd6d531e3a589cb0d1d9a36e1ca47453306e8a0bd29df3f032",
+      "coverage_route_action_count": 106
+    },
+    {
+      "candidate_order": 3,
+      "scene": "FloorPlan302",
+      "configuration_id": "FloorPlan302_R1_fixed_start_001",
+      "anchor_id": "FloorPlan302_R1_stale_Book_anchor_001",
+      "start_pose_digest": "bcb4798a308542035e15c1e9ddf760c74ffd320096e29351ca54136adc7e1d9b",
+      "coverage_route_digest": "707714596f40e2a504424c7a6eb8a964ad0b82c7830ef0344fac05d1d4026f2e",
+      "coverage_route_action_count": 61
+    },
+    {
+      "candidate_order": 4,
+      "scene": "FloorPlan303",
+      "configuration_id": "FloorPlan303_R1_fixed_start_001",
+      "anchor_id": "FloorPlan303_R1_stale_Book_anchor_001",
+      "start_pose_digest": "d24fd421d4c3ae03cc19ed62d8f9fbc69159127ed7c7947aa2ac67491b0a8a8b",
+      "coverage_route_digest": "f6f0fabb546de435a5290c99f1ee5fddf7f131275956cc7b2ef6e8ea2130f900",
+      "coverage_route_action_count": 96
+    },
+    {
+      "candidate_order": 5,
+      "scene": "FloorPlan304",
+      "configuration_id": "FloorPlan304_R1_fixed_start_001",
+      "anchor_id": "FloorPlan304_R1_stale_Book_anchor_001",
+      "start_pose_digest": "5ab622fa467421c53f436347982d4e96a2ed36f17839028b747feafdf1956930",
+      "coverage_route_digest": "4ad304f071967bf95d8198977a710a691ce3cf642cb8967c195364f1905f7918",
+      "coverage_route_action_count": 129
+    },
+    {
+      "candidate_order": 6,
+      "scene": "FloorPlan305",
+      "configuration_id": "FloorPlan305_R1_fixed_start_001",
+      "anchor_id": "FloorPlan305_R1_stale_Book_anchor_001",
+      "start_pose_digest": "2c48b17eb8a77c4a489db2ffcb066fe0ee1bd0c05a18dcf1ea18bf4cf8e5bf96",
+      "coverage_route_digest": "6d0ac80074b87fe84e1d8ff6562d34e87165116b039b59827b64219bd7aeca4b",
+      "coverage_route_action_count": 113
+    }
+  ],
+  "privacy": "only pose and route digests are public; exact poses and object IDs remain evaluator-only"
+}

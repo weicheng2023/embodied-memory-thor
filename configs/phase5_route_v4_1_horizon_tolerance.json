@@ -1,0 +1,29 @@
+{
+  "policy_version": "phase5-absolute-horizon-tolerance-v4.1",
+  "scope": "absolute camera-horizon normalization at the ordinary-action route builder boundary only",
+  "source_stop_evidence": "docs/evidence/phase5_floorplan303_route_v4_float_boundary_stop.json",
+  "tolerance_degrees": 0.001,
+  "action_grid_step_degrees": 30.0,
+  "supported_normalized_range_degrees": [
+    -30.0,
+    60.0
+  ],
+  "normalization_rule": "normalize to the nearest 30-degree action-grid value only when absolute deviation is at most 0.001 degrees, then enforce the unchanged supported range and action grid",
+  "accepted_observed_value_degrees": 60.00001525878906,
+  "normalized_value_degrees": 60.0,
+  "must_reject_values_degrees": [
+    60.5,
+    61.0
+  ],
+  "normalized_route_version": "phase5-target-independent-absolute-horizon-v4.1",
+  "exact_grid_route_version": "phase5-target-independent-absolute-horizon-v4",
+  "exact_grid_route_serialization_unchanged": true,
+  "compatibility_route_digests": {
+    "FloorPlan202": "cb82c0057aa6d9a89d9493745c3ccc8db2047ebfae78e9fb65af022495777cae",
+    "FloorPlan302": "8844fb4f2424b3b143ffcf2de8c58f249ab5ba35206289a0e11d4b60f1e9400a"
+  },
+  "planner_input_schema_changed": false,
+  "target_anchor_support_or_coordinate_input_added": false,
+  "native_qualification_allowed_before_route_pass": false,
+  "next_gate": "offline focused tests and full regression, then clean commit and push, then rerun FloorPlan303 route-only from the beginning"
+}
