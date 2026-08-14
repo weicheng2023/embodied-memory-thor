@@ -866,3 +866,12 @@ viewpoints and 404 planned actions, with the same route digest as the initial
 audit-bug run and successful reset restoration. No route action, qualification,
 memory variant, image or FloorPlan7+ run occurred. The first-pass stop rule is
 active. Result-evidence gates pass 11/11 and the full regression passes 275/275.
+
+R2 qualification v6 is now precommitted as a hash-guarded adapter over the v5
+qualifier. Only the visual fallback constructor/version, budgeted failure names
+and coordinate-free public coverage metrics change; start stability, pairing,
+subgoal/trial/replay, target lock and restoration remain v5 functions. Its
+authorized order is FloorPlan6, 7, 8, 10, 13, 16, with no memory variants,
+images, formal aggregate or FloorPlan17+. Focused precommit tests pass 28/28;
+the full offline regression passes 281/281. A clean push is the remaining
+real-run gate.

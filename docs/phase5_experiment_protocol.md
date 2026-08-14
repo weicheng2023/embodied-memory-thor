@@ -2213,3 +2213,27 @@ audit-bug run and corrected retry. No route action, object-specific query,
 qualification, memory variant or later scene ran. The registered stop-on-first-
 pass rule is now active; FloorPlan7 and all later scenes remain untouched until
 separate authorization.
+
+### R2 native qualification v6 precommit
+
+The subsequent authorization introduces `phase5-r2-native-qualification-v6`.
+It hash-freezes the complete v5 qualifier and adapts only its fallback builder,
+version labels, registered failure names and coordinate-free public fallback
+metrics. The v2 start-stability audit, deterministic first-12 pair freeze,
+subgoal route, trial/replay logic, target lock and reset restoration remain the
+same function objects as v5.
+
+The replacement builder is exactly
+`phase5-r2-budgeted-visual-fallback-v1`, with the fixed 3-by-3 grid bins,
+0/+30-degree cardinal scans and 2048 limit already construction-tested on
+FloorPlan6. Candidate fallback routes are built before task outcomes. Cup and
+CoffeeMachine identities remain evaluator-only inputs to qualification setup
+and success checking; neither identity nor position enters fallback selection.
+No memory provider/variant is run during qualification.
+
+Only FloorPlan6, 7, 8, 10, 13 and 16 are admitted, in that operational order;
+FloorPlan17+ remains prohibited. Registered scene-level outcomes distinguish
+budgeted construction, execution and reacquisition failures. Public evidence
+may expose only action/viewpoint count ranges, digest/action-only route
+references, nominal bin coverage and classifications. Full qualification may
+start only after offline tests, frozen-hash audit and clean push.

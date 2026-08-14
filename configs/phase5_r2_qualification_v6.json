@@ -1,0 +1,61 @@
+{
+  "qualification_version": "phase5-r2-native-qualification-v6",
+  "adapter_version": "phase5-r2-budgeted-qualification-adapter-v1",
+  "inherited_qualification_version": "phase5-r2-native-qualification-v5",
+  "start_stability_policy_version": "phase5-r2-start-visibility-stability-v2",
+  "start_stability_trials_per_pose": 3,
+  "start_stability_pose_budget": 256,
+  "candidate_pair_limit": 12,
+  "candidate_freeze_before_task_outcomes": true,
+  "subgoal_route_action_limit": 240,
+  "fallback_policy_version": "phase5-r2-budgeted-visual-fallback-v1",
+  "fallback_viewpoint_selection_policy": "deterministic-grid-binning-v1",
+  "fallback_grid_bin_size_steps": 3,
+  "fallback_action_limit": 2048,
+  "fallback_scan_horizons_degrees": [0.0, 30.0],
+  "fallback_target_or_anchor_input_used": false,
+  "fallback_candidate_outcome_input_used": false,
+  "fallback_memory_input_used": false,
+  "fallback_memory_variant_input_used": false,
+  "shared_variant_contract": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ],
+  "authorized_scene_order": [
+    "FloorPlan6",
+    "FloorPlan7",
+    "FloorPlan8",
+    "FloorPlan10",
+    "FloorPlan13",
+    "FloorPlan16"
+  ],
+  "scene_skip_classifications": [
+    "scene_start_ineligible_no_standing_cup",
+    "scene_start_visibility_unstable_no_stable_pose",
+    "scene_start_ineligible_no_joint_feasible_start",
+    "subgoal_route_construction_ineligible",
+    "subgoal_route_execution_ineligible",
+    "budgeted_visual_fallback_construction_ineligible",
+    "budgeted_visual_fallback_execution_ineligible",
+    "budgeted_visual_fallback_reacquisition_not_achieved",
+    "native_batch_completed_without_qualified_configuration",
+    "candidate_batch_exhausted_without_route_or_replay_pass",
+    "reset_restoration_passed_but_scene_ineligible"
+  ],
+  "qualification_runs_memory_variants": false,
+  "images_saved": false,
+  "gui_enabled": false,
+  "formal_use_allowed": false,
+  "floorplan17_or_later_allowed": false,
+  "historical_artifacts_frozen": {
+    "scripts/qualify_phase5_r2_v5.py": "8dda109f2392b33c468d3fcd6a9f782a0807d40f5b40dec6079b297d36fe1352",
+    "configs/phase5_r2_qualification_v5.json": "1ae97b61a0a86d88a0569d2485ada7e961828fbd430c635a02ee981890bc9c75",
+    "configs/phase5_r2_budgeted_visual_fallback_v1.json": "0e1cecedd41300e7719061b390550d8115c342e25cd984f1f33891e178257cd0",
+    "docs/evidence/phase5_floorplan6_r2_budgeted_fallback_construction_v1.json": "eb6c31b877601012174195f49ceb7c5305bda10a65cd650c09f71f8baf7063f7",
+    "docs/evidence/phase5_floorplan3_r2_v2_qualification.json": "980ec6738ab80f20bf4aa617fd91ce89b43c7f6ec7ea2c489035f5a906a49a93",
+    "docs/evidence/phase5_floorplan4_r2_v2_qualification.json": "5373cbea07bab8ae99cb80893b2afe037fffb7a502fbc70c779cac3e671bb2ec",
+    "docs/evidence/phase5_floorplan12_r2_qualification_v4.json": "778166d69a2c2dea27e94d81be8bd72d300386cdd306d2726363e00ebed9fb12",
+    "configs/phase5_r2_floorplan12_qualified_configuration_v1.json": "417ec499d2513c474263ff53fdbe456efce7b7069ab4899d5f9b20f822dce2e9"
+  }
+}
