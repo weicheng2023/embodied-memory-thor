@@ -34,13 +34,17 @@ controlled.
 
 ## Approach
 
-Three variants run behind the same deterministic planner and action interface:
+Phase 5 and Phase 7A use three variants behind the same deterministic planner
+and action interface:
 
 | Variant | Historical information available to the planner |
 | --- | --- |
 | `no_memory` | No earlier observation; retains the full systematic search policy |
 | `short_memory_k2` | Exactly the two most recent safe observation snapshots |
 | `object_memory` | Persistent visible-derived object and last-seen camera records |
+
+Phase 7B preserves those conditions and adds generalized exact K=4 and K=8
+recent-observation windows in a separate fresh-run ablation.
 
 The controlled comparison keeps the following shared across variants:
 
@@ -53,7 +57,9 @@ The controlled comparison keeps the following shared across variants:
 - stale memory tested explicitly rather than reporting only favorable stable
   cases.
 
-## Experiment
+## Evidence chronology
+
+### Phase 5: controlled internal evaluation
 
 The accepted formal-v5 evaluation contains:
 
@@ -74,7 +80,7 @@ reuse six deterministic matched configurations per panel and are not 54
 independent environments or independent samples. Automated checks confirmed
 that hidden evaluator state was not exposed to the planner.
 
-## Key results
+#### Phase-5 results
 
 | Panel | Success: No / K=2 / Object | Mean steps: No / K=2 / Object | Mean reacquisition actions: No / K=2 / Object |
 | --- | ---: | ---: | ---: |
@@ -88,20 +94,53 @@ movement, route re-entry, and total action cost. In the stale panel it detected
 and corrected five explicit outdated records, then matched the baselines on the
 main costs.
 
+### Phase 7A: frozen holdout evaluation
+
+The unchanged three-condition R1 policy was evaluated on the first six
+configurations passing a rule fixed before outcomes (FloorPlan308-FloorPlan313).
+All 18 fresh episodes succeeded without scene-specific repair. Object memory
+used one fewer total and reacquisition action in five configurations and tied in
+one; K=2 matched no memory. This is a small conditional result in rotational
+reacquisition: no episode used translation or a fallback route. See the
+[Phase-7A result](docs/phase7/holdout_results.md).
+
+### Phase 7B: memory-horizon mechanism ablation
+
+All five variants were rerun fresh on the same six configurations, for 30 new
+executions under one frozen revision.
+
+| Variant | Target retained at reacquisition | Mean steps | Mean reacquisition actions |
+| --- | ---: | ---: | ---: |
+| No memory | 0/6 | 7.500 | 5.333 |
+| Recent memory K=2 | 0/6 | 7.500 | 5.333 |
+| Recent memory K=4 | 2/6 | 7.667 | 5.500 |
+| Recent memory K=8 | 6/6 | 6.667 | 4.500 |
+| Object memory | 6/6 | 6.667 | 4.500 |
+
+K=8 and object memory matched on retention, total actions, and reacquisition
+actions in every configuration. In this simple task, retaining the target long
+enough reproduced the observed efficiency pattern; the study does not
+demonstrate an additional benefit from structured object records or establish
+that the two memory systems are generally equivalent. See the
+[Phase-7B result](docs/phase7/memory_horizon_results.md).
+
 ## Takeaway
 
 > **Memory storage alone is insufficient. Useful embodied memory must be coupled
 > with efficient memory-conditioned navigation and uncertainty-aware revision.**
 
-This mixed result is the main finding: retrieving the right location can reduce
-blind search, yet a weak policy for exploiting that location can erase or reverse
-the benefit.
+Across the three studies, retrieving the right location can reduce blind search,
+yet a weak policy for exploiting that location can erase or reverse the benefit.
+The horizon ablation further shows that the small simple-task gain does not, by
+itself, establish a benefit from structured representation beyond sufficient
+recent-context length.
 
-The project is a controlled internal case study developed through adaptive
-qualification, followed by one fixed fresh-run comparison. It supports
-conditional evidence in the engineered settings, not statistical significance
-or broad external validity. See
-[the formal result and claim boundary](docs/phase5_formal_results.md).
+The project begins with a controlled internal case study developed through
+adaptive qualification, then adds a frozen holdout and a separate mechanism
+ablation. Together they support conditional evidence in narrow deterministic
+settings, not statistical significance or broad external validity. See the
+[Phase-5 result](docs/phase5_formal_results.md) and
+[Phase-7 evidence index](docs/phase7/README.md).
 
 ## System at a glance
 
@@ -138,20 +177,22 @@ AI2-THOR metadata replaces a learned detector, and deterministic action logic
 avoids mixing visual errors or LLM sampling variance into the memory comparison.
 
 This is an experimental-control choice, not a claim that metadata planning is a
-complete embodied-agent solution. The natural successor is to replace it with a
+complete embodied-agent solution. A natural successor is to replace it with a
 structured LLM/VLM planner and RGB perception behind the same observation-memory
-interface, then evaluate on untouched holdout tasks and scenes.
+interface, then evaluate broader randomized holdout tasks with real navigation.
 
 ## Project status
 
-Phases 0-6 are complete:
+Phases 0-7 are complete:
 
 - Phase 3 established the controlled symbolic partial-observation harness;
 - Phase 4 established the real AI2-THOR loop and planner/evaluator boundary;
 - Phase 5 completed the adaptive protocol-development process and the fresh
   54-execution formal-v5 comparison;
 - Phase 6 assembled the architecture, results, failure analysis, application
-  abstract, scorecard, and reproducibility documentation.
+  abstract, scorecard, and reproducibility documentation;
+- Phase 7A completed a frozen first-six holdout evaluation, and Phase 7B
+  completed a fresh K=2/K=4/K=8 memory-horizon ablation.
 
 Formal-v2, v3, and v4 were invalidated after distraction, pickup-recovery, and
 route-execution defects. Their rows were not selectively reused; formal-v5 was
@@ -167,7 +208,7 @@ python -m pip install -e ".[dev]"
 python -m pytest -q
 ```
 
-The accepted checkpoint passes **422 tests plus 70 generated subtests**.
+The accepted checkpoint passes **448 tests plus 70 generated subtests**.
 
 ### Minimal mock episode
 
@@ -278,6 +319,7 @@ configs/evaluator_only/          Schema only; hidden frozen registries stay loca
 docs/evidence/                   Compact public qualification and result evidence
 docs/phase5_experiment_protocol.md  Chronological protocol-development audit
 docs/phase5_formal_results.md     Accepted descriptive result and claim boundary
+docs/phase7/                      Frozen successor protocols and accepted results
 outputs/                         Generated run artifacts (ignored except .gitkeep)
 scripts/                         Diagnostics, qualification, execution, aggregation
 src/embodied_memory_thor/        Environment, memory, planner, evaluator, trace code
@@ -293,6 +335,8 @@ tests/                           Offline contracts and regression coverage
   design;
 - [`docs/phase5_formal_results.md`](docs/phase5_formal_results.md): result table
   and interpretation;
+- [`docs/phase7/README.md`](docs/phase7/README.md): Phase-7 holdout and
+  memory-horizon evidence;
 - [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons.
 
 ## Development provenance and ownership
@@ -319,10 +363,15 @@ boundary.
 - The complete-condition comparison does not separately isolate memory
   persistence, capacity, representation structure, and retrieval; exact K=2 and
   persistent object memory differ along more than one of these dimensions.
+- Phase 7A adds only six holdout configurations in the same simple R1 structure;
+  it exercised rotation but no translation, fallback route, or difficult
+  recovery behavior.
+- Phase 7B shows an exact K=8/object-memory behavioral tie only on that narrow
+  deterministic panel; it does not establish representational equivalence.
 - The formal planner uses visible metadata rather than RGB perception or an LLM.
 - AI2-THOR results do not establish physical-robot performance.
 
-The strongest next study would commit the interface and successor policy before
-touching broader holdout scenes/tasks, report holdout failures without
+The strongest next study would extend the frozen-policy approach to broader,
+randomized tasks that require translation and recovery, report failures without
 task-specific repair, and separately evaluate structured LLM/VLM planning and
 RGB perception.
