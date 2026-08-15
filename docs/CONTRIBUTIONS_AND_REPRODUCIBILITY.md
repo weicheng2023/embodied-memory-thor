@@ -40,11 +40,13 @@ removed to make the project look uniformly successful.
 
 ## What the evidence supports
 
-The accepted formal-v5 matrix contains 54 successful real AI2-THOR episodes over
-three six-configuration matched panels. Persistent object memory modestly reduced
-reacquisition work in R1 stable, did not improve the longer R2 task overall, and
-used bounded fallback in the stale panel without reducing its main costs. These
-are descriptive results for the frozen settings, not statistical significance,
+The project is an audited protocol-development case study followed by one frozen,
+fresh-run internal comparison. The accepted formal-v5 matrix contains 54
+successful real AI2-THOR episodes over three six-configuration matched panels.
+Persistent object memory modestly reduced reacquisition work in R1 stable, did
+not improve the longer R2 task overall, and used bounded fallback in the stale
+panel without reducing its main costs. These are descriptive results for the
+engineered settings, not an externally valid benchmark, statistical significance,
 broad robotics generalization, or evidence that memory is always beneficial.
 
 The detailed boundary is stated in

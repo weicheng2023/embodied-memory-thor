@@ -1,5 +1,17 @@
 # Phase 5 Real AI2-THOR Memory Comparison Protocol
 
+## Reader note: study classification
+
+This is a cumulative protocol-development log, not evidence that the complete
+Phase 5 study was fixed once at the outset. The task, scene, route, candidate,
+camera, interaction, and recovery contracts evolved adaptively as retained
+simulator failures were diagnosed. Each successor gate was prospectively
+committed before its corresponding execution, and invalidated runs were not
+reused. Only the final formal-v5 matrix should be described as frozen and
+fresh-run. The overall project is therefore an audited protocol-development case
+study with a frozen final matched evaluation, not an externally valid
+preregistered benchmark.
+
 Status: protocol v1 frozen before comparison runs. Phase 5A1 implementation has
 started with offline-only memory-provider and parity tests; no Phase 5 episode or
 comparison has run.

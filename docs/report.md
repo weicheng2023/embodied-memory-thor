@@ -5,9 +5,10 @@
 This is a lightweight research preparation project about memory, context, and
 auditable evaluation in embodied agents. It is not a state-of-the-art method,
 does not train a vision-language-action model, and does not claim transfer to a
-physical robot. Its contribution is a controlled real-simulator comparison in
-which memory access is isolated from search capability and hidden evaluator
-state.
+physical robot. Its contribution is an audited protocol-development case study
+followed by a frozen real-simulator comparison in which memory access is isolated
+from search capability and hidden evaluator state. It is not positioned as an
+externally valid preregistered benchmark.
 
 ## Motivation
 
@@ -91,6 +92,12 @@ Scene availability was not inferred from object stereotypes. R1 and R2 scenes,
 starts, target-independent routes, and stale anchors were qualified in fixed
 orders with rejected candidates retained. Public route contracts contain action
 names and digests; private coordinates remain in Git-ignored evaluator registries.
+
+This qualification was adaptive protocol development. Book availability, route
+budgets, candidate visibility, camera horizons, pickup collisions, and frozen
+route failures all informed later task and policy contracts. Success in the final
+panels is therefore conditional on substantial scene/task engineering and should
+not be interpreted as out-of-sample benchmark performance.
 
 The formal manifest fixed one clean pushed revision, 54-cell ordering,
 controller parameters, policies, 72 required metrics, no-image/no-GUI output,
@@ -183,8 +190,9 @@ The full taxonomy and evidence links are in [failure_cases.md](failure_cases.md)
   advantage. R2 reveals larger route-policy dependence.
 - Stale anchors were qualified, but one scene did not force an explicit stale
   miss across the full remembered camera-restoration sequence.
-- The lengthy qualification history improves auditability but makes the current
-  engineering surface larger than an ideal minimal benchmark package.
+- Tasks, scenes, routes, and recovery policies were co-developed through a long
+  qualification process. This improves internal auditability but limits external
+  validity and leaves a larger engineering surface than an ideal minimal study.
 
 ## Future work
 
@@ -192,22 +200,26 @@ The full taxonomy and evidence links are in [failure_cases.md](failure_cases.md)
    ranking that accounts for path cost and route re-entry.
 2. Add stronger stale anchors that remain hidden across every remembered camera
    restoration, then test stale cost as a controlled independent variable.
-3. Increase scenes, layouts, target types, and randomized initial conditions,
-   with a new preregistered inferential analysis when sample size supports it.
+3. Freeze a successor before touching new holdout scenes, layouts, target types,
+   and randomized initial conditions; report holdout failures without
+   task-specific repair, then use inferential analysis only if sample size
+   supports it.
 4. Add pixel-based object detection while preserving the same planner/evaluator
    boundary, allowing perception and memory errors to be separated.
 5. Evaluate the optional structured LLM planner as a distinct study, reporting
    tokens, latency, invalid actions, and prompt/context ablations.
-6. Reduce legacy qualification scripts into a smaller reproducible benchmark
+6. Reduce legacy qualification scripts into a smaller reproducible evaluation
    command without deleting historical evidence.
 
 ## Conclusion
 
 The project establishes a reproducible real AI2-THOR pipeline in which persistent
 object memory can be compared fairly with capable limited/no-memory baselines.
-The result is deliberately conditional: object memory helped simple Book
-reacquisition, did not improve the longer ordered Cup task overall, and recovered
-from stale information without task failure. The main research lesson is that
-memory representation and memory-conditioned navigation must be evaluated
+Its primary research contribution is the audited protocol-development case and
+the internal validity of the final frozen comparison, not an externally validated
+benchmark. The result is deliberately conditional: object memory helped simple
+Book reacquisition, did not improve the longer ordered Cup task overall, and
+recovered from stale information without task failure. The main research lesson
+is that memory representation and memory-conditioned navigation must be evaluated
 together; remembering the right place is useful only when the agent can exploit
 that information efficiently.

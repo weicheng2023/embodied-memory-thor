@@ -1,5 +1,16 @@
 # Phase 5 Formal-v5 Results
 
+## Study type
+
+Formal-v5 is the frozen endpoint of an adaptive, audited protocol-development
+case study. Earlier simulator failures informed scene qualification, route
+construction, recovery policies, and successor protocol versions. Those changes
+were committed before their subsequent runs, and v2-v4 rows were discarded
+rather than selectively reused; nevertheless, the overall study was not fixed
+once at the outset. The final matrix supports a controlled internal comparison
+within the engineered settings, not external-validity or preregistered-benchmark
+claims.
+
 ## Outcome
 
 The fixed real AI2-THOR matrix completed 54/54 episodes with 54 task successes,
@@ -51,7 +62,9 @@ initially hidden the Book.
 These are repeated real-simulator results, but each panel contains only six
 deterministic matched configurations. No significance test or panel pooling was
 performed, and the result does not establish broad task, scene, perception, or
-robotics generalization. The supported claim is conditional: persistent memory
+robotics generalization. Because tasks, scenes, routes, and recovery policies were
+co-developed through qualification, the result also does not estimate performance
+on untouched settings. The supported claim is conditional: persistent memory
 helped simple reacquisition in the tested R1 settings; it was not unconditionally
 better, and R2 exposes navigation overhead that should be addressed next.
 

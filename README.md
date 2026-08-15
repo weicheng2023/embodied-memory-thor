@@ -2,6 +2,12 @@
 
 A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-THOR.
 
+This repository is best read as an **audited protocol-development case study**
+followed by one frozen, fresh-run matched evaluation. Tasks, scenes, routes, and
+recovery policies were developed adaptively in response to retained simulator
+failures. Formal-v5 was frozen and rerun from cell 1 after that process; it is not
+presented as an externally valid preregistered benchmark.
+
 Phase 5 formal-v5 is complete. One fixed clean-revision matrix ran 54/54 real
 AI2-THOR episodes across R1 stable, R2 stable, and R1 stale; every task succeeded
 and every integrity/information-boundary audit passed. The comparison keeps
@@ -277,10 +283,11 @@ tests/                           Automated tests
 
 See [`docs/development_status.md`](docs/development_status.md) for the phase-by-phase status.
 
-The preregistered Phase 5 comparison design and audit history are in
-[`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md). It
-freezes fairness, two task structures, a stale-memory negative panel, scene
-qualification, metrics, and stop rules. The accepted descriptive result is in
+The adaptive Phase 5 protocol-development and frozen-evaluation history is in
+[`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md).
+Individual successor gates were prospectively committed before execution, but
+the overall protocol evolved through qualification and failure diagnosis. The
+accepted descriptive result is in
 [`docs/phase5_formal_results.md`](docs/phase5_formal_results.md).
 
 ## Research presentation package
