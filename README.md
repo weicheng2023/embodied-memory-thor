@@ -20,6 +20,18 @@ possible.
 > object memory reduce target reacquisition effort relative to a capable
 > no-memory search policy and exact-K short-term memory?
 
+## Related work and positioning
+
+[Kolve et al. (2017)](https://arxiv.org/abs/1712.05474) introduced AI2-THOR as
+an interactive 3D environment for agents that navigate and manipulate household
+objects. Long-term object memory is also established prior work:
+[Fukushima et al. (2022)](https://arxiv.org/abs/2203.14708) proposed the Object
+Memory Transformer for Object Goal Navigation. This project therefore does not
+claim a novel memory architecture. It asks a narrower evaluation question:
+whether lightweight persistent visible-history memory produces measurable
+benefit when baseline search capability and privileged simulator state are
+controlled.
+
 ## Approach
 
 Three variants run behind the same deterministic planner and action interface:
@@ -127,9 +139,8 @@ avoids mixing visual errors or LLM sampling variance into the memory comparison.
 
 This is an experimental-control choice, not a claim that metadata planning is a
 complete embodied-agent solution. The natural successor is to replace it with a
-structured LLM/VLM planner and RGB perception behind the same audited
-observation-memory interface, then evaluate on untouched holdout tasks and
-scenes.
+structured LLM/VLM planner and RGB perception behind the same observation-memory
+interface, then evaluate on untouched holdout tasks and scenes.
 
 ## Project status
 
@@ -144,7 +155,7 @@ Phases 0-6 are complete:
 
 Formal-v2, v3, and v4 were invalidated after distraction, pickup-recovery, and
 route-execution defects. Their rows were not selectively reused; formal-v5 was
-rerun from cell 1 after the successor protocol was frozen. The complete
+rerun from cell 1 after the successor rules were fixed. The complete
 chronology remains in [`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md).
 
 ## Quick reproduction
@@ -194,7 +205,7 @@ python scripts/run_thor_episode.py \
 RGB is a human-audit artifact; the formal planner consumes visible metadata.
 Setup actions and optional evaluator debug state are logged separately from
 planner metrics. A complete formal-matrix rerun additionally requires the local
-evaluator-only frozen registry described in
+evaluator-only historical registry described in
 [`configs/evaluator_only/README.md`](configs/evaluator_only/README.md).
 
 ## Installation and environment
@@ -311,7 +322,7 @@ boundary.
 - The formal planner uses visible metadata rather than RGB perception or an LLM.
 - AI2-THOR results do not establish physical-robot performance.
 
-The strongest next study would freeze the audited interface and successor policy
-before touching broader holdout scenes/tasks, report holdout failures without
-task-specific repair, and separately evaluate structured LLM/VLM planning and RGB
-perception.
+The strongest next study would commit the interface and successor policy before
+touching broader holdout scenes/tasks, report holdout failures without
+task-specific repair, and separately evaluate structured LLM/VLM planning and
+RGB perception.

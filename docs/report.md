@@ -34,6 +34,19 @@ search policy and exact-K short-term memory?
 The tested comparison uses a deterministic metadata planner. It studies memory
 access and downstream navigation, not pixel perception or LLM reasoning quality.
 
+## Related work and positioning
+
+[Kolve et al. (2017)](https://arxiv.org/abs/1712.05474) introduced AI2-THOR as
+an interactive 3D environment for visual agents that can navigate and manipulate
+objects. Persistent semantic/object memory is not new: the
+[Object Memory Transformer](https://arxiv.org/abs/2203.14708) of Fukushima et
+al. (2022), for example, uses long-term object and scene observations for Object
+Goal Navigation. Embodied-navigation research also includes broader semantic and
+spatial mapping approaches. This project makes no architecture-novelty claim;
+its narrower contribution is a controlled comparison of lightweight
+visible-history memory against search-capable baselines while excluding
+privileged simulator state from planner decisions.
+
 ## System design
 
 One episode engine connects an environment, safe observation parser, memory
@@ -169,7 +182,7 @@ first live task failed because Book was not visible at reset, and later
 distraction templates failed because initial horizon and near-field geometry
 violated simple assumptions.
 
-Second, native simulator actions and frozen routes require bounded, auditable
+Second, native simulator actions and fixed routes require bounded, explicit
 failure handling. Pickup collision once caused repeated actions to the limit;
 a persistent FloorPlan10 obstacle survived stabilization and retry. Both were
 treated as protocol defects or scene ineligibility, not favorable memory data.
