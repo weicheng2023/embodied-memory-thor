@@ -1,6 +1,6 @@
 # Embodied-Memory-THOR
 
-**Auditable evaluation of persistent object memory for partially observable embodied agents in AI2-THOR.**
+**Controlled evaluation of persistent object memory for partially observable embodied agents in AI2-THOR.**
 
 ## Problem
 
@@ -46,16 +46,21 @@ The controlled comparison keeps the following shared across variants:
 The accepted formal-v5 evaluation contains:
 
 ```text
-3 panels x 6 matched configurations x 3 memory variants = 54 episodes
+18 matched configuration cells across 3 panels
+x 3 memory variants = 54 executions
 ```
 
 - **R1 stable:** reacquire a previously seen Book;
 - **R2 stable:** complete a CoffeeMachine subgoal, then reacquire a Cup;
 - **R1 stale:** revisit an outdated Book record, fall back, and correct it.
 
-All 54 real AI2-THOR episodes completed successfully and passed the registered
-information-boundary audits. The 54 episodes are repeated cells over six
-deterministic configurations per panel, not 54 independent environments.
+All 54 real AI2-THOR executions completed successfully. Success was therefore
+saturated and does not distinguish the variants; the informative comparisons
+are task/action efficiency, reacquisition effort, search rotations,
+translation/navigation overhead, and stale-memory recovery. These executions
+reuse six deterministic matched configurations per panel and are not 54
+independent environments or independent samples. Automated checks confirmed
+that hidden evaluator state was not exposed to the planner.
 
 ## Key results
 
@@ -65,8 +70,8 @@ deterministic configurations per panel, not 54 independent environments.
 | R2 stable | 6/6 / 6/6 / 6/6 | 28.50 / 28.50 / **32.00** | 21.50 / 21.50 / **23.83** |
 | R1 stale | 6/6 / 6/6 / 6/6 | 43.33 / 43.33 / 43.33 | 41.00 / 41.00 / 41.00 |
 
-Persistent memory produced a small, directionally sensible benefit in simple
-R1 reacquisition. In the longer R2 task it reduced search rotations but increased
+Persistent memory produced a small conditional efficiency gain in simple R1
+reacquisition. In the longer R2 task it reduced search rotations but increased
 movement, route re-entry, and total action cost. In the stale panel it detected
 and corrected five explicit outdated records, then matched the baselines on the
 main costs.
@@ -80,10 +85,11 @@ This mixed result is the main finding: retrieving the right location can reduce
 blind search, yet a weak policy for exploiting that location can erase or reverse
 the benefit.
 
-The project is an **audited protocol-development case study** followed by one
-frozen, fresh-run internal comparison. It supports conditional evidence in the
-engineered settings, not statistical significance or broad external validity.
-See [the formal result and claim boundary](docs/phase5_formal_results.md).
+The project is a controlled internal case study developed through adaptive
+qualification, followed by one fixed fresh-run comparison. It supports
+conditional evidence in the engineered settings, not statistical significance
+or broad external validity. See
+[the formal result and claim boundary](docs/phase5_formal_results.md).
 
 ## System at a glance
 
@@ -132,7 +138,7 @@ Phases 0-6 are complete:
 - Phase 3 established the controlled symbolic partial-observation harness;
 - Phase 4 established the real AI2-THOR loop and planner/evaluator boundary;
 - Phase 5 completed the adaptive protocol-development process and the fresh
-  54-episode formal-v5 comparison;
+  54-execution formal-v5 comparison;
 - Phase 6 assembled the architecture, results, failure analysis, application
   abstract, scorecard, and reproducibility documentation.
 
@@ -276,9 +282,7 @@ tests/                           Offline contracts and regression coverage
   design;
 - [`docs/phase5_formal_results.md`](docs/phase5_formal_results.md): result table
   and interpretation;
-- [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons;
-- [`PROJECT_SCORECARD.md`](PROJECT_SCORECARD.md): original engineering-rubric
-  self-assessment and remaining gaps.
+- [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons.
 
 ## Development provenance and ownership
 
@@ -301,6 +305,9 @@ boundary.
   task-specific evidence only.
 - Tasks, scenes, routes, and recovery policies were co-developed during
   qualification, limiting external validity.
+- The complete-condition comparison does not separately isolate memory
+  persistence, capacity, representation structure, and retrieval; exact K=2 and
+  persistent object memory differ along more than one of these dimensions.
 - The formal planner uses visible metadata rather than RGB perception or an LLM.
 - AI2-THOR results do not establish physical-robot performance.
 

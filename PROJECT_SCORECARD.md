@@ -9,6 +9,9 @@ The score reflects a complete, auditable real-simulator study, while retaining
 deductions for limited scene count, metadata perception, deterministic formal
 planning, and a large historical engineering surface.
 
+This file is retained as historical engineering self-assessment and is not
+recommended as supervisor-facing research evidence.
+
 The `91/100` value is an engineering-completeness score against that local rubric;
 it is not a publication-quality, scientific-impact, or external-validity score.
 

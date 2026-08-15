@@ -5,10 +5,10 @@
 This is a lightweight research preparation project about memory, context, and
 auditable evaluation in embodied agents. It is not a state-of-the-art method,
 does not train a vision-language-action model, and does not claim transfer to a
-physical robot. Its contribution is an audited protocol-development case study
-followed by a frozen real-simulator comparison in which memory access is isolated
-from search capability and hidden evaluator state. It is not positioned as an
-externally valid preregistered benchmark.
+physical robot. Its contribution is a controlled case study developed through
+adaptive protocol qualification, followed by a fixed real-simulator comparison
+in which memory access is isolated from search capability and hidden evaluator
+state. It is not positioned as an externally valid preregistered benchmark.
 
 ## Motivation
 
@@ -55,15 +55,16 @@ The planner receives only current visible objects, safe agent/inventory state,
 retrieved visible-history memory, available actions, and ordinary action/failure
 history. Full metadata is available only to setup and success evaluation.
 Evaluator-only relocation destinations and native actions are stored separately.
-The exact planner request is hashed and audited on every step.
+The exact planner request is hashed and checked on every step.
 
 The architecture and information boundary are detailed in
 [architecture.md](architecture.md).
 
 ## Tasks and experimental panels
 
-The accepted matrix contains three panels, each with six frozen matched
-configurations and three variants, for 54 episodes total.
+The accepted matrix contains 18 matched configuration cells across three panels
+(six per panel), each evaluated under three variants, for 54 executions total.
+These are not 54 independent environments or independent samples.
 
 ### R1 stable: Book reacquisition
 
@@ -99,7 +100,7 @@ route failures all informed later task and policy contracts. Success in the fina
 panels is therefore conditional on substantial scene/task engineering and should
 not be interpreted as out-of-sample benchmark performance.
 
-The formal manifest fixed one clean pushed revision, 54-cell ordering,
+The formal manifest fixed one clean pushed revision, 54-execution ordering,
 controller parameters, policies, 72 required metrics, no-image/no-GUI output,
 and a 2048-action ceiling. An integrity failure invalidated a partial matrix and
 required a new protocol version plus a complete fresh rerun. Formal-v2, v3, and
@@ -125,9 +126,12 @@ significance test was performed.
 
 ## Results
 
-All 54 episodes succeeded and all integrity audits passed. K=2 and no-memory
-were identical on every primary metric in all three panels, consistent with the
-target record being evicted before reacquisition.
+All 54 executions succeeded and all information-boundary checks passed. Final
+success was therefore saturated and is not evidence that one memory condition
+was superior. The informative outcomes are action efficiency, reacquisition
+effort, search rotations, translation/navigation overhead, and stale-memory
+recovery. K=2 and no-memory were identical on every primary metric in all three
+panels, consistent with the target record being evicted before reacquisition.
 
 | Panel | Mean steps: No / K=2 / Object | Object - No steps | Mean reacquisition actions: No / K=2 / Object | Object - No reacquisition |
 | --- | ---: | ---: | ---: | ---: |
@@ -135,10 +139,11 @@ target record being evicted before reacquisition.
 | R2 stable | 28.50 / 28.50 / 32.00 | +3.50; 1 better, 1 tie, 4 worse | 21.50 / 21.50 / 23.83 | +2.33; 1 better, 3 ties, 2 worse |
 | R1 stale | 43.33 / 43.33 / 43.33 | 0.00; 6 ties | 41.00 / 41.00 / 41.00 | 0.00; 6 ties |
 
-For R1 stable, persistent memory produced a small, clean reacquisition benefit:
-three configurations saved one reacquisition action and three tied. Repeated
-viewpoint visits also fell by one on average. Overall episode steps improved
-only slightly because one native interaction required an extra action.
+For R1 stable, persistent memory produced a small conditional reacquisition-
+efficiency gain: three configurations saved one reacquisition action and three
+tied. Repeated viewpoint visits also fell by one on average. Overall episode
+steps improved only slightly because one native interaction required an extra
+action.
 
 For R2 stable, memory reduced mean search rotations by 3.17, showing that the
 agent did use last-seen context instead of only blind scanning. Yet translation,
@@ -193,6 +198,11 @@ The full taxonomy and evidence links are in [failure_cases.md](failure_cases.md)
 - Tasks, scenes, routes, and recovery policies were co-developed through a long
   qualification process. This improves internal auditability but limits external
   validity and leaves a larger engineering surface than an ideal minimal study.
+- The three complete conditions do not independently isolate memory persistence,
+  capacity, representation structure, or retrieval mechanism. In particular,
+  exact K=2 recent observations and persistent object records differ along
+  several dimensions, so Phase 5 cannot assign the paired differences to any
+  one memory property.
 
 ## Future work
 
@@ -215,8 +225,8 @@ The full taxonomy and evidence links are in [failure_cases.md](failure_cases.md)
 
 The project establishes a reproducible real AI2-THOR pipeline in which persistent
 object memory can be compared fairly with capable limited/no-memory baselines.
-Its primary research contribution is the audited protocol-development case and
-the internal validity of the final frozen comparison, not an externally validated
+Its primary research contribution is the controlled protocol-development case
+and the internal validity of the final fixed comparison, not an externally validated
 benchmark. The result is deliberately conditional: object memory helped simple
 Book reacquisition, did not improve the longer ordered Cup task overall, and
 recovered from stale information without task failure. The main research lesson
