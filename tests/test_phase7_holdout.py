@@ -51,7 +51,7 @@ def test_candidate_pool_excludes_phase5_formal_scenes_and_is_deterministic() -> 
     assert pool["target_configuration_count"] == 6
 
 
-def test_preregistered_manifest_freezes_variants_and_budgets() -> None:
+def test_matrix_frozen_manifest_freezes_variants_budgets_and_selection() -> None:
     manifest = json.loads(
         (ROOT / "configs" / "phase7" / "holdout_manifest.json").read_text(
             encoding="utf-8"
@@ -61,7 +61,45 @@ def test_preregistered_manifest_freezes_variants_and_budgets() -> None:
     assert manifest["success_budgets"] == [18, 72, 2048]
     assert manifest["route_action_limit"] == PHASE7A_ROUTE_ACTION_LIMIT
     assert manifest["optional_ai_planner_used"] is False
-    assert manifest["status"] == "preregistered_no_outcomes"
+    assert manifest["status"] == "matrix_frozen_no_outcomes"
+    assert manifest["outcome_execution_authorized"] is True
+    assert manifest["selected_configuration_count"] == 6
+    assert len(manifest["selected_configurations"]) == 6
+    digest_payload = dict(manifest)
+    expected_digest = digest_payload.pop("manifest_digest")
+    assert stable_digest(digest_payload) == expected_digest
+
+
+def test_matrix_frozen_artifacts_are_hash_bound_and_runtime_loadable() -> None:
+    manifest_path = ROOT / "configs" / "phase7" / "holdout_manifest.json"
+    private_path = (
+        ROOT / "configs" / "phase7" / "evaluator_only" / "holdout_registry_v1.json"
+    )
+    routes_path = ROOT / "configs" / "phase7" / "holdout_routes_v1.json"
+    eligibility_path = ROOT / "docs" / "evidence" / "phase7" / "holdout_eligibility_v1.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    assert hashlib.sha256(private_path.read_bytes()).hexdigest() == manifest[
+        "evaluator_registry_sha256"
+    ]
+    assert hashlib.sha256(routes_path.read_bytes()).hexdigest() == manifest[
+        "route_registry_sha256"
+    ]
+    assert hashlib.sha256(eligibility_path.read_bytes()).hexdigest() == manifest[
+        "eligibility_evidence_sha256"
+    ]
+
+    validate_public_artifact(manifest)
+    validate_public_artifact(json.loads(routes_path.read_text(encoding="utf-8")))
+    validate_public_artifact(
+        json.loads(eligibility_path.read_text(encoding="utf-8"))
+    )
+    for row in manifest["selected_configurations"]:
+        runtime = load_phase7a_holdout_runtime(row["configuration_id"])
+        public = runtime.configuration.public_reference()
+        assert public["planner_visible"] is False
+        assert "target_object_id" not in public
+        assert "start_action" not in public
 
 
 @pytest.mark.parametrize("horizon", [-30.0, 0.0, 30.0, 60.0])

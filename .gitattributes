@@ -1,6 +1,10 @@
 * text=auto
+.gitattributes text eol=lf
 *.py text eol=lf
 *.md text eol=lf
 *.toml text eol=lf
 *.txt text eol=lf
 *.example text eol=lf
+configs/phase7/*.json text eol=lf
+configs/phase7/evaluator_only/*.json text eol=lf
+docs/evidence/phase7/*.json text eol=lf

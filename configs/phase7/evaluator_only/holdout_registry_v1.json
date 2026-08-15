@@ -1,0 +1,106 @@
+{
+  "boundary": "EVALUATOR-ONLY PHASE7A HOLDOUT SETUP - NEVER PLANNER INPUT",
+  "configuration_count": 6,
+  "configurations": [
+    {
+      "configuration_id": "FloorPlan308_Phase7A_R1_holdout_001",
+      "route_id": "FloorPlan308_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "scene": "FloorPlan308",
+      "start_action": {
+        "action": "TeleportFull",
+        "horizon": -30.0,
+        "rotation": 180.0,
+        "standing": false,
+        "x": -0.75,
+        "y": 0.9009991884231567,
+        "z": 0.25
+      },
+      "start_pose_digest": "f821ecbbec23a2c8aa24464a47d4a8af2113bcf369357f620f9da126026ff02b",
+      "target_object_id": "Book|-00.62|+00.87|-01.33"
+    },
+    {
+      "configuration_id": "FloorPlan309_Phase7A_R1_holdout_001",
+      "route_id": "FloorPlan309_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "scene": "FloorPlan309",
+      "start_action": {
+        "action": "TeleportFull",
+        "horizon": 0.0,
+        "rotation": 90.0,
+        "standing": true,
+        "x": -2.0,
+        "y": 0.9469271898269653,
+        "z": -2.0
+      },
+      "start_pose_digest": "12253d357d4dce47d94a3e86ce94797a8584c8d1006f05d0e89b5409cbadb6e8",
+      "target_object_id": "Book|-00.86|+01.11|-02.93"
+    },
+    {
+      "configuration_id": "FloorPlan310_Phase7A_R1_holdout_001",
+      "route_id": "FloorPlan310_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "scene": "FloorPlan310",
+      "start_action": {
+        "action": "TeleportFull",
+        "horizon": 30.0,
+        "rotation": 90.0,
+        "standing": true,
+        "x": -1.5,
+        "y": 0.9009992480278015,
+        "z": -1.0
+      },
+      "start_pose_digest": "1bc052c7a4fb80d7504ad11fc2c9215179a429553a107ef8855262ca93423005",
+      "target_object_id": "Book|-00.56|+00.84|-02.14"
+    },
+    {
+      "configuration_id": "FloorPlan311_Phase7A_R1_holdout_001",
+      "route_id": "FloorPlan311_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "scene": "FloorPlan311",
+      "start_action": {
+        "action": "TeleportFull",
+        "horizon": -30.0,
+        "rotation": 90.0,
+        "standing": false,
+        "x": 1.25,
+        "y": 0.9101201295852661,
+        "z": 2.5
+      },
+      "start_pose_digest": "699d82896d16ae09a67ba1232a1c397662125b0c266031e821c08c4d6e1eafb9",
+      "target_object_id": "Book|+02.65|+00.81|+03.34"
+    },
+    {
+      "configuration_id": "FloorPlan312_Phase7A_R1_holdout_001",
+      "route_id": "FloorPlan312_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "scene": "FloorPlan312",
+      "start_action": {
+        "action": "TeleportFull",
+        "horizon": -30.0,
+        "rotation": 90.0,
+        "standing": false,
+        "x": 0.5,
+        "y": 0.9009992480278015,
+        "z": -1.25
+      },
+      "start_pose_digest": "a08919b4259babe7bb399c61118cea4af806f74153624b1d2445ef7d7ea0e46e",
+      "target_object_id": "Book|+02.06|+00.75|-01.41"
+    },
+    {
+      "configuration_id": "FloorPlan313_Phase7A_R1_holdout_001",
+      "route_id": "FloorPlan313_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "scene": "FloorPlan313",
+      "start_action": {
+        "action": "TeleportFull",
+        "horizon": -30.0,
+        "rotation": 90.0,
+        "standing": false,
+        "x": -0.75,
+        "y": 0.9009991884231567,
+        "z": -1.5
+      },
+      "start_pose_digest": "73807a5de2c10b43e36d964a707bcabe6a00d4d1c35f9cc6231ff455cb75e271",
+      "target_object_id": "Book|+00.70|+00.70|-01.61"
+    }
+  ],
+  "included_in_planner_metrics": false,
+  "planner_visible": false,
+  "private_registry_digest": "6f572006cc072ef1dc8e2941cec2b36c9676893e89ac510e01b1c35b63bd147b",
+  "registry_version": "phase7a-holdout-evaluator-registry-v1"
+}

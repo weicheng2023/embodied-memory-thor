@@ -1,0 +1,91 @@
+{
+  "registry_version": "phase7a-holdout-route-registry-v1",
+  "route_policy": "phase7a-generic-budgeted-visual-fallback-v1",
+  "routes": [
+    {
+      "action_codes": "DRRRRDRRRRULFFFRRRRDRRRRURFFRFRRRRDRRRRURRFFRFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRUFFRRRRDRRRRULFFFRFRRRRDRRRRURRFFFRRRRDRRRRURFFRRRRDRRRRURFFRRRRDRRRRURRFFFFFFRFFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRURRFFFFFRRRRDRRRRULFFRRRRDRRRRURRFLFFLFRFRRRRDRRRRURFFRRRRDRRRRUFRFFLFFRFRRRRDRRRRUFFFRRRRDRRRRUU",
+      "action_sequence_digest": "94d8c1eb687fbab5e4ace1ce03d35ae11a698a322136752e9545249c2359b8b6",
+      "entry_angle_tolerance_degrees": 1.0,
+      "entry_position_tolerance_meters": 0.05,
+      "qualification_goal_input_used": false,
+      "route_id": "FloorPlan308_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "route_role": "target_independent_fallback",
+      "scene": "FloorPlan308",
+      "schema_version": "phase5-search-route-v1",
+      "source_qualification_route_digest": "48924c0f7d6916e5af41b140b1ad58996db75054aca3cceab01ffa9b4e99ca25",
+      "target_or_anchor_input_used": false,
+      "task": "thor_book_reacquire_k2"
+    },
+    {
+      "action_codes": "RRRRDRRRRURRFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRUFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRULFFFRRRRDRRRRULFFRRRRDRRRRURFLFRFFRRRRDRRRRURFFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRUFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRURFFFFFLFFFFFFFRFFFFFFFFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRUFRFLFRRRRDRRRRURFFLFRRRRDRRRRUFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRUFFFRRRRDRRRRUFFRRRRDRRRRULFFFRRRRDRRRRURRFRFFRRRRDRRRRUFFFRFRRRRDRRRRULFFRRRRDRRRRURRFFLFRFLFRRRRDRRRRURRFFLFRFLFRFFFFFRRRRDRRRRU",
+      "action_sequence_digest": "ee0563151509a78614786e2e77b90d30e3a305c26bb8625b04bda62969a5ceac",
+      "entry_angle_tolerance_degrees": 1.0,
+      "entry_position_tolerance_meters": 0.05,
+      "qualification_goal_input_used": false,
+      "route_id": "FloorPlan309_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "route_role": "target_independent_fallback",
+      "scene": "FloorPlan309",
+      "schema_version": "phase5-search-route-v1",
+      "source_qualification_route_digest": "dd1faa0501b698059916a8da8540ad307c1d3a9b3137278c2093eee6cc4b99a0",
+      "target_or_anchor_input_used": false,
+      "task": "thor_book_reacquire_k2"
+    },
+    {
+      "action_codes": "URRRRDRRRRULFFFRFRRRRDRRRRULFFFRRRRDRRRRURFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRURFFFRRRRDRRRRULFFFRRRRDRRRRUFFRRRRDRRRRULFLFRFFLFRRRRDRRRRUD",
+      "action_sequence_digest": "fa13fe495efbaebcfb90eb00dbc282062f69a09b6377bcc794cfca5595340e68",
+      "entry_angle_tolerance_degrees": 1.0,
+      "entry_position_tolerance_meters": 0.05,
+      "qualification_goal_input_used": false,
+      "route_id": "FloorPlan310_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "route_role": "target_independent_fallback",
+      "scene": "FloorPlan310",
+      "schema_version": "phase5-search-route-v1",
+      "source_qualification_route_digest": "9e7b7d770e5ccbb875646e5436aebd638a041b5bf414e970d5720399d9314652",
+      "target_or_anchor_input_used": false,
+      "task": "thor_book_reacquire_k2"
+    },
+    {
+      "action_codes": "DRRRRDRRRRULFFLFRRRRDRRRRURRFFFRRRRDRRRRURRFLFFFLFRRRRDRRRRURFFFRRRRDRRRRURFFFRRRRDRRRRULFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRURFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRURFFFRRRRDRRRRUFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRULFFFRRRRDRRRRULFFFRRRRDRRRRULFLFRFFFFFFFFRFRRRRDRRRRULFFFRFFFRRRRDRRRRURRFFRFFLFRFLFRFFFFFFRFRRRRDRRRRURRFFFRRRRDRRRRURFFFRRRRDRRRRUFFRRRRDRRRRURFLFFFRRRRDRRRRURFFRRRRDRRRRURFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRUFFRRRRDRRRRULFLFRFFLFRRRRDRRRRURFFRRRRDRRRRURRFFFFFRFFFFFFFFFRRRRDRRRRUFFRRRRDRRRRULFFRRRRDRRRRULFFRRRRDRRRRUU",
+      "action_sequence_digest": "6882129e82a69aa9226bfd4577e4b460c685319bb1a3e019c5a4aab7ffc664b3",
+      "entry_angle_tolerance_degrees": 1.0,
+      "entry_position_tolerance_meters": 0.05,
+      "qualification_goal_input_used": false,
+      "route_id": "FloorPlan311_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "route_role": "target_independent_fallback",
+      "scene": "FloorPlan311",
+      "schema_version": "phase5-search-route-v1",
+      "source_qualification_route_digest": "93929b6ce22fc1b5199bba51f2faed3b4b305be685dc42b124ae331a82e0e353",
+      "target_or_anchor_input_used": false,
+      "task": "thor_book_reacquire_k2"
+    },
+    {
+      "action_codes": "DRRRRDRRRRULFFFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRUFFFRRRRDRRRRURFFRRRRDRRRRURFFFLFRRRRDRRRRURFFRRRRDRRRRURFFLFRFLFFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRULFFRRRRDRRRRURFFFRRRRDRRRRURFFRRRRDRRRRUFFFRRRRDRRRRULFFFRRRRDRRRRURRFRFFRRRRDRRRRULFRFFFRFRRRRDRRRRUU",
+      "action_sequence_digest": "1ab0e7a21c8ffbb0ab044895ac9c199859453614980e04303458163f440fffd8",
+      "entry_angle_tolerance_degrees": 1.0,
+      "entry_position_tolerance_meters": 0.05,
+      "qualification_goal_input_used": false,
+      "route_id": "FloorPlan312_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "route_role": "target_independent_fallback",
+      "scene": "FloorPlan312",
+      "schema_version": "phase5-search-route-v1",
+      "source_qualification_route_digest": "9eb17b5a43423b8f3b1b6d7c6742e3fbc2a9e5aedb308d27d210cb7852b4c43a",
+      "target_or_anchor_input_used": false,
+      "task": "thor_book_reacquire_k2"
+    },
+    {
+      "action_codes": "DRRRRDRRRRURRFFFFRRRRDRRRRURRFFFFLFFFFRRRRDRRRRURFFRRRRDRRRRURFFRRRRDRRRRULFFRRRRDRRRRULFFRFRRRRDRRRRUFFRRRRDRRRRULFFFRRRRDRRRRULFFRRRRDRRRRURFFRRRRDRRRRURFFRRRRDRRRRURFRFFFFRFRRRRDRRRRURRFFRFRRRRDRRRRUFFRRRRDRRRRUU",
+      "action_sequence_digest": "bce9debe5bd74aa792664c68d20b3d70b7ef1431b12e04086d5504f6dfdf5d76",
+      "entry_angle_tolerance_degrees": 1.0,
+      "entry_position_tolerance_meters": 0.05,
+      "qualification_goal_input_used": false,
+      "route_id": "FloorPlan313_Phase7A_R1_holdout_001_generic_budgeted_v1",
+      "route_role": "target_independent_fallback",
+      "scene": "FloorPlan313",
+      "schema_version": "phase5-search-route-v1",
+      "source_qualification_route_digest": "eca5faea38957bc037407da41647ae90d1cb3615659328ddbb21b3ef4c6196ef",
+      "target_or_anchor_input_used": false,
+      "task": "thor_book_reacquire_k2"
+    }
+  ],
+  "schema_version": "phase5-search-route-v1"
+}
