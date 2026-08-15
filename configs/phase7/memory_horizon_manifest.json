@@ -1,0 +1,109 @@
+{
+  "analysis": {
+    "better_tie_worse": true,
+    "capacity_curve": [
+      2,
+      4,
+      8
+    ],
+    "pairing_unit": "configuration",
+    "primary_comparisons": [
+      "recent_memory_k2_minus_no_memory",
+      "recent_memory_k4_minus_no_memory",
+      "recent_memory_k8_minus_no_memory",
+      "object_memory_minus_no_memory",
+      "object_memory_minus_recent_memory_k8"
+    ],
+    "significance_test": false
+  },
+  "book_distraction_policy": "phase5-book-distraction-v4",
+  "claim_boundary": "Phase7B preregistered mechanism study; capacity is varied within recent-observation memory, while object memory still differs in representation and retrieval",
+  "condition": "stable",
+  "configuration_count": 6,
+  "configuration_ids": [
+    "FloorPlan308_Phase7A_R1_holdout_001",
+    "FloorPlan309_Phase7A_R1_holdout_001",
+    "FloorPlan310_Phase7A_R1_holdout_001",
+    "FloorPlan311_Phase7A_R1_holdout_001",
+    "FloorPlan312_Phase7A_R1_holdout_001",
+    "FloorPlan313_Phase7A_R1_holdout_001"
+  ],
+  "configuration_source": "configs/phase7/holdout_manifest.json",
+  "configuration_source_sha256": "93d8269e701396c40ac54ace06321ac3f29d06688f16f742cd4666024e7d28c9",
+  "controller_settings": {
+    "fieldOfView": 90,
+    "gridSize": 0.25,
+    "height": 300,
+    "quality": "Low",
+    "renderDepthImage": false,
+    "renderInstanceSegmentation": false,
+    "rotateStepDegrees": 90,
+    "snapToGrid": true,
+    "width": 300
+  },
+  "evaluator_registry": "configs/phase7/evaluator_only/holdout_registry_v1.json",
+  "evaluator_registry_sha256": "f0880b3e0c8612f7a6948a4393854519948387896fc88f23917dc2b1b578b2ce",
+  "expected_episode_count": 30,
+  "historical_phase5_k2_path_preserved": true,
+  "images_saved": false,
+  "included_in_phase5_aggregate": false,
+  "manifest_digest": "2052b196b3abbf398c29f9db543b4c37c4ce9b3324ec70c2f6a407e19d35014e",
+  "manifest_version": "phase7b-memory-horizon-preregistration-v1",
+  "max_steps_per_episode": 2048,
+  "metrics": [
+    "success",
+    "success_at_18",
+    "success_at_72",
+    "success_at_2048",
+    "steps",
+    "target_reacquisition_action_count",
+    "translation_action_count",
+    "translation_distance_meters",
+    "search_rotation_count",
+    "repeated_viewpoint_visit_count",
+    "memory_guided_action_count",
+    "memory_retrieval_count",
+    "target_record_present_at_reacquisition",
+    "target_record_age_actions_at_reacquisition",
+    "recent_capacity",
+    "invalid_action_count",
+    "failed_interaction_count",
+    "recovery_counts",
+    "information_boundary_passed"
+  ],
+  "optional_persistent_snapshot_memory_used": false,
+  "outcome_execution_authorized": true,
+  "planner": "deterministic",
+  "prior_episode_reuse": false,
+  "protocol": "docs/phase7/memory_horizon_protocol.md",
+  "recent_capacity_by_variant": {
+    "recent_memory_k2": 2,
+    "recent_memory_k4": 4,
+    "recent_memory_k8": 8
+  },
+  "recent_memory_provider": "phase7b-recent-observation-memory-v1",
+  "repair_policy": "no configuration-specific repair after the first Phase7B outcome; a general invalidating defect requires a new version and all 30 fresh reruns",
+  "required_execution_tag": "phase7b-memory-horizon-matrix-v1",
+  "retry_policy": "one retry only for infrastructure failure before observation zero; no retry after observation zero",
+  "route_registry": "configs/phase7/holdout_routes_v1.json",
+  "route_registry_sha256": "169b01977b5ef259ee58368c7c41ff0a2fc7b1a2ca4aa8584598d3739a1b9040",
+  "source_phase7a_result_tag": "phase7a-holdout-results-v1",
+  "source_phase7a_result_revision": "49f0935b223ce1a3e5113c37edd06527676691c7",
+  "status": "matrix_frozen_no_outcomes",
+  "success_budgets": [
+    18,
+    72,
+    2048
+  ],
+  "task": "thor_book_reacquire_k2",
+  "trace_retention_checkpoint": "first planner request whose task_stage is reacquire_book or pickup_book; post-hoc only and never action input",
+  "variant_order": "configuration order, then listed variant order",
+  "variants": [
+    "no_memory",
+    "recent_memory_k2",
+    "recent_memory_k4",
+    "recent_memory_k8",
+    "object_memory"
+  ],
+  "visualize": false
+}

@@ -1,6 +1,6 @@
 # Phase 7 Successor Studies
 
-Current status: Phase 7A result frozen; Phase 7B pending
+Current status: Phase 7A result frozen; Phase 7B matrix frozen, no outcomes run
 
 Phase 7 is additive successor research. It does not correct, extend, or replace
 the accepted Phase-5 formal-v5 evidence.
@@ -58,5 +58,8 @@ Never reuse only favorable rows.
 The detailed Phase-7A rules are in [holdout_protocol.md](holdout_protocol.md).
 The eligibility record is in
 [holdout_eligibility_v1.json](../evidence/phase7/holdout_eligibility_v1.json),
-and the frozen outcome is in [holdout_results.md](holdout_results.md). Phase 7B
-may now be preregistered, but no Phase-7B outcome has been run.
+and the frozen outcome is in [holdout_results.md](holdout_results.md). The
+Phase-7B mechanism-study rules are in
+[memory_horizon_protocol.md](memory_horizon_protocol.md). No Phase-7B outcome
+has been run. Its manifest authorizes execution only from a clean pushed commit
+at annotated tag `phase7b-memory-horizon-matrix-v1`.
