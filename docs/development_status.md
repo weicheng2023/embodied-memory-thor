@@ -1,6 +1,6 @@
 # Development Status
 
-## Current status: Phases 0-6 complete
+## Current status: Phases 0-7 complete
 
 The accepted formal-v5 run completed 54/54 real AI2-THOR episodes on clean
 revision `069dab5`, with 54 task successes, zero integrity errors, and all rows
@@ -12,10 +12,20 @@ panel with five explicit record corrections. Public results are in
 `docs/phase5_formal_results.md` and
 `docs/evidence/phase5_real_formal_v5_descriptive_results.json`.
 
-Phase 6 packages the architecture, research report, failure analysis, and
-160-word application abstract. Documentation and result-consistency gates pass,
-as do 422 tests plus 70 subtests. No new experiment or selective rerun was part
-of this documentation phase.
+Phase 7 adds two separate successor studies without changing Phase-5 evidence.
+Phase 7A ran the unchanged three-condition R1 policy on the first six eligible
+frozen holdout configurations: all 18 episodes succeeded, and object memory
+saved one action in five configurations and tied in one. These episodes used
+rotation only, so they do not demonstrate broader navigation performance.
+Phase 7B then ran all five conditions fresh in 30 episodes. K=8 recent memory
+matched object memory on target retention, total actions, and reacquisition
+actions in all six configurations; this bounded result does not establish that
+the representations are generally equivalent.
+
+Current documentation, result-consistency gates, 448 tests, and 70 generated
+subtests pass. The accepted successor evidence is under `docs/phase7/` and
+`docs/evidence/phase7/`; no Phase-5 canonical result or evidence file was
+rewritten.
 
 ## Historical engineering checkpoints
 

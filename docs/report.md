@@ -7,8 +7,9 @@ auditable evaluation in embodied agents. It is not a state-of-the-art method,
 does not train a vision-language-action model, and does not claim transfer to a
 physical robot. Its contribution is a controlled case study developed through
 adaptive protocol qualification, followed by a fixed real-simulator comparison
-in which memory access is isolated from search capability and hidden evaluator
-state. It is not positioned as an externally valid preregistered benchmark.
+and two separately frozen successor studies in which memory access is isolated
+from search capability and hidden evaluator state. It is not positioned as an
+externally valid preregistered benchmark.
 
 ## Motivation
 
@@ -54,8 +55,9 @@ provider, structured planner, action executor, task-progress tracker,
 state-based evaluator, and trace writer. The same engine serves formal batch and
 debug presentation modes.
 
-Three memory variants share the same task, start, action space, planner logic,
-target lock, systematic fallback, recovery policies, limits, and evaluator:
+In Phase 5 and Phase 7A, three memory variants share the same task, start,
+action space, planner logic, target lock, systematic fallback, recovery
+policies, limits, and evaluator:
 
 - `no_memory` stores no historical observation but can execute the complete
   target-independent search route;
@@ -75,9 +77,10 @@ The architecture and information boundary are detailed in
 
 ## Tasks and experimental panels
 
-The accepted matrix contains 18 matched configuration cells across three panels
-(six per panel), each evaluated under three variants, for 54 executions total.
-These are not 54 independent environments or independent samples.
+The accepted Phase-5 matrix contains 18 matched configuration cells across
+three panels (six per panel), each evaluated under three variants, for 54
+executions total. These are not 54 independent environments or independent
+samples.
 
 ### R1 stable: Book reacquisition
 
@@ -173,6 +176,30 @@ emitted; this limitation is retained in the result.
 Exact paired vectors and mechanism totals are available in
 [phase5_formal_results.md](phase5_formal_results.md) and the linked JSON evidence.
 
+## Phase 7 successor evidence
+
+Phase 7A tested the unchanged three-condition R1 policy on the first six
+configurations passing a rule fixed before outcomes. FloorPlan308 through
+FloorPlan313 received no scene-specific repair after comparative execution
+began. All 18 fresh episodes succeeded. Object memory used one fewer total and
+reacquisition action in five configurations and tied in one; K=2 again matched
+no memory. This is a frozen holdout result, but a narrow one: every episode used
+rotation only, with no translation, fallback route, invalid action, or failed
+interaction.
+
+Phase 7B then evaluated no memory, recent-observation K=2/K=4/K=8, and object
+memory in 30 fresh episodes under one separately frozen revision. The target was
+retained in 0/6 K=2, 2/6 K=4, and 6/6 K=8 conditions. K=8 and object memory
+matched on retention, total actions, and reacquisition actions in all six
+configurations. In this simple rotational panel, sufficient recent-context
+length reproduced the small efficiency pattern; the study provides no evidence
+of an additional benefit from structured object representation or retrieval.
+It does not establish that the memory systems are generally equivalent.
+
+The holdout and horizon results, exact paired vectors, integrity metadata, and
+limitations are under [phase7/](phase7/README.md). They are additive successor
+evidence and do not alter the Phase-5 canonical result.
+
 ## Failure analysis
 
 The development history exposed three broad lessons.
@@ -223,10 +250,10 @@ The full taxonomy and evidence links are in [failure_cases.md](failure_cases.md)
    ranking that accounts for path cost and route re-entry.
 2. Add stronger stale anchors that remain hidden across every remembered camera
    restoration, then test stale cost as a controlled independent variable.
-3. Freeze a successor before touching new holdout scenes, layouts, target types,
-   and randomized initial conditions; report holdout failures without
-   task-specific repair, then use inferential analysis only if sample size
-   supports it.
+3. Extend the frozen-policy holdout design to broader scenes, layouts, target
+   types, translation-heavy tasks, and randomized initial conditions; retain
+   failures without task-specific repair, then use inferential analysis only if
+   sample size supports it.
 4. Add pixel-based object detection while preserving the same planner/evaluator
    boundary, allowing perception and memory errors to be separated.
 5. Evaluate the optional structured LLM planner as a distinct study, reporting
@@ -238,11 +265,13 @@ The full taxonomy and evidence links are in [failure_cases.md](failure_cases.md)
 
 The project establishes a reproducible real AI2-THOR pipeline in which persistent
 object memory can be compared fairly with capable limited/no-memory baselines.
-Its primary research contribution is the controlled protocol-development case
-and the internal validity of the final fixed comparison, not an externally validated
-benchmark. The result is deliberately conditional: object memory helped simple
-Book reacquisition, did not improve the longer ordered Cup task overall, and
-recovered from stale information without task failure. The main research lesson
-is that memory representation and memory-conditioned navigation must be evaluated
-together; remembering the right place is useful only when the agent can exploit
-that information efficiently.
+Its primary contribution remains the controlled protocol-development case and
+the internal validity of the fixed comparisons, not an externally validated
+benchmark. Phase 5 found a small Book-reacquisition gain, worse overall cost in
+the longer ordered Cup task, and bounded stale correction. Phase 7A reproduced a
+small action difference on six frozen holdout configurations but exercised no
+navigation, while Phase 7B found that K=8 recent memory reproduced object-memory
+behavior in the same simple setting. The main lesson is that retention horizon,
+representation, and memory-conditioned navigation must be evaluated separately:
+remembering the right place matters only when the agent retains and exploits the
+information efficiently.
