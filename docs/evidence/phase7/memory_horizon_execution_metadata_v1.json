@@ -1,0 +1,33 @@
+{
+  "ai2thor_version": "5.0.0",
+  "analysis_digest": "e194912e675ca9200bf0c5b42afbb66decfddfb60d164559dbee8da3aca56a2d",
+  "analysis_file": "docs/evidence/phase7/memory_horizon_descriptive_results_v1.json",
+  "analysis_file_sha256": "b00bd70f1d5a03e54522c68d1a6215a85a6d597921a2bbe7081ca358b8e632f6",
+  "claim_boundary": "complete integrity-valid Phase7B paired mechanism evidence over six configurations; no significance or broad-generalization claim, and object-memory representation/retrieval remain different",
+  "code_revision": "5cecc728812e85e10ef56e60adb23f893cfdc543",
+  "completed_episode_count": 30,
+  "execution_command": "python scripts/phase7/run_memory_horizon.py --manifest configs/phase7/memory_horizon_manifest.json --output-dir outputs/phase7b_memory_horizon_v1_5cecc72 --required-tag phase7b-memory-horizon-matrix-v1",
+  "execution_tag": "phase7b-memory-horizon-matrix-v1",
+  "first_episode_created_at_utc": "2026-08-15T06:27:24.538879+00:00",
+  "integrity_error_count": 0,
+  "integrity_valid": true,
+  "last_episode_created_at_utc": "2026-08-15T06:33:04.652889+00:00",
+  "matrix_complete": true,
+  "matrix_manifest_digest": "2052b196b3abbf398c29f9db543b4c37c4ce9b3324ec70c2f6a407e19d35014e",
+  "matrix_manifest_sha256": "568cc401136e4fa5ff52b90bb6f7cc03819aa44c05d2adb61ef1aa5f46a278cc",
+  "platform": "Linux Orange 6.6.87.2-microsoft-standard-WSL2 x86_64",
+  "prior_episode_reuse": false,
+  "python_version": "3.10.12",
+  "result_digest": "57e2d64e3324c7ab13ed517043d5d95709b977252ca53c19af474d3ce3b94f17",
+  "summary_file": "docs/evidence/phase7/memory_horizon_summary_v1.json",
+  "summary_file_sha256": "59b08f0d6762cf5fc857ef3b5c9bee2dfd3ffd04516d05447f8323af735e7d8a",
+  "task_failure_count": 0,
+  "task_success_count": 30,
+  "variant_order": [
+    "no_memory",
+    "recent_memory_k2",
+    "recent_memory_k4",
+    "recent_memory_k8",
+    "object_memory"
+  ]
+}

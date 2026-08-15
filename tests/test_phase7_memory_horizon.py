@@ -306,3 +306,54 @@ def test_phase7b_aggregator_requires_fresh_ordered_quintets() -> None:
         -1,
         -1,
     ]
+
+
+def test_phase7b_frozen_result_evidence_is_hash_bound_and_complete() -> None:
+    evidence_root = ROOT / "docs" / "evidence" / "phase7"
+    metadata_path = evidence_root / "memory_horizon_execution_metadata_v1.json"
+    summary_path = evidence_root / "memory_horizon_summary_v1.json"
+    analysis_path = evidence_root / "memory_horizon_descriptive_results_v1.json"
+
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
+
+    assert metadata["matrix_complete"] is True
+    assert metadata["integrity_valid"] is True
+    assert metadata["completed_episode_count"] == 30
+    assert metadata["task_success_count"] == 30
+    assert metadata["task_failure_count"] == 0
+    assert metadata["integrity_error_count"] == 0
+    assert metadata["prior_episode_reuse"] is False
+
+    summary_sha256 = hashlib.sha256(summary_path.read_bytes()).hexdigest()
+    analysis_sha256 = hashlib.sha256(analysis_path.read_bytes()).hexdigest()
+    assert summary_sha256 == metadata["summary_file_sha256"]
+    assert analysis_sha256 == metadata["analysis_file_sha256"]
+    assert analysis["source_summary_sha256"] == summary_sha256
+
+    summary_digest_payload = dict(summary)
+    expected_result_digest = summary_digest_payload.pop("result_digest")
+    assert stable_digest(summary_digest_payload) == expected_result_digest
+    assert expected_result_digest == metadata["result_digest"]
+
+    analysis_digest_payload = dict(analysis)
+    expected_analysis_digest = analysis_digest_payload.pop("analysis_digest")
+    analysis_digest_payload.pop("source_summary_sha256")
+    assert stable_digest(analysis_digest_payload) == expected_analysis_digest
+    assert expected_analysis_digest == metadata["analysis_digest"]
+
+    assert len(summary["rows"]) == 30
+    assert all(not row["integrity_errors"] for row in summary["rows"])
+    retention = analysis["target_retention_counts"]
+    assert retention["recent_memory_k2"]["present"] == 0
+    assert retention["recent_memory_k4"]["present"] == 2
+    assert retention["recent_memory_k8"]["present"] == 6
+    assert retention["object_memory"]["present"] == 6
+    paired_steps = analysis["metrics"]["steps"]["paired_differences"]
+    assert paired_steps["object_memory_minus_recent_memory_k8"][
+        "differences"
+    ] == [0, 0, 0, 0, 0, 0]
+
+    for artifact in (metadata, summary, analysis):
+        validate_public_artifact(artifact)

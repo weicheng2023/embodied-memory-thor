@@ -13,3 +13,13 @@ Phase 7 evidence is additive and must not overwrite Phase-5 canonical evidence.
 
 The result interpretation and limitations are in
 [`docs/phase7/holdout_results.md`](../../phase7/holdout_results.md).
+
+- `memory_horizon_summary_v1.json`: exact compact output from the fresh 30-cell
+  Phase-7B execution.
+- `memory_horizon_descriptive_results_v1.json`: exact output from the frozen
+  paired capacity aggregator.
+- `memory_horizon_execution_metadata_v1.json`: Phase-7B environment, command,
+  revision, hashes, digests, counts, and integrity status.
+
+The Phase-7B interpretation and limitations are in
+[`docs/phase7/memory_horizon_results.md`](../../phase7/memory_horizon_results.md).
