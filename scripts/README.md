@@ -59,6 +59,11 @@ outputs must not replace, rename, or silently reuse Phase-5 artifacts.
   comparison from its required clean annotated tag.
 - `phase7/aggregate_holdout.py`: validate and descriptively aggregate one
   complete integrity-valid Phase-7A summary.
+- `phase7/run_memory_horizon.py`: run all 30 fresh Phase-7B R1 cells from the
+  frozen memory-horizon matrix tag and reduce the post-hoc retention checkpoint
+  to non-identifying scalars.
+- `phase7/aggregate_memory_horizon.py`: validate and descriptively aggregate a
+  complete integrity-valid Phase-7B capacity matrix.
 
 ## Documentation consistency
 
