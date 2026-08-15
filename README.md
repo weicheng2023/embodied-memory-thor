@@ -1,238 +1,180 @@
 # Embodied-Memory-THOR
 
-A lightweight memory and evaluation layer for LLM-based embodied agents in AI2-THOR.
+**Auditable evaluation of persistent object memory for partially observable embodied agents in AI2-THOR.**
 
-This repository is best read as an **audited protocol-development case study**
-followed by one frozen, fresh-run matched evaluation. Tasks, scenes, routes, and
-recovery policies were developed adaptively in response to retained simulator
-failures. Formal-v5 was frozen and rerun from cell 1 after that process; it is not
-presented as an externally valid preregistered benchmark.
+## Problem
 
-Phase 5 formal-v5 is complete. One fixed clean-revision matrix ran 54/54 real
-AI2-THOR episodes across R1 stable, R2 stable, and R1 stale; every task succeeded
-and every integrity/information-boundary audit passed. The comparison keeps
-`no_memory`, exact `short_memory_k2`, and `object_memory` behind the same
-deterministic planner, search, action, and evaluator paths.
+Embodied agents lose access to previously observed objects once those objects
+leave the current view. Persistent memory may help, but a comparison is easily
+confounded: a memory agent can appear stronger because its baseline cannot
+search, or because it reads privileged simulator state unavailable to an actual
+agent.
 
-The descriptive result is deliberately mixed. Object memory reduced mean R1
-stable target-reacquisition cost by 0.5 actions, but in R2 stable it increased
-mean total steps by 3.5 despite reducing search rotations. In R1 stale, it
-recovered five explicit outdated records while matching baseline principal
-costs. These six-configuration panels support a conditional real-simulator claim,
-not statistical significance or broad generalization. See
-[`docs/phase5_formal_results.md`](docs/phase5_formal_results.md).
+This project asks how to measure memory itself while holding search capability,
+action execution, recovery logic, and success evaluation as constant as
+possible.
 
-## Status
+## Research question
 
-Phases 0-5 are complete, and the Phase 6 research package is assembled. Phase 3
-provided controlled symbolic partial-observation evidence; Phase 4 established
-the real closed loop and auditable planner/evaluator boundary; Phase 5 completed
-the fresh matched 54-episode real-simulator comparison. The formal planner is
-deterministic. The optional OpenAI-compatible planner exists behind the same
-structured boundary but was not evaluated in the formal comparison.
+> In matched partially observable AI2-THOR tasks, does persistent visible-history
+> object memory reduce target reacquisition effort relative to a capable
+> no-memory search policy and exact-K short-term memory?
 
-## Development provenance
+## Approach
 
-Coding assistants were used extensively for implementation, tests, documentation
-drafting, command orchestration, and repository maintenance. The chronological
-development PR and immutable audit tag remain public, while the reviewed
-integration history groups the identical final tree by research milestone. See
-[`docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md`](docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md)
-for the division of responsibility, history mapping, supported claims, and
-reproduction boundary.
+Three variants run behind the same deterministic planner and action interface:
 
-## Motivation and scope
+| Variant | Historical information available to the planner |
+| --- | --- |
+| `no_memory` | No earlier observation; retains the full systematic search policy |
+| `short_memory_k2` | Exactly the two most recent safe observation snapshots |
+| `object_memory` | Persistent visible-derived object and last-seen camera records |
 
-This project explores how structured object state, recent interaction context, and action-failure history can support small embodied-agent pipelines. Its intended end-to-end loop is:
+The controlled comparison keeps the following shared across variants:
+
+- the same task, start, action space, target-lock, fallback search, recovery
+  policies, step limit, and state-based evaluator;
+- planner input limited to current visible-derived state, permitted history, and
+  the memory exposed by the selected variant;
+- evaluator-only global state and stale-relocation coordinates isolated from
+  planner requests, ordinary traces, and memory records;
+- stale memory tested explicitly rather than reporting only favorable stable
+  cases.
+
+## Experiment
+
+The accepted formal-v5 evaluation contains:
 
 ```text
-AI2-THOR environment
--> observation parsing
--> memory update
--> planner decision
--> action execution
--> state-based success evaluation
--> logging and report generation
+3 panels x 6 matched configurations x 3 memory variants = 54 episodes
 ```
 
-The project is a lightweight research preparation project. It is not a state-of-the-art method, does not train a large VLA or diffusion-policy model. Its focus is systems engineering, memory/context design, robust evaluation, and reproducibility.
+- **R1 stable:** reacquire a previously seen Book;
+- **R2 stable:** complete a CoffeeMachine subgoal, then reacquire a Cup;
+- **R1 stale:** revisit an outdated Book record, fall back, and correct it.
 
-## Requirements
+All 54 real AI2-THOR episodes completed successfully and passed the registered
+information-boundary audits. The 54 episodes are repeated cells over six
+deterministic configurations per panel, not 54 independent environments.
 
-- Python 3.10 or newer
-- Windows, macOS, or Linux for the mock path; live AI2-THOR is verified on Ubuntu 22.04 WSL2/WSLg rather than native Windows
-- AI2-THOR is optional during Phase 0
-- An OpenAI-compatible API key is optional and will not be needed for the mock path
+## Key results
 
-## Installation
+| Panel | Success: No / K=2 / Object | Mean steps: No / K=2 / Object | Mean reacquisition actions: No / K=2 / Object |
+| --- | ---: | ---: | ---: |
+| R1 stable | 6/6 / 6/6 / 6/6 | 7.33 / 7.33 / **7.17** | 5.00 / 5.00 / **4.50** |
+| R2 stable | 6/6 / 6/6 / 6/6 | 28.50 / 28.50 / **32.00** | 21.50 / 21.50 / **23.83** |
+| R1 stale | 6/6 / 6/6 / 6/6 | 43.33 / 43.33 / 43.33 | 41.00 / 41.00 / 41.00 |
 
-Create and activate a virtual environment, then install the local package:
+Persistent memory produced a small, directionally sensible benefit in simple
+R1 reacquisition. In the longer R2 task it reduced search rotations but increased
+movement, route re-entry, and total action cost. In the stale panel it detected
+and corrected five explicit outdated records, then matched the baselines on the
+main costs.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e .
+## Takeaway
+
+> **Memory storage alone is insufficient. Useful embodied memory must be coupled
+> with efficient memory-conditioned navigation and uncertainty-aware revision.**
+
+This mixed result is the main finding: retrieving the right location can reduce
+blind search, yet a weak policy for exploiting that location can erase or reverse
+the benefit.
+
+The project is an **audited protocol-development case study** followed by one
+frozen, fresh-run internal comparison. It supports conditional evidence in the
+engineered settings, not statistical significance or broad external validity.
+See [the formal result and claim boundary](docs/phase5_formal_results.md).
+
+## System at a glance
+
+```mermaid
+flowchart LR
+    THOR[AI2-THOR] --> OBS[Visible observation parser]
+    OBS --> MEM[Selected memory provider]
+    OBS --> REQ[PlannerRequest]
+    MEM --> REQ
+    REQ --> PLAN[Shared planner and recovery policy]
+    PLAN --> ACT[Action executor]
+    ACT --> THOR
+    REQ --> TRACE[Planner-visible audit trace]
+    ACT --> TRACE
+    THOR -. evaluator-only full state .-> EVAL[Intervention and success checker]
+    EVAL --> PRIVATE[Private evaluator audit]
 ```
 
-On macOS or Linux, activate with `source .venv/bin/activate`.
+The dashed evaluator path is unavailable to the planner. The full architecture
+and field-level information boundary are documented in
+[`docs/architecture.md`](docs/architecture.md).
 
-Optional development and AI2-THOR dependencies can be installed with:
+![Real AI2-THOR FloorPlan1 frame with a visible Book](docs/assets/ai2thor_smoke/floorplan1.png)
+
+*A real AI2-THOR integration-smoke frame captured from the in-memory RGB array.
+It confirms the simulator/rendering path; it is not presented as formal memory-
+comparison evidence.*
+
+## Why a deterministic visible-metadata planner?
+
+The formal study deliberately holds perception and open-ended planning constant
+so that memory access is the primary changing variable. Current visible
+AI2-THOR metadata replaces a learned detector, and deterministic action logic
+avoids mixing visual errors or LLM sampling variance into the memory comparison.
+
+This is an experimental-control choice, not a claim that metadata planning is a
+complete embodied-agent solution. The natural successor is to replace it with a
+structured LLM/VLM planner and RGB perception behind the same audited
+observation-memory interface, then evaluate on untouched holdout tasks and
+scenes.
+
+## Project status
+
+Phases 0-6 are complete:
+
+- Phase 3 established the controlled symbolic partial-observation harness;
+- Phase 4 established the real AI2-THOR loop and planner/evaluator boundary;
+- Phase 5 completed the adaptive protocol-development process and the fresh
+  54-episode formal-v5 comparison;
+- Phase 6 assembled the architecture, results, failure analysis, application
+  abstract, scorecard, and reproducibility documentation.
+
+Formal-v2, v3, and v4 were invalidated after distraction, pickup-recovery, and
+route-execution defects. Their rows were not selectively reused; formal-v5 was
+rerun from cell 1 after the successor protocol was frozen. The complete
+chronology remains in [`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md).
+
+## Quick reproduction
+
+### Offline tests
 
 ```powershell
 python -m pip install -e ".[dev]"
-python -m pip install -e ".[thor]"
-```
-
-## Environment configuration
-
-Copy `.env.example` to `.env` if a later phase will use an OpenAI-compatible endpoint. The project never commits `.env` and diagnostics report only whether variables are set, never their values.
-
-```dotenv
-OPENAI_API_KEY=
-OPENAI_BASE_URL=
-OPENAI_MODEL=
-```
-
-## Run the Phase 0 diagnostic
-
-Human-readable output:
-
-```powershell
-python scripts/check_environment.py
-```
-
-Machine-readable output:
-
-```powershell
-python scripts/check_environment.py --json
-```
-
-Use strict mode in CI or when checking readiness for all optional capabilities:
-
-```powershell
-python scripts/check_environment.py --strict
-```
-
-The default command succeeds when optional components are absent and explains the appropriate fallback. Strict mode returns a non-zero status if AI2-THOR, its controller, an API key, or likely graphical display support is unavailable.
-
-## Tests
-
-Run the complete offline suite with:
-
-```powershell
 python -m pytest -q
 ```
 
-The accepted Phase 6 checkpoint passes 422 tests plus 70 generated
-subtests.
+The accepted checkpoint passes **422 tests plus 70 generated subtests**.
 
-They are also compatible with `pytest` after installing the development extra.
+### Minimal mock episode
 
-## Inspect scene objects
-
-The deterministic mock path requires no AI2-THOR installation or graphical display:
-
-```powershell
-python scripts/list_scene_objects.py --mock
-python scripts/list_scene_objects.py --mock --json
-```
-
-If the optional AI2-THOR dependency and graphical environment are available:
-
-```powershell
-python scripts/list_scene_objects.py --scene FloorPlan1
-```
-
-The real-environment command reports an actionable error when AI2-THOR or Unity rendering is unavailable. The mock path remains usable in that case.
-
-## Run the verified live AI2-THOR smoke test
-
-The verified Windows-host route uses Ubuntu 22.04 on WSL2/WSLg because upstream AI2-THOR does not officially list native Windows support. Setup details and exact dependency records are in [`docs/ai2thor_wsl_setup.md`](docs/ai2thor_wsl_setup.md).
-
-```powershell
-wsl --distribution Ubuntu-22.04 --user research -- bash -lc "cd /mnt/d/path/to/embodied-memory-thor && ~/embodied-memory-thor-runtime/.venv/bin/python scripts/smoke_ai2thor.py --scenes FloorPlan1 FloorPlan10"
-```
-
-The verified run started both scenes, recorded real metadata and pose, changed visible observations through movement/rotation, completed a valid object interaction, captured an intentional failed interaction, and saved RGB frames. This is E2 integration evidence, not a memory experiment.
-
-## Run the minimal episode
-
-Run the Phase 2 acceptance task without AI2-THOR or external APIs:
+This path requires neither AI2-THOR nor an external API:
 
 ```powershell
 python scripts/run_episode.py --mock --task put_apple_on_countertop --planner rule_based
 ```
 
-Other configured tasks are:
+Each run writes `episode.jsonl` and `summary.json` under a unique
+`outputs/runs/<timestamp>/` directory.
 
-```text
-put_apple_on_plate
-wash_apple_put_countertop
-slice_apple_put_plate
-po_slice_apple_put_plate
-po_find_book_after_distraction
-```
+### Real AI2-THOR integration smoke test
 
-Each run creates a unique directory under `outputs/runs/<timestamp>/` containing:
-
-- `episode.jsonl`: one record per attempted action, including visible objects, action outcome, decision trace, before/after memory snapshots, provenance, task milestones, interventions, latency, and goal state
-- `summary.json`: success, steps, invalid-action, search/revisit, memory-hint, stale-recovery, audit, and latency metrics
-
-Task success is evaluated only from object metadata. Planner text is never treated as evidence of success.
-
-## Run the controlled partially observable harness
-
-The Phase 2R mock assigns Apple, Knife, and Plate to distinct seeded regions and exposes only the current region/view to ordinary planners:
+The verified Windows-host route uses Ubuntu 22.04 under WSL2/WSLg:
 
 ```powershell
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner rule_based_no_memory
+wsl --distribution Ubuntu-22.04 --user research -- bash -lc "cd /mnt/d/path/to/embodied-memory-thor && ~/embodied-memory-thor-runtime/.venv/bin/python scripts/smoke_ai2thor.py --scenes FloorPlan1 FloorPlan10"
 ```
 
-The privileged oracle is available only as a solvability/debug upper bound:
+See [`docs/ai2thor_wsl_setup.md`](docs/ai2thor_wsl_setup.md) for the tested
+environment and dependency record.
 
-```powershell
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner oracle_debug
-```
-
-The mock remains an abstract state harness: `MoveToRegion` does not simulate locomotion, collision, vision pixels, or physics. Phase 2R results are preliminary E1 harness evidence, not proof of AI2-THOR performance or memory benefit. See [`docs/partial_observability.md`](docs/partial_observability.md).
-
-## Run Phase 3 memory variants
-
-The three ordinary variants share one task policy and one deterministic fallback search cycle. They differ only in historical observation access:
-
-```powershell
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner rule_based_no_memory
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner short_memory
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner object_memory
-```
-
-Run the controlled stale-memory condition:
-
-```powershell
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner object_memory --stale-intervention
-```
-
-Run the frozen 54-episode pilot from a clean Git revision:
-
-```powershell
-python scripts/run_phase3_pilot.py
-```
-
-See [`docs/phase3_memory_experiment.md`](docs/phase3_memory_experiment.md) for the information boundary, constants, output files, and interpretation limits.
-
-The accepted aggregate and per-layout results are in [`docs/phase3_results.md`](docs/phase3_results.md). Object memory reduced mean stable-task steps/moves by 0.5 in both task structures, while all stale ObjectMemory episodes exposed and recovered from an outdated last-seen record. These small deterministic results are reported without significance or broad-generalization claims.
-
-## Phase 4 real-THOR runner (corrected single gate passed)
-
-The first live Phase 4 case reached THOR but failed before planning because Book
-was not visible directly after reset. Protocol v2 corrected that assumption and
-its bounded rerun completed the three-step evaluated episode. It provides one engine
-for both formal and visual-debug presentations, a real `thor_book_reacquire` task,
-visible-observation spatial memory, exact planner-input audits, per-step RGB/trace
-artifacts, and an optional structured external planner.
-
-The frozen first test is one formal `FloorPlan1` object-memory case only:
+### Auditable real episode trace
 
 ```bash
 python scripts/run_thor_episode.py \
@@ -243,57 +185,126 @@ python scripts/run_thor_episode.py \
   --trace-html
 ```
 
-The corrected bounded run uses planner-safe metadata plus lightweight statistics
-and a raw hash from AI2-THOR's in-memory `event.frame`; it does not take desktop
-screenshots and does not save PNG files unless `--save-frames` is explicitly set.
-The fixed task-setup actions are written to `setup.jsonl` and excluded from
-planner metrics.
+RGB is a human-audit artifact; the formal planner consumes visible metadata.
+Setup actions and optional evaluator debug state are logged separately from
+planner metrics. A complete formal-matrix rerun additionally requires the local
+evaluator-only frozen registry described in
+[`configs/evaluator_only/README.md`](configs/evaluator_only/README.md).
 
-Do not interpret that single run as a memory comparison. The runner labels RGB as
-a human-audit artifact because the initial planner consumes visible metadata, not
-pixels. Full evaluator metadata is excluded from `episode.jsonl` and is written
-only to a separately labeled file when `--save-evaluator-debug` is explicitly set.
+## Installation and environment
 
-See [`docs/phase4_execution_trace.md`](docs/phase4_execution_trace.md) for the
-contracts, artifact schema, information boundary, and the one-case test gate.
+Requirements:
 
-For a human visual sanity run that does not depend on Qt/xcb, use debug mode with
-`--save-frames --trace-html` and omit `--visualize`. Protocol v3 runs an explicitly
-requested OpenCV viewer in a separate process; if the GUI plugin fails, the THOR
-episode continues and records the viewer failure instead of losing the summary.
+- Python 3.10 or newer;
+- Windows, macOS, or Linux for the mock/offline path;
+- Ubuntu 22.04 WSL2/WSLg for the verified live AI2-THOR path;
+- no API key unless the optional OpenAI-compatible planner is used.
 
-## Repository layout
+Create and activate a virtual environment, then install the package:
 
-```text
-configs/tasks.yaml              Frozen Phase 0–3 mock task definitions
-configs/phase4_tasks.yaml       Controlled real-THOR task definitions
-configs/phase4_acceptance.yaml  Single-case first acceptance manifest
-docs/                            Public-facing project documentation
-outputs/                         Generated run artifacts (ignored except .gitkeep)
-scripts/check_environment.py     Environment diagnostic CLI
-scripts/smoke_ai2thor.py         Live AI2-THOR E2 integration smoke CLI
-scripts/list_scene_objects.py    Real/mock scene inspection CLI
-scripts/run_episode.py           Single-episode execution and logging CLI
-scripts/run_phase3_pilot.py      Frozen Phase 3 matrix, manifest, aggregation, and acceptance
-scripts/run_thor_episode.py      Phase 4 real runner and auditable trace CLI
-scripts/run_thor_batch.py        Manifest runner, limited to one case by default
-src/embodied_memory_thor/        Installable Python package
-tests/                           Automated tests
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e .
 ```
 
-See [`docs/development_status.md`](docs/development_status.md) for the phase-by-phase status.
+On macOS or Linux, activate with `source .venv/bin/activate`. Optional extras:
 
-The adaptive Phase 5 protocol-development and frozen-evaluation history is in
-[`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md).
-Individual successor gates were prospectively committed before execution, but
-the overall protocol evolved through qualification and failure diagnosis. The
-accepted descriptive result is in
-[`docs/phase5_formal_results.md`](docs/phase5_formal_results.md).
+```powershell
+python -m pip install -e ".[dev]"
+python -m pip install -e ".[thor]"
+```
+
+Optional OpenAI-compatible configuration belongs in an untracked `.env` file:
+
+```dotenv
+OPENAI_API_KEY=
+OPENAI_BASE_URL=
+OPENAI_MODEL=
+```
+
+The environment diagnostic reports capability without exposing secret values:
+
+```powershell
+python scripts/check_environment.py
+python scripts/check_environment.py --json
+```
+
+## Additional evaluation entry points
+
+Inspect mock or real scene objects:
+
+```powershell
+python scripts/list_scene_objects.py --mock
+python scripts/list_scene_objects.py --scene FloorPlan1
+```
+
+Run the controlled symbolic memory variants:
+
+```powershell
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner rule_based_no_memory
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner short_memory
+python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner object_memory
+```
+
+The privileged `oracle_debug` variant is a solvability upper bound only. Phase 3
+is symbolic E1 evidence, not proof of real-simulator memory improvement. See
+[`docs/phase3_memory_experiment.md`](docs/phase3_memory_experiment.md) and
+[`docs/phase3_results.md`](docs/phase3_results.md).
+
+## Repository map
+
+```text
+configs/                         Public task, protocol, and route contracts
+configs/evaluator_only/          Schema only; hidden frozen registries stay local
+docs/evidence/                   Compact public qualification and result evidence
+docs/phase5_experiment_protocol.md  Chronological protocol-development audit
+docs/phase5_formal_results.md     Accepted descriptive result and claim boundary
+outputs/                         Generated run artifacts (ignored except .gitkeep)
+scripts/                         Diagnostics, qualification, execution, aggregation
+src/embodied_memory_thor/        Environment, memory, planner, evaluator, trace code
+tests/                           Offline contracts and regression coverage
+```
 
 ## Research presentation package
 
+- [`docs/application_abstract.md`](docs/application_abstract.md): copy-ready
+  project summary;
 - [`docs/report.md`](docs/report.md): complete research narrative;
-- [`docs/architecture.md`](docs/architecture.md): system and information-flow design;
+- [`docs/architecture.md`](docs/architecture.md): system and information-flow
+  design;
+- [`docs/phase5_formal_results.md`](docs/phase5_formal_results.md): result table
+  and interpretation;
 - [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons;
-- [`docs/application_abstract.md`](docs/application_abstract.md): copy-ready 120-180 word English abstract;
-- [`PROJECT_SCORECARD.md`](PROJECT_SCORECARD.md): rubric-based self-assessment and remaining gaps.
+- [`PROJECT_SCORECARD.md`](PROJECT_SCORECARD.md): original engineering-rubric
+  self-assessment and remaining gaps.
+
+## Development provenance and ownership
+
+Coding assistants were used extensively for implementation drafts, tests,
+documentation drafting, command orchestration, and repository maintenance. The
+maintainer set the project objective, required fair search-capable baselines and
+an explicit stale-memory negative condition, enforced planner/evaluator
+separation, selected or approved protocol revisions and stop/rerun decisions,
+provided and observed the Windows/WSL2/WSLg environment, and takes responsibility
+for the final interpretation and limitations.
+
+The raw chronological PR and immutable audit tag remain public. See
+[`docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md`](docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md)
+for the detailed division of responsibility, history mapping, and reproduction
+boundary.
+
+## Limitations and next step
+
+- Six deterministic matched configurations per panel support descriptive,
+  task-specific evidence only.
+- Tasks, scenes, routes, and recovery policies were co-developed during
+  qualification, limiting external validity.
+- The formal planner uses visible metadata rather than RGB perception or an LLM.
+- AI2-THOR results do not establish physical-robot performance.
+
+The strongest next study would freeze the audited interface and successor policy
+before touching broader holdout scenes/tasks, report holdout failures without
+task-specific repair, and separately evaluate structured LLM/VLM planning and RGB
+perception.

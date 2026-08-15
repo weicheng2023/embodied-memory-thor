@@ -25,6 +25,27 @@ read as a line-by-line claim of unaided implementation. The mixed Phase 5 result
 failed gates, invalidated pilots, and scene exclusions are retained rather than
 removed to make the project look uniformly successful.
 
+## Maintainer research and technical ownership
+
+The maintainer's responsibilities in this project include:
+
+- setting the research-preparation objective and accepting the final research
+  question;
+- requiring a search-capable no-memory baseline, exact K=2 comparison, and
+  explicit stale-memory negative condition;
+- enforcing the planner-visible versus evaluator-only information boundary;
+- selecting or approving protocol revisions, qualification rules, stop decisions,
+  retries, and complete reruns rather than selective row reuse;
+- supplying and observing the Windows/WSL2/WSLg AI2-THOR environment;
+- reviewing the retained failures and accepting the mixed R1/R2 interpretation;
+- taking responsibility for reproducing, explaining, and defending the final
+  methods, evidence boundary, and limitations.
+
+Coding assistants produced substantial implementation, testing, documentation,
+and command-orchestration work. The list above describes decision ownership and
+accountability; it is not a claim that the maintainer manually authored every
+associated code path.
+
 ## Raw and reviewed histories
 
 - The chronological Phase 5/6 development history remains in

@@ -13,11 +13,15 @@ panel with five explicit record corrections. Public results are in
 `docs/evidence/phase5_real_formal_v5_descriptive_results.json`.
 
 Phase 6 packages the architecture, research report, failure analysis,
-158-word application abstract, and conservative 91/100 scorecard. Documentation
+164-word application abstract, and conservative 91/100 scorecard. Documentation
 and result-consistency gates pass, as do 422 tests plus 70 subtests. No new
 experiment or selective rerun was part of this documentation phase.
 
-## Historical Phase 5 engineering log (began at Phase 5A1)
+## Historical engineering checkpoints
+
+*The entries below are contemporaneous checkpoints retained in chronological
+order. Statements such as "has begun," "has not run," or "remains blocked"
+describe the state at that checkpoint, not the repository's current status.*
 
 The manual Phase 4 protocol-v3 case completed successfully even though the
 isolated live viewer reported `viewer_display_timeout`; all non-GUI artifacts and
@@ -184,7 +188,7 @@ FloorPlan202 requalification; FloorPlan301 is prohibited until both pass.
 The v4-focused suite passes 30/30 and the complete offline regression passes
 113/113; compile and planner-input audits also pass.
 
-## Implemented
+## Historical implemented snapshot (superseded by current status)
 
 ### Phase 0
 
@@ -259,7 +263,11 @@ Phase 2.5 is integration evidence only. It is not a memory experiment or a repea
 
 The formal `phase3-v2` pilot completed 54/54 successful episodes from clean revision `1af6c9c`. All 54 ordinary information-leak audits, all 18 T2 ordered-subgoal audits, all 18 matched stale interventions, and all six ObjectMemory stale miss/recovery traces passed. See `phase3_results.md` for per-layout results and the documented v1 invalidation.
 
-## Planned
+## Historical planned snapshot (now completed)
+
+*This plan was written before Phases 4-6 were completed. It remains here only to
+show what was intended at that time; the current state is summarized at the top
+of this document.*
 
 - Phase 4: one real AI2-THOR episode engine with deterministic and OpenAI-compatible structured planners
   - controlled `thor_book_reacquire` closed-loop task using ordinary THOR actions
@@ -296,7 +304,7 @@ startup failure and mid-episode native death now degrade to non-GUI artifacts an
 cannot change the planner trace or final task outcome. Seven targeted Phase 4 tests
 and all 60 offline tests pass. A manual v3 visual rerun remains pending.
 
-## Phase 5 protocol status
+## Historical Phase 5 protocol checkpoints
 
 The real comparison protocol is frozen in `phase5_experiment_protocol.md` before
 implementation or comparative runs. It requires two task structures, three fair
