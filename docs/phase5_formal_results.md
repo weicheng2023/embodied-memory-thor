@@ -32,11 +32,11 @@ panel; object-versus-K=2 therefore equals object-versus-no-memory here.
 
 ## Interpretation
 
-R1 stable provides the clean positive result. Object memory reduced target
-reacquisition by one action in three configurations and tied in three, for a
-mean reduction of 0.5 actions. Total episode steps changed only slightly: two
-improvements, three ties, and one regression, with a mean reduction of 0.17.
-Repeated viewpoint visits fell by one on average.
+R1 stable provides a small conditional efficiency gain in simple reacquisition.
+Object memory reduced target reacquisition by one action in three configurations
+and tied in three, for a mean reduction of 0.5 actions. Total episode steps
+changed only slightly: two improvements, three ties, and one regression, with a
+mean reduction of 0.17. Repeated viewpoint visits fell by one on average.
 
 R2 stable is the important counter-result. Object memory reduced search
 rotations by 3.17 on average and did use remembered information, but this did

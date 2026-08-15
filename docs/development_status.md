@@ -12,10 +12,10 @@ panel with five explicit record corrections. Public results are in
 `docs/phase5_formal_results.md` and
 `docs/evidence/phase5_real_formal_v5_descriptive_results.json`.
 
-Phase 6 packages the architecture, research report, failure analysis,
-164-word application abstract, and conservative 91/100 scorecard. Documentation
-and result-consistency gates pass, as do 422 tests plus 70 subtests. No new
-experiment or selective rerun was part of this documentation phase.
+Phase 6 packages the architecture, research report, failure analysis, and
+160-word application abstract. Documentation and result-consistency gates pass,
+as do 422 tests plus 70 subtests. No new experiment or selective rerun was part
+of this documentation phase.
 
 ## Historical engineering checkpoints
 

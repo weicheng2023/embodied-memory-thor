@@ -1,6 +1,6 @@
 # Embodied-Memory-THOR
 
-**Auditable evaluation of persistent object memory for partially observable embodied agents in AI2-THOR.**
+**Controlled evaluation of persistent object memory for partially observable embodied agents in AI2-THOR.**
 
 ## Problem
 
@@ -19,6 +19,18 @@ possible.
 > In matched partially observable AI2-THOR tasks, does persistent visible-history
 > object memory reduce target reacquisition effort relative to a capable
 > no-memory search policy and exact-K short-term memory?
+
+## Related work and positioning
+
+[Kolve et al. (2017)](https://arxiv.org/abs/1712.05474) introduced AI2-THOR as
+an interactive 3D environment for agents that navigate and manipulate household
+objects. Long-term object memory is also established prior work:
+[Fukushima et al. (2022)](https://arxiv.org/abs/2203.14708) proposed the Object
+Memory Transformer for Object Goal Navigation. This project therefore does not
+claim a novel memory architecture. It asks a narrower evaluation question:
+whether lightweight persistent visible-history memory produces measurable
+benefit when baseline search capability and privileged simulator state are
+controlled.
 
 ## Approach
 
@@ -46,16 +58,21 @@ The controlled comparison keeps the following shared across variants:
 The accepted formal-v5 evaluation contains:
 
 ```text
-3 panels x 6 matched configurations x 3 memory variants = 54 episodes
+18 matched configuration cells across 3 panels
+x 3 memory variants = 54 executions
 ```
 
 - **R1 stable:** reacquire a previously seen Book;
 - **R2 stable:** complete a CoffeeMachine subgoal, then reacquire a Cup;
 - **R1 stale:** revisit an outdated Book record, fall back, and correct it.
 
-All 54 real AI2-THOR episodes completed successfully and passed the registered
-information-boundary audits. The 54 episodes are repeated cells over six
-deterministic configurations per panel, not 54 independent environments.
+All 54 real AI2-THOR executions completed successfully. Success was therefore
+saturated and does not distinguish the variants; the informative comparisons
+are task/action efficiency, reacquisition effort, search rotations,
+translation/navigation overhead, and stale-memory recovery. These executions
+reuse six deterministic matched configurations per panel and are not 54
+independent environments or independent samples. Automated checks confirmed
+that hidden evaluator state was not exposed to the planner.
 
 ## Key results
 
@@ -65,8 +82,8 @@ deterministic configurations per panel, not 54 independent environments.
 | R2 stable | 6/6 / 6/6 / 6/6 | 28.50 / 28.50 / **32.00** | 21.50 / 21.50 / **23.83** |
 | R1 stale | 6/6 / 6/6 / 6/6 | 43.33 / 43.33 / 43.33 | 41.00 / 41.00 / 41.00 |
 
-Persistent memory produced a small, directionally sensible benefit in simple
-R1 reacquisition. In the longer R2 task it reduced search rotations but increased
+Persistent memory produced a small conditional efficiency gain in simple R1
+reacquisition. In the longer R2 task it reduced search rotations but increased
 movement, route re-entry, and total action cost. In the stale panel it detected
 and corrected five explicit outdated records, then matched the baselines on the
 main costs.
@@ -80,10 +97,11 @@ This mixed result is the main finding: retrieving the right location can reduce
 blind search, yet a weak policy for exploiting that location can erase or reverse
 the benefit.
 
-The project is an **audited protocol-development case study** followed by one
-frozen, fresh-run internal comparison. It supports conditional evidence in the
-engineered settings, not statistical significance or broad external validity.
-See [the formal result and claim boundary](docs/phase5_formal_results.md).
+The project is a controlled internal case study developed through adaptive
+qualification, followed by one fixed fresh-run comparison. It supports
+conditional evidence in the engineered settings, not statistical significance
+or broad external validity. See
+[the formal result and claim boundary](docs/phase5_formal_results.md).
 
 ## System at a glance
 
@@ -121,9 +139,8 @@ avoids mixing visual errors or LLM sampling variance into the memory comparison.
 
 This is an experimental-control choice, not a claim that metadata planning is a
 complete embodied-agent solution. The natural successor is to replace it with a
-structured LLM/VLM planner and RGB perception behind the same audited
-observation-memory interface, then evaluate on untouched holdout tasks and
-scenes.
+structured LLM/VLM planner and RGB perception behind the same observation-memory
+interface, then evaluate on untouched holdout tasks and scenes.
 
 ## Project status
 
@@ -132,13 +149,13 @@ Phases 0-6 are complete:
 - Phase 3 established the controlled symbolic partial-observation harness;
 - Phase 4 established the real AI2-THOR loop and planner/evaluator boundary;
 - Phase 5 completed the adaptive protocol-development process and the fresh
-  54-episode formal-v5 comparison;
+  54-execution formal-v5 comparison;
 - Phase 6 assembled the architecture, results, failure analysis, application
   abstract, scorecard, and reproducibility documentation.
 
 Formal-v2, v3, and v4 were invalidated after distraction, pickup-recovery, and
 route-execution defects. Their rows were not selectively reused; formal-v5 was
-rerun from cell 1 after the successor protocol was frozen. The complete
+rerun from cell 1 after the successor rules were fixed. The complete
 chronology remains in [`docs/phase5_experiment_protocol.md`](docs/phase5_experiment_protocol.md).
 
 ## Quick reproduction
@@ -188,7 +205,7 @@ python scripts/run_thor_episode.py \
 RGB is a human-audit artifact; the formal planner consumes visible metadata.
 Setup actions and optional evaluator debug state are logged separately from
 planner metrics. A complete formal-matrix rerun additionally requires the local
-evaluator-only frozen registry described in
+evaluator-only historical registry described in
 [`configs/evaluator_only/README.md`](configs/evaluator_only/README.md).
 
 ## Installation and environment
@@ -276,9 +293,7 @@ tests/                           Offline contracts and regression coverage
   design;
 - [`docs/phase5_formal_results.md`](docs/phase5_formal_results.md): result table
   and interpretation;
-- [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons;
-- [`PROJECT_SCORECARD.md`](PROJECT_SCORECARD.md): original engineering-rubric
-  self-assessment and remaining gaps.
+- [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons.
 
 ## Development provenance and ownership
 
@@ -301,10 +316,13 @@ boundary.
   task-specific evidence only.
 - Tasks, scenes, routes, and recovery policies were co-developed during
   qualification, limiting external validity.
+- The complete-condition comparison does not separately isolate memory
+  persistence, capacity, representation structure, and retrieval; exact K=2 and
+  persistent object memory differ along more than one of these dimensions.
 - The formal planner uses visible metadata rather than RGB perception or an LLM.
 - AI2-THOR results do not establish physical-robot performance.
 
-The strongest next study would freeze the audited interface and successor policy
-before touching broader holdout scenes/tasks, report holdout failures without
-task-specific repair, and separately evaluate structured LLM/VLM planning and RGB
-perception.
+The strongest next study would commit the interface and successor policy before
+touching broader holdout scenes/tasks, report holdout failures without
+task-specific repair, and separately evaluate structured LLM/VLM planning and
+RGB perception.
