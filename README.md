@@ -55,7 +55,7 @@ AI2-THOR environment
 -> logging and report generation
 ```
 
-The project is a lightweight research preparation project. It is not a state-of-the-art method, does not train a large VLA or diffusion-policy model, and is not a reproduction of a paper from James Cheng's group. Its focus is systems engineering, memory/context design, robust evaluation, and reproducibility.
+The project is a lightweight research preparation project. It is not a state-of-the-art method, does not train a large VLA or diffusion-policy model. Its focus is systems engineering, memory/context design, robust evaluation, and reproducibility.
 
 ## Requirements
 
