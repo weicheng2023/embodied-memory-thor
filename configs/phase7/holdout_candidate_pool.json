@@ -1,0 +1,57 @@
+{
+  "pool_version": "phase7a-r1-holdout-candidate-pool-v1",
+  "task": "thor_book_reacquire_k2",
+  "condition": "stable",
+  "target_configuration_count": 6,
+  "candidate_order_rule": "ascending FloorPlan number within the retained post-Phase5 bedroom prefix; accept the first six passing the fixed pre-outcome eligibility filter",
+  "prior_contact_disclosure": "the Phase5 coordinate-free presence census and route-construction prescreen queried this scene family; none of these candidates has a comparative Phase7 memory outcome and no Phase7 outcome-specific repair is permitted",
+  "source_presence_evidence": "docs/evidence/phase5_r1_scene_census.json",
+  "ordered_candidates": [
+    "FloorPlan308",
+    "FloorPlan309",
+    "FloorPlan310",
+    "FloorPlan311",
+    "FloorPlan312",
+    "FloorPlan313",
+    "FloorPlan314",
+    "FloorPlan315",
+    "FloorPlan316",
+    "FloorPlan317",
+    "FloorPlan318",
+    "FloorPlan320",
+    "FloorPlan321",
+    "FloorPlan322",
+    "FloorPlan323",
+    "FloorPlan325",
+    "FloorPlan326",
+    "FloorPlan327",
+    "FloorPlan328",
+    "FloorPlan329",
+    "FloorPlan330"
+  ],
+  "excluded_phase5_formal_scenes": [
+    "FloorPlan202",
+    "FloorPlan302",
+    "FloorPlan303",
+    "FloorPlan305",
+    "FloorPlan306",
+    "FloorPlan307"
+  ],
+  "excluded_phase5_r1_qualification_scenes": [
+    "FloorPlan301",
+    "FloorPlan304"
+  ],
+  "eligibility": {
+    "object_type": "Book",
+    "object_order": "objectId lexical ascending",
+    "pose_order": ["x", "z", "rotation", "horizon", "standing", "y"],
+    "max_pose_trials_per_scene": 32,
+    "requires_native_pickup_probe": true,
+    "requires_distraction_v4_hidden": true,
+    "requires_generic_route_construction": true,
+    "route_execution_during_eligibility": false,
+    "memory_variants_during_eligibility": false,
+    "images_saved": false
+  },
+  "claim_boundary": "ordered pre-outcome Phase7A eligibility pool; not a holdout result or memory comparison"
+}
