@@ -1,0 +1,2631 @@
+{
+  "analysis_digest": "e194912e675ca9200bf0c5b42afbb66decfddfb60d164559dbee8da3aca56a2d",
+  "analysis_version": "phase7b-memory-horizon-descriptive-analysis-v1",
+  "capacity_curve": [
+    {
+      "k": 2,
+      "mean_reacquisition_actions": 5.333333,
+      "mean_steps": 7.5,
+      "mean_target_record_age_actions": null,
+      "target_retained_count": 0,
+      "variant": "recent_memory_k2"
+    },
+    {
+      "k": 4,
+      "mean_reacquisition_actions": 5.5,
+      "mean_steps": 7.666667,
+      "mean_target_record_age_actions": 4.0,
+      "target_retained_count": 2,
+      "variant": "recent_memory_k4"
+    },
+    {
+      "k": 8,
+      "mean_reacquisition_actions": 4.5,
+      "mean_steps": 6.666667,
+      "mean_target_record_age_actions": 4.666667,
+      "target_retained_count": 6,
+      "variant": "recent_memory_k8"
+    }
+  ],
+  "claim_boundary": "paired descriptive Phase7B mechanism analysis over six configurations; recent capacity is controlled within one provider, while object-memory representation and retrieval remain confounded",
+  "configuration_order": [
+    "FloorPlan308_Phase7A_R1_holdout_001",
+    "FloorPlan309_Phase7A_R1_holdout_001",
+    "FloorPlan310_Phase7A_R1_holdout_001",
+    "FloorPlan311_Phase7A_R1_holdout_001",
+    "FloorPlan312_Phase7A_R1_holdout_001",
+    "FloorPlan313_Phase7A_R1_holdout_001"
+  ],
+  "metrics": {
+    "memory_guided_action_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 1.833333,
+          "median": 2.0,
+          "range": [
+            1,
+            2
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 0.333333,
+          "median": 0.0,
+          "range": [
+            0,
+            1
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 1.833333,
+          "median": 2.0,
+          "range": [
+            1,
+            2
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            0,
+            6
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            2,
+            2,
+            1,
+            2,
+            2,
+            2
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 1.833333,
+            "median": 2.0,
+            "range": [
+              1,
+              2
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            4,
+            2
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            1,
+            1,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.333333,
+            "median": 0.0,
+            "range": [
+              0,
+              1
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            0,
+            6
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            2,
+            2,
+            1,
+            2,
+            2,
+            2
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 1.833333,
+            "median": 2.0,
+            "range": [
+              1,
+              2
+            ]
+          }
+        }
+      }
+    },
+    "memory_retrieval_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 6.666667,
+          "median": 7.0,
+          "range": [
+            6,
+            7
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 3.166667,
+          "median": 3.0,
+          "range": [
+            3,
+            4
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 5.166667,
+          "median": 5.0,
+          "range": [
+            5,
+            6
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 6.666667,
+          "median": 7.0,
+          "range": [
+            6,
+            7
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            0,
+            6
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            7,
+            6,
+            6,
+            7,
+            7,
+            7
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 6.666667,
+            "median": 7.0,
+            "range": [
+              6,
+              7
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            0,
+            6
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            3,
+            3,
+            4,
+            3,
+            3,
+            3
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 3.166667,
+            "median": 3.0,
+            "range": [
+              3,
+              4
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            0,
+            6
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            5,
+            5,
+            6,
+            5,
+            5,
+            5
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 5.166667,
+            "median": 5.0,
+            "range": [
+              5,
+              6
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            0,
+            6
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            7,
+            6,
+            6,
+            7,
+            7,
+            7
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 6.666667,
+            "median": 7.0,
+            "range": [
+              6,
+              7
+            ]
+          }
+        }
+      }
+    },
+    "repeated_viewpoint_visit_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 4.5,
+          "median": 4.5,
+          "range": [
+            4,
+            5
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 2.333333,
+          "median": 2.0,
+          "range": [
+            2,
+            4
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 4.5,
+          "median": 4.5,
+          "range": [
+            4,
+            5
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 4.5,
+          "median": 5.0,
+          "range": [
+            2,
+            6
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 2.333333,
+          "median": 2.0,
+          "range": [
+            2,
+            4
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            5,
+            1,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            -2,
+            0,
+            -2,
+            -3,
+            -3,
+            -3
+          ],
+          "summary": {
+            "count": 6,
+            "mean": -2.166667,
+            "median": -2.5,
+            "range": [
+              -3,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            1,
+            4,
+            1
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            2,
+            -2,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              -2,
+              2
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            5,
+            1,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            -2,
+            0,
+            -2,
+            -3,
+            -3,
+            -3
+          ],
+          "summary": {
+            "count": 6,
+            "mean": -2.166667,
+            "median": -2.5,
+            "range": [
+              -3,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "search_rotation_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 0.166667,
+          "median": 0.0,
+          "range": [
+            0,
+            1
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            5,
+            1
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.166667,
+            "median": 0.0,
+            "range": [
+              0,
+              1
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "shared_route_action_recovery_action_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "shared_search_coverage_action_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "shared_search_entry_recovery_action_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 0.166667,
+          "median": 0.0,
+          "range": [
+            0,
+            1
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            5,
+            1
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.166667,
+            "median": 0.0,
+            "range": [
+              0,
+              1
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "steps": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 7.5,
+          "median": 8.0,
+          "range": [
+            6,
+            8
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 6.666667,
+          "median": 7.0,
+          "range": [
+            6,
+            7
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 7.5,
+          "median": 8.0,
+          "range": [
+            6,
+            8
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 7.666667,
+          "median": 8.0,
+          "range": [
+            6,
+            8
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 6.666667,
+          "median": 7.0,
+          "range": [
+            6,
+            7
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            5,
+            1,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            -1,
+            0,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "summary": {
+            "count": 6,
+            "mean": -0.833333,
+            "median": -1.0,
+            "range": [
+              -1,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            1,
+            4,
+            1
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            2,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.166667,
+            "median": 0.0,
+            "range": [
+              -1,
+              2
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            5,
+            1,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            -1,
+            0,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "summary": {
+            "count": 6,
+            "mean": -0.833333,
+            "median": -1.0,
+            "range": [
+              -1,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "target_reacquisition_action_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 5.333333,
+          "median": 6.0,
+          "range": [
+            4,
+            6
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 4.5,
+          "median": 5.0,
+          "range": [
+            3,
+            5
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 5.333333,
+          "median": 6.0,
+          "range": [
+            4,
+            6
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 5.5,
+          "median": 6.0,
+          "range": [
+            3,
+            6
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 4.5,
+          "median": 5.0,
+          "range": [
+            3,
+            5
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            5,
+            1,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            -1,
+            0,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "summary": {
+            "count": 6,
+            "mean": -0.833333,
+            "median": -1.0,
+            "range": [
+              -1,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            1,
+            4,
+            1
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            2,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.166667,
+            "median": 0.0,
+            "range": [
+              -1,
+              2
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            5,
+            1,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            -1,
+            0,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "summary": {
+            "count": 6,
+            "mean": -0.833333,
+            "median": -1.0,
+            "range": [
+              -1,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "target_record_age_actions_at_reacquisition": {
+      "by_variant": {
+        "no_memory": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "range": null
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 4.666667,
+          "median": 5.0,
+          "range": [
+            4,
+            5
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "range": null
+        },
+        "recent_memory_k4": {
+          "count": 2,
+          "mean": 4.0,
+          "median": 4.0,
+          "range": [
+            4,
+            4
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 4.666667,
+          "median": 5.0,
+          "range": [
+            4,
+            5
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [],
+          "better_tie_worse": [
+            0,
+            0,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [],
+          "summary": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "range": null
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [],
+          "better_tie_worse": [
+            0,
+            0,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [],
+          "summary": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "range": null
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [],
+          "better_tie_worse": [
+            0,
+            0,
+            0
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [],
+          "summary": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "range": null
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [],
+          "better_tie_worse": [
+            0,
+            0,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [],
+          "summary": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "range": null
+          }
+        }
+      }
+    },
+    "translation_action_count": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0,
+            0
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "translation_distance_meters": {
+      "by_variant": {
+        "no_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0.0,
+            0.0
+          ]
+        },
+        "object_memory": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0.0,
+            0.0
+          ]
+        },
+        "recent_memory_k2": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0.0,
+            0.0
+          ]
+        },
+        "recent_memory_k4": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0.0,
+            0.0
+          ]
+        },
+        "recent_memory_k8": {
+          "count": 6,
+          "mean": 0.0,
+          "median": 0.0,
+          "range": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "paired_differences": {
+        "object_memory_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_no_memory; lower cost is better",
+          "differences": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "object_memory_minus_recent_memory_k8": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "object_memory_minus_recent_memory_k8; lower cost is better",
+          "differences": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "recent_memory_k2_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k2_minus_no_memory; lower cost is better",
+          "differences": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "recent_memory_k4_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k4_minus_no_memory; lower cost is better",
+          "differences": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "recent_memory_k8_minus_no_memory": {
+          "available_configuration_ids": [
+            "FloorPlan308_Phase7A_R1_holdout_001",
+            "FloorPlan309_Phase7A_R1_holdout_001",
+            "FloorPlan310_Phase7A_R1_holdout_001",
+            "FloorPlan311_Phase7A_R1_holdout_001",
+            "FloorPlan312_Phase7A_R1_holdout_001",
+            "FloorPlan313_Phase7A_R1_holdout_001"
+          ],
+          "better_tie_worse": [
+            0,
+            6,
+            0
+          ],
+          "definition": "recent_memory_k8_minus_no_memory; lower cost is better",
+          "differences": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "summary": {
+            "count": 6,
+            "mean": 0.0,
+            "median": 0.0,
+            "range": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    }
+  },
+  "panel_pooling_used": false,
+  "significance_test_used": false,
+  "source_code_revision": "5cecc728812e85e10ef56e60adb23f893cfdc543",
+  "source_matrix_manifest_digest": "2052b196b3abbf398c29f9db543b4c37c4ce9b3324ec70c2f6a407e19d35014e",
+  "source_result_digest": "57e2d64e3324c7ab13ed517043d5d95709b977252ca53c19af474d3ce3b94f17",
+  "source_summary_sha256": "59b08f0d6762cf5fc857ef3b5c9bee2dfd3ffd04516d05447f8323af735e7d8a",
+  "success_counts": {
+    "no_memory": {
+      "at_18": 6,
+      "at_2048": 6,
+      "at_72": 6,
+      "eventual": 6
+    },
+    "object_memory": {
+      "at_18": 6,
+      "at_2048": 6,
+      "at_72": 6,
+      "eventual": 6
+    },
+    "recent_memory_k2": {
+      "at_18": 6,
+      "at_2048": 6,
+      "at_72": 6,
+      "eventual": 6
+    },
+    "recent_memory_k4": {
+      "at_18": 6,
+      "at_2048": 6,
+      "at_72": 6,
+      "eventual": 6
+    },
+    "recent_memory_k8": {
+      "at_18": 6,
+      "at_2048": 6,
+      "at_72": 6,
+      "eventual": 6
+    }
+  },
+  "target_retention_counts": {
+    "no_memory": {
+      "absent": 6,
+      "present": 0,
+      "unknown": 0
+    },
+    "object_memory": {
+      "absent": 0,
+      "present": 6,
+      "unknown": 0
+    },
+    "recent_memory_k2": {
+      "absent": 6,
+      "present": 0,
+      "unknown": 0
+    },
+    "recent_memory_k4": {
+      "absent": 4,
+      "present": 2,
+      "unknown": 0
+    },
+    "recent_memory_k8": {
+      "absent": 0,
+      "present": 6,
+      "unknown": 0
+    }
+  },
+  "variant_order": [
+    "no_memory",
+    "recent_memory_k2",
+    "recent_memory_k4",
+    "recent_memory_k8",
+    "object_memory"
+  ]
+}
