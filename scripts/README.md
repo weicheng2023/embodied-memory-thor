@@ -53,6 +53,13 @@ invalidated protocol history. Do not use them to extend formal-v5.
 New successor-study code belongs under `scripts/phase7/`. Phase-7 scripts and
 outputs must not replace, rename, or silently reuse Phase-5 artifacts.
 
+- `phase7/qualify_holdout_candidates.py`: run the fixed pre-outcome Phase-7A
+  eligibility filter and generic route construction; no memory variants.
+- `phase7/run_holdout.py`: run the complete matrix-frozen 18-cell Phase-7A
+  comparison from its required clean annotated tag.
+- `phase7/aggregate_holdout.py`: validate and descriptively aggregate one
+  complete integrity-valid Phase-7A summary.
+
 ## Documentation consistency
 
 Run this before a research-facing merge:

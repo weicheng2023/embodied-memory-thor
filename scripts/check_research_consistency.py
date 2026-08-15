@@ -156,6 +156,15 @@ def check_repository(root: Path = ROOT) -> list[str]:
             errors.append(f"formal-v5 registered artifact changed: {relative}")
 
     phase7_status = _phase7_status(root)
+    if phase7_status != "absent":
+        for relative in (
+            "docs/phase7/README.md",
+            "docs/phase7/holdout_protocol.md",
+            "configs/phase7/holdout_candidate_pool.json",
+            "configs/phase7/holdout_manifest.json",
+        ):
+            if not (root / relative).is_file():
+                errors.append(f"Phase-7 namespace is incomplete: {relative}")
     phase7_linked = "docs/phase7/" in readme
     phase7_named = bool(re.search(r"\bPhase 7[AB]?\b", readme, flags=re.IGNORECASE))
     if phase7_status == "accepted" and not phase7_linked:
