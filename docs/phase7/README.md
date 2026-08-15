@@ -1,6 +1,6 @@
 # Phase 7 Successor Studies
 
-Current status: Phase 7A matrix frozen, no comparative outcomes run
+Current status: Phase 7A result frozen; Phase 7B pending
 
 Phase 7 is additive successor research. It does not correct, extend, or replace
 the accepted Phase-5 formal-v5 evidence.
@@ -27,10 +27,12 @@ public evidence contains only digests and coverage summaries; exact target IDs
 and start poses are isolated in the evaluator-only registry and are never
 planner input.
 
-The selected matrix is authorized to run only from a clean, pushed commit at
-the annotated tag `phase7a-holdout-matrix-v1`. Until that tag exists and the
-18-cell launcher completes its integrity checks, this checkpoint supports no
-memory-performance claim.
+The selected matrix ran only from a clean, pushed commit at the annotated tag
+`phase7a-holdout-matrix-v1`. All 18 cells completed without integrity errors.
+The result is a small descriptive efficiency difference in simple rotational
+reacquisition, with final success saturated and no translation or fallback
+route execution. See [holdout_results.md](holdout_results.md) for the numerical
+result and its limitations.
 
 ## Invalidation policy
 
@@ -55,5 +57,6 @@ Never reuse only favorable rows.
 
 The detailed Phase-7A rules are in [holdout_protocol.md](holdout_protocol.md).
 The eligibility record is in
-[holdout_eligibility_v1.json](../evidence/phase7/holdout_eligibility_v1.json).
-No Phase-7 outcome has been run or accepted at this checkpoint.
+[holdout_eligibility_v1.json](../evidence/phase7/holdout_eligibility_v1.json),
+and the frozen outcome is in [holdout_results.md](holdout_results.md). Phase 7B
+may now be preregistered, but no Phase-7B outcome has been run.

@@ -1,0 +1,33 @@
+{
+  "ai2thor_version": "5.0.0",
+  "analysis_digest": "91779a0978c7f9df777aa8e433b62e5a6208518009d8cb7b1ea093ab727bfe18",
+  "analysis_file": "docs/evidence/phase7/holdout_descriptive_results_v1.json",
+  "analysis_file_sha256": "29a81b5839abe2c4287591dcb61e6c6d29986491cd548f9652fc5cb3400c6ad6",
+  "claim_boundary": "complete integrity-valid Phase7A paired descriptive evidence over six configurations; no significance or broad-generalization claim",
+  "code_revision": "3d5b76796b15b10ceb1b0daf2c943df9e87e8038",
+  "completed_episode_count": 18,
+  "execution_command": "python scripts/phase7/run_holdout.py --manifest configs/phase7/holdout_manifest.json --output-dir outputs/phase7a_holdout_v1_3d5b767 --required-tag phase7a-holdout-matrix-v1",
+  "execution_tag": "phase7a-holdout-matrix-v1",
+  "first_episode_created_at_utc": "2026-08-15T05:42:10.719930+00:00",
+  "integrity_error_count": 0,
+  "integrity_valid": true,
+  "last_episode_created_at_utc": "2026-08-15T05:45:34.035441+00:00",
+  "matrix_complete": true,
+  "matrix_manifest_digest": "59952fc657e129d30a3aaa258731de4b8de6da0a6c8f79230133fceca59f0f48",
+  "matrix_manifest_sha256": "93d8269e701396c40ac54ace06321ac3f29d06688f16f742cd4666024e7d28c9",
+  "platform": "Linux Orange 6.6.87.2-microsoft-standard-WSL2 x86_64",
+  "prior_episode_reuse": false,
+  "python_version": "3.10.12",
+  "qualification_rejected_configuration_count": 0,
+  "qualification_selected_configuration_count": 6,
+  "result_digest": "5e69f91fac4590641aa74880f5649344117bf005bfe918504df21a21b8262770",
+  "summary_file": "docs/evidence/phase7/holdout_summary_v1.json",
+  "summary_file_sha256": "4244ac0a0673a8e45502855007cd9edcc80e188e4cc47ea8538e72c2bf635384",
+  "task_failure_count": 0,
+  "task_success_count": 18,
+  "variant_order": [
+    "no_memory",
+    "short_memory_k2",
+    "object_memory"
+  ]
+}

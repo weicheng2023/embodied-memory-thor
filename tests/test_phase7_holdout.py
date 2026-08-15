@@ -102,6 +102,44 @@ def test_matrix_frozen_artifacts_are_hash_bound_and_runtime_loadable() -> None:
         assert "start_action" not in public
 
 
+def test_frozen_holdout_result_evidence_is_complete_and_digest_valid() -> None:
+    evidence_root = ROOT / "docs" / "evidence" / "phase7"
+    metadata = json.loads(
+        (evidence_root / "holdout_execution_metadata_v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    summary_path = evidence_root / "holdout_summary_v1.json"
+    analysis_path = evidence_root / "holdout_descriptive_results_v1.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
+
+    assert metadata["matrix_complete"] is True
+    assert metadata["integrity_valid"] is True
+    assert metadata["completed_episode_count"] == 18
+    assert metadata["integrity_error_count"] == 0
+    assert hashlib.sha256(summary_path.read_bytes()).hexdigest() == metadata[
+        "summary_file_sha256"
+    ]
+    assert hashlib.sha256(analysis_path.read_bytes()).hexdigest() == metadata[
+        "analysis_file_sha256"
+    ]
+
+    summary_payload = dict(summary)
+    expected_result_digest = summary_payload.pop("result_digest")
+    assert stable_digest(summary_payload) == expected_result_digest
+    assert expected_result_digest == metadata["result_digest"]
+
+    analysis_payload = dict(analysis)
+    expected_analysis_digest = analysis_payload.pop("analysis_digest")
+    analysis_payload.pop("source_summary_sha256")
+    assert stable_digest(analysis_payload) == expected_analysis_digest
+    assert expected_analysis_digest == metadata["analysis_digest"]
+    assert all(not row["integrity_errors"] for row in summary["rows"])
+    validate_public_artifact(summary)
+    validate_public_artifact(analysis)
+
+
 @pytest.mark.parametrize("horizon", [-30.0, 0.0, 30.0, 60.0])
 def test_distraction_template_matches_phase5_v4(horizon: float) -> None:
     progress = BookReacquireProgress.phase5_k2_v4()
