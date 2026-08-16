@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="820" viewBox="0 0 1500 820" role="img" aria-labelledby="title desc">
+  <title id="title">Embodied-Memory-THOR controlled information flow</title>
+  <desc id="desc">Current visible observations and permitted memory reach the shared planner. Evaluator-only full state remains on a separate dashed path and never enters planner input.</desc>
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0f172a" flood-opacity="0.10"/></filter>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker>
+    <marker id="arrow-teal" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#0f766e"/></marker>
+    <marker id="arrow-amber" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#b45309"/></marker>
+    <style>
+      .title{font:700 32px system-ui,-apple-system,Segoe UI,sans-serif;fill:#0f172a}.subtitle{font:400 17px system-ui,-apple-system,Segoe UI,sans-serif;fill:#475569}
+      .lane{font:700 14px system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:1.4px}.box-title{font:700 19px system-ui,-apple-system,Segoe UI,sans-serif;fill:#0f172a}.box-copy{font:400 14px system-ui,-apple-system,Segoe UI,sans-serif;fill:#475569}.small{font:600 13px system-ui,-apple-system,Segoe UI,sans-serif;fill:#334155}.legend{font:500 13px system-ui,-apple-system,Segoe UI,sans-serif;fill:#475569}
+      .box{rx:16;filter:url(#shadow)}.visible{stroke:#93c5fd;stroke-width:2;fill:#eff6ff}.memory{stroke:#5eead4;stroke-width:2;fill:#f0fdfa}.shared{stroke:#c4b5fd;stroke-width:2;fill:#f5f3ff}.action{stroke:#86efac;stroke-width:2;fill:#f0fdf4}.trace{stroke:#cbd5e1;stroke-width:2;fill:#ffffff}.private{stroke:#f59e0b;stroke-width:2;stroke-dasharray:9 7;fill:#fffbeb}
+      .blue-line{stroke:#2563eb;stroke-width:3;fill:none;marker-end:url(#arrow-blue)}.teal-line{stroke:#0f766e;stroke-width:3;fill:none;marker-end:url(#arrow-teal)}.amber-line{stroke:#b45309;stroke-width:3;stroke-dasharray:9 7;fill:none;marker-end:url(#arrow-amber)}.audit-line{stroke:#64748b;stroke-width:2.5;fill:none;marker-end:url(#arrow-blue)}
+    </style>
+  </defs>
+  <rect width="1500" height="820" fill="#f8fafc"/>
+  <text class="title" x="70" y="65">Embodied-Memory-THOR · Controlled Information Flow</text>
+  <text class="subtitle" x="70" y="96">Memory access changes; task, action space, search, recovery, and evaluator remain matched.</text>
+
+  <rect x="55" y="128" width="1390" height="420" rx="24" fill="#ffffff" stroke="#dbeafe" stroke-width="2"/>
+  <text class="lane" x="82" y="153" fill="#1d4ed8">PLANNER-VISIBLE EXECUTION PATH</text>
+
+  <rect class="box visible" x="85" y="205" width="235" height="145"/>
+  <text class="box-title" x="110" y="245">AI2-THOR</text>
+  <text class="box-copy" x="110" y="276">First-person RGB frame</text>
+  <text class="box-copy" x="110" y="300">Current visible metadata</text>
+  <text class="box-copy" x="110" y="324">Safe agent state</text>
+
+  <rect class="box visible" x="385" y="205" width="245" height="145"/>
+  <text class="box-title" x="410" y="245">Observation Parser</text>
+  <text class="box-copy" x="410" y="276">Visible objects only</text>
+  <text class="box-copy" x="410" y="300">Inventory and pose</text>
+  <text class="box-copy" x="410" y="324">No hidden global state</text>
+
+  <rect class="box memory" x="385" y="390" width="245" height="118"/>
+  <text class="box-title" x="410" y="428">Memory Provider</text>
+  <text class="box-copy" x="410" y="458">None · recent K · object</text>
+  <text class="box-copy" x="410" y="482">Visible-history records</text>
+
+  <rect class="box shared" x="700" y="205" width="265" height="210"/>
+  <text class="box-title" x="725" y="245">Shared Planner</text>
+  <text class="box-copy" x="725" y="278">Current observation</text>
+  <text class="box-copy" x="725" y="302">Permitted action history</text>
+  <text class="box-copy" x="725" y="326">Retrieved memory</text>
+  <line x1="725" y1="346" x2="940" y2="346" stroke="#ddd6fe" stroke-width="2"/>
+  <text class="small" x="725" y="374">Matched search + recovery</text>
+  <text class="small" x="725" y="396">Deterministic decision</text>
+
+  <rect class="box action" x="1035" y="205" width="220" height="145"/>
+  <text class="box-title" x="1060" y="245">Action Executor</text>
+  <text class="box-copy" x="1060" y="278">Validated THOR action</text>
+  <text class="box-copy" x="1060" y="302">Success / failure</text>
+  <text class="box-copy" x="1060" y="326">Error message</text>
+
+  <rect class="box trace" x="1035" y="390" width="330" height="118"/>
+  <text class="box-title" x="1060" y="428">Auditable Episode Trace</text>
+  <text class="box-copy" x="1060" y="458">Planner input · action · feedback</text>
+  <text class="box-copy" x="1060" y="482">Hashes · provenance · no hidden state</text>
+
+  <path class="blue-line" d="M320 278 H385"/>
+  <path class="blue-line" d="M630 278 H700"/>
+  <path class="teal-line" d="M508 350 V390"/>
+  <path class="teal-line" d="M630 448 H665 Q680 448 680 430 V390 Q680 375 700 375"/>
+  <path class="blue-line" d="M965 278 H1035"/>
+  <path class="blue-line" d="M1255 278 H1375 Q1400 278 1400 205 Q1400 180 1375 180 H235 Q205 180 205 205"/>
+  <path class="audit-line" d="M832 415 V475 Q832 490 850 490 H1035"/>
+  <path class="audit-line" d="M1145 350 V390"/>
+
+  <rect x="55" y="575" width="1390" height="170" rx="24" fill="#fffbeb" stroke="#fbbf24" stroke-width="2" stroke-dasharray="10 8"/>
+  <text class="lane" x="82" y="609" fill="#92400e">EVALUATOR-ONLY PATH · NEVER PLANNER INPUT</text>
+  <rect class="box private" x="165" y="638" width="300" height="78"/>
+  <text class="box-title" x="190" y="670">Full Simulator State</text>
+  <text class="box-copy" x="190" y="696">Setup and intervention metadata</text>
+  <rect class="box private" x="600" y="638" width="300" height="78"/>
+  <text class="box-title" x="625" y="670">Success Checker</text>
+  <text class="box-copy" x="625" y="696">Task verdict after each action</text>
+  <rect class="box private" x="1035" y="638" width="300" height="78"/>
+  <text class="box-title" x="1060" y="670">Private Evaluator Audit</text>
+  <text class="box-copy" x="1060" y="696">Isolated metadata and provenance</text>
+  <path class="amber-line" d="M465 677 H600"/>
+  <path class="amber-line" d="M900 677 H1035"/>
+
+  <line x1="85" y1="780" x2="135" y2="780" stroke="#2563eb" stroke-width="3"/><text class="legend" x="145" y="785">planner-visible flow</text>
+  <line x1="330" y1="780" x2="380" y2="780" stroke="#0f766e" stroke-width="3"/><text class="legend" x="390" y="785">visible-derived memory</text>
+  <line x1="610" y1="780" x2="660" y2="780" stroke="#b45309" stroke-width="3" stroke-dasharray="9 7"/><text class="legend" x="670" y="785">evaluator-only flow</text>
+  <text class="legend" x="1040" y="785">Dashed boundary is enforced by tests and trace audits.</text>
+</svg>
