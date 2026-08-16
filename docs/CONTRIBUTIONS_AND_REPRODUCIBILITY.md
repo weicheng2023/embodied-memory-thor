@@ -11,19 +11,17 @@ defend the limited conclusions.
 
 ## Development workflow
 
-Coding assistants were used extensively for implementation drafts, refactoring,
-test scaffolding, documentation drafting, command orchestration, and repository
-maintenance. The repository maintainer set the project goal and scope, supplied
-and observed the Windows/WSL2/WSLg environment, evaluated proposed protocol
-changes, authorized simulator runs and retries, made the stopping and continuation
-decisions, reviewed the resulting evidence, and takes responsibility for the
-claims in the final report.
+AI tools were used to assist with implementation drafts, tests, documentation
+drafting, and command orchestration. The repository maintainer set the project
+goal and scope, supplied and observed the Windows/WSL2/WSLg environment,
+evaluated proposed protocol changes, authorized simulator runs and retries,
+made the stopping and continuation decisions, reviewed the resulting evidence,
+and takes responsibility for the claims in the final report.
 
-Some research and engineering decisions were developed collaboratively through
-discussion with coding assistants. Accordingly, Git authorship should not be
-read as a line-by-line claim of unaided implementation. The mixed Phase 5 result,
-failed gates, invalidated pilots, and scene exclusions are retained rather than
-removed to make the project look uniformly successful.
+AI-assisted discussion was also used to explore some research and engineering
+options. The maintainer evaluated and approved the resulting decisions. The
+mixed Phase 5 result, failed gates, invalidated pilots, and scene exclusions are
+retained rather than removed to make the project look uniformly successful.
 
 ## Maintainer research and technical ownership
 
@@ -41,10 +39,9 @@ The maintainer's responsibilities in this project include:
 - taking responsibility for reproducing, explaining, and defending the final
   methods, evidence boundary, and limitations.
 
-Coding assistants produced substantial implementation, testing, documentation,
-and command-orchestration work. The list above describes decision ownership and
-accountability; it is not a claim that the maintainer manually authored every
-associated code path.
+AI assistance covered implementation drafts, tests, documentation drafting, and
+command orchestration. These activities supported, but did not replace, the
+maintainer's decision ownership and accountability.
 
 ## Raw and reviewed histories
 

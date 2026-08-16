@@ -341,13 +341,13 @@ tests/                           Offline contracts and regression coverage
 
 ## Development provenance and ownership
 
-Coding assistants were used extensively for implementation drafts, tests,
-documentation drafting, command orchestration, and repository maintenance. The
-maintainer set the project objective, required fair search-capable baselines and
-an explicit stale-memory negative condition, enforced planner/evaluator
-separation, selected or approved protocol revisions and stop/rerun decisions,
-provided and observed the Windows/WSL2/WSLg environment, and takes responsibility
-for the final interpretation and limitations.
+AI tools were used to assist with implementation drafts, tests, documentation
+drafting, and command orchestration. The maintainer set the project objective,
+required fair search-capable baselines and an explicit stale-memory negative
+condition, enforced planner/evaluator separation, selected or approved protocol
+revisions and stop/rerun decisions, provided and observed the
+Windows/WSL2/WSLg environment, and takes responsibility for the final
+interpretation and limitations.
 
 The raw chronological PR and immutable audit tag remain public. See
 [`docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md`](docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md)
