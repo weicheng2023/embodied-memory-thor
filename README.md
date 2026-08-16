@@ -16,7 +16,7 @@
   <a href="docs/application_abstract.md">Application abstract</a> ·
   <a href="docs/phase5_formal_results.md">Phase-5 results</a> ·
   <a href="docs/phase7/README.md">Holdout evidence</a> ·
-  <a href="#quick-reproduction">Reproduce</a>
+  <a href="docs/USAGE.md">Usage &amp; reproduction</a>
 </p>
 
 <p align="center">
@@ -215,16 +215,9 @@ interface, then evaluate broader randomized holdout tasks with real navigation.
 
 ## Project status
 
-Phases 0-7 are complete:
-
-- Phase 3 established the controlled symbolic partial-observation harness;
-- Phase 4 established the real AI2-THOR loop and planner/evaluator boundary;
-- Phase 5 completed the adaptive protocol-development process and the fresh
-  54-execution formal-v5 comparison;
-- Phase 6 assembled the architecture, results, failure analysis, application
-  abstract, scorecard, and reproducibility documentation;
-- Phase 7A completed a frozen first-six holdout evaluation, and Phase 7B
-  completed a fresh K=2/K=4/K=8 memory-horizon ablation.
+Phases 0-7 are complete: the repository contains the symbolic harness, real
+AI2-THOR loop, accepted 54-execution case study, frozen 18-episode holdout, and
+fresh 30-episode memory-horizon ablation summarized above.
 
 Formal-v2, v3, and v4 were invalidated after distraction, pickup-recovery, and
 route-execution defects. Their rows were not selectively reused; formal-v5 was
@@ -233,156 +226,31 @@ chronology remains in [`docs/phase5_experiment_protocol.md`](docs/phase5_experim
 
 ## Quick reproduction
 
-### Offline tests
+The zero-simulator validation path is deliberately short:
 
 ```powershell
 python -m pip install -e ".[dev]"
+python scripts/check_research_consistency.py
 python -m pytest -q
 ```
 
 The accepted checkpoint passes **453 tests plus 70 generated subtests**.
 
-### Minimal mock episode
-
-This path requires neither AI2-THOR nor an external API:
-
-```powershell
-python scripts/run_episode.py --mock --task put_apple_on_countertop --planner rule_based
-```
-
-Each run writes `episode.jsonl` and `summary.json` under a unique
-`outputs/runs/<timestamp>/` directory.
-
-### Real AI2-THOR integration smoke test
-
-The verified Windows-host route uses Ubuntu 22.04 under WSL2/WSLg:
-
-```powershell
-wsl --distribution Ubuntu-22.04 --user research -- bash -lc "cd /mnt/d/path/to/embodied-memory-thor && ~/embodied-memory-thor-runtime/.venv/bin/python scripts/smoke_ai2thor.py --scenes FloorPlan1 FloorPlan10"
-```
-
-See [`docs/ai2thor_wsl_setup.md`](docs/ai2thor_wsl_setup.md) for the tested
-environment and dependency record.
-
-### Auditable real episode trace
-
-```bash
-python scripts/run_thor_episode.py \
-  --scene FloorPlan1 \
-  --task thor_book_reacquire \
-  --planner object_memory \
-  --mode formal \
-  --trace-html
-```
-
-RGB is a human-audit artifact; the formal planner consumes visible metadata.
-Setup actions and optional evaluator debug state are logged separately from
-planner metrics. A complete formal-matrix rerun additionally requires the local
-evaluator-only historical registry described in
-[`configs/evaluator_only/README.md`](configs/evaluator_only/README.md).
-
-### README research visuals
-
-The architecture figure and Phase-7B chart are deterministic, code-generated
-SVGs:
-
-```bash
-python scripts/render_readme_assets.py
-```
-
-The presentation GIF additionally requires the verified real-THOR runtime and
-the local evaluator-only registry. Its exact role and provenance boundary are
-recorded in [`docs/assets/readme/README.md`](docs/assets/readme/README.md).
-
-## Installation and environment
-
-Requirements:
-
-- Python 3.10 or newer;
-- Windows, macOS, or Linux for the mock/offline path;
-- Ubuntu 22.04 WSL2/WSLg for the verified live AI2-THOR path;
-- no API key unless the optional OpenAI-compatible planner is used.
-
-Create and activate a virtual environment, then install the package:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e .
-```
-
-On macOS or Linux, activate with `source .venv/bin/activate`. Optional extras:
-
-```powershell
-python -m pip install -e ".[dev]"
-python -m pip install -e ".[thor]"
-```
-
-Optional OpenAI-compatible configuration belongs in an untracked `.env` file:
-
-```dotenv
-OPENAI_API_KEY=
-OPENAI_BASE_URL=
-OPENAI_MODEL=
-```
-
-The environment diagnostic reports capability without exposing secret values:
-
-```powershell
-python scripts/check_environment.py
-python scripts/check_environment.py --json
-```
-
-## Additional evaluation entry points
-
-Inspect mock or real scene objects:
-
-```powershell
-python scripts/list_scene_objects.py --mock
-python scripts/list_scene_objects.py --scene FloorPlan1
-```
-
-Run the controlled symbolic memory variants:
-
-```powershell
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner rule_based_no_memory
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner short_memory
-python scripts/run_episode.py --mock --partial-observability --seed 0 --task po_slice_apple_put_plate --planner object_memory
-```
-
-The privileged `oracle_debug` variant is a solvability upper bound only. Phase 3
-is symbolic E1 evidence, not proof of real-simulator memory improvement. See
-[`docs/phase3_memory_experiment.md`](docs/phase3_memory_experiment.md) and
-[`docs/phase3_results.md`](docs/phase3_results.md).
-
-## Repository map
-
-```text
-configs/                         Public task, protocol, and route contracts
-configs/evaluator_only/          Schema only; hidden frozen registries stay local
-docs/evidence/                   Compact public qualification and result evidence
-docs/phase5_experiment_protocol.md  Chronological protocol-development audit
-docs/phase5_formal_results.md     Accepted descriptive result and claim boundary
-docs/phase7/                      Frozen successor protocols and accepted results
-outputs/                         Generated run artifacts (ignored except .gitkeep)
-scripts/                         Diagnostics, qualification, execution, aggregation
-src/embodied_memory_thor/        Environment, memory, planner, evaluator, trace code
-tests/                           Offline contracts and regression coverage
-```
+> **Installing AI2-THOR, running Mock/real episodes, generating traces, or
+> reproducing the README visuals?** Open the complete
+> **[Usage and reproduction guide](docs/USAGE.md)**.
 
 ## Research presentation package
 
-- [`docs/application_abstract.md`](docs/application_abstract.md): copy-ready
-  project summary;
-- [`docs/report.md`](docs/report.md): complete research narrative;
-- [`docs/architecture.md`](docs/architecture.md): system and information-flow
-  design;
-- [`docs/phase5_formal_results.md`](docs/phase5_formal_results.md): result table
-  and interpretation;
-- [`docs/phase7/README.md`](docs/phase7/README.md): Phase-7 holdout and
-  memory-horizon evidence;
-- [`docs/failure_cases.md`](docs/failure_cases.md): retained failures and lessons.
+| Reader need | Document |
+| --- | --- |
+| Complete research narrative | [Research report](docs/report.md) |
+| Architecture and information boundary | [Architecture](docs/architecture.md) |
+| Accepted internal results | [Phase-5 results](docs/phase5_formal_results.md) |
+| Frozen holdout and mechanism evidence | [Phase-7 evidence index](docs/phase7/README.md) |
+| Retained failures and lessons | [Failure cases](docs/failure_cases.md) |
+| Installation, commands, outputs, and repository map | [Usage and reproduction](docs/USAGE.md) |
+| Ownership and reproducibility boundary | [Contributions and reproducibility](docs/CONTRIBUTIONS_AND_REPRODUCIBILITY.md) |
 
 ## Development provenance and ownership
 

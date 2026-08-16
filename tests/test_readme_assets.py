@@ -59,10 +59,12 @@ def test_committed_readme_diagrams_are_deterministic(tmp_path: Path) -> None:
         tmp_path / "chart.svg",
     )
     asset_dir = ROOT / "docs" / "assets" / "readme"
-    assert generated_system.read_bytes() == (asset_dir / "system_overview.svg").read_bytes()
-    assert generated_chart.read_bytes() == (
+    assert generated_system.read_text(encoding="utf-8") == (
+        asset_dir / "system_overview.svg"
+    ).read_text(encoding="utf-8")
+    assert generated_chart.read_text(encoding="utf-8") == (
         asset_dir / "memory_horizon_retention.svg"
-    ).read_bytes()
+    ).read_text(encoding="utf-8")
 
 
 def test_readme_replay_manifest_matches_public_assets() -> None:
