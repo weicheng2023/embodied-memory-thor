@@ -14,6 +14,12 @@ does not declare every historical command safe for a new formal run.
 - `smoke_ai2thor.py`: verify the live simulator/rendering path.
 - `list_scene_objects.py`: inspect scene object availability.
 - `run_phase3_pilot.py`: reproduce the controlled symbolic Phase-3 comparison.
+- `render_readme_assets.py`: deterministically render the public architecture
+  SVG and Phase-7B chart; optionally compose a presentation replay from a saved
+  planner-visible trace and in-memory RGB frames.
+- `run_readme_demo.py`: run one explicitly non-formal frozen Phase-7A
+  configuration with saved frames for the README replay; requires the verified
+  real-THOR runtime and local evaluator-only registry.
 
 ## Current formal-v5 reproduction and analysis
 

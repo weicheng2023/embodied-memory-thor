@@ -1,6 +1,44 @@
 # Embodied-Memory-THOR
 
-**Controlled evaluation of persistent object memory for partially observable embodied agents in AI2-THOR.**
+<p align="center">
+  <strong>Controlled evaluation of persistent object memory for partially observable embodied agents in AI2-THOR.</strong>
+</p>
+
+<p align="center">
+  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white">
+  <img alt="AI2-THOR 5.0.0" src="https://img.shields.io/badge/AI2--THOR-5.0.0-2563EB?style=flat-square">
+  <img alt="Real simulator evidence" src="https://img.shields.io/badge/evidence-real%20simulator-0F766E?style=flat-square">
+  <img alt="Audited information boundary" src="https://img.shields.io/badge/information%20boundary-audited-7C3AED?style=flat-square">
+</p>
+
+<p align="center">
+  <a href="docs/report.md">Research report</a> ·
+  <a href="docs/application_abstract.md">Application abstract</a> ·
+  <a href="docs/phase5_formal_results.md">Phase-5 results</a> ·
+  <a href="docs/phase7/README.md">Holdout evidence</a> ·
+  <a href="#quick-reproduction">Reproduce</a>
+</p>
+
+<p align="center">
+  <img src="docs/assets/readme/book_reacquisition.gif" width="960" alt="Real AI2-THOR episode in which the agent observes a Book, loses sight of it, retrieves a last-seen memory, returns, reacquires the Book, and picks it up">
+</p>
+
+<p align="center">
+  <sub>Real AI2-THOR presentation replay: visible objects, retrieved memory, planner action, and action result are composed from saved RGB frames and the planner-visible trace. It is an explanatory replay, not a formal comparison row; evaluator-only state is excluded. <a href="docs/assets/readme/demo_manifest.json">Provenance manifest</a>.</sub>
+</p>
+
+## Research snapshot
+
+| Study | Controlled design | Executions | Main descriptive result |
+| --- | --- | ---: | --- |
+| Phase 5 · protocol-development case study | 18 matched cells × 3 memory variants | 54 | All succeeded; memory helped slightly in simple Book reacquisition, hurt total cost in the longer Cup task, and recovered from stale records. |
+| Phase 7A · frozen holdout | First six eligible unseen configurations × 3 variants | 18 | Object memory saved one total/reacquisition action in 5/6 configurations; the task required rotation but no navigation. |
+| Phase 7B · memory-horizon ablation | Same six configurations × 5 fresh memory conditions | 30 | K=8 and object memory both retained the target in 6/6 and behaved identically on this narrow task. |
+
+The repository is best read as an **audited protocol-development case study with
+a frozen holdout and a mechanism ablation**. It provides conditional evidence in
+narrow deterministic tasks, not a claim of broad benchmark validity or
+statistical significance.
 
 ## Problem
 
@@ -56,6 +94,25 @@ The controlled comparison keeps the following shared across variants:
   planner requests, ordinary traces, and memory records;
 - stale memory tested explicitly rather than reporting only favorable stable
   cases.
+
+## System and evidence boundary
+
+![Controlled information flow from visible AI2-THOR observations through the selected memory provider and shared planner, with evaluator-only state isolated below a dashed boundary](docs/assets/readme/system_overview.svg)
+
+Only current visible-derived state and the selected memory provider can reach
+the shared planner. Full simulator state is reserved for setup, intervention,
+and success checking; it is never planner input. The field-level contract and
+trace schema are documented in [`docs/architecture.md`](docs/architecture.md).
+
+Four controls make the comparison interpretable:
+
+1. the no-memory baseline retains the same systematic search and recovery
+   capabilities as the memory variants;
+2. the changing treatment is historical observation access, not a stronger
+   action space or a privileged evaluator connection;
+3. stale-memory failures and fallback correction are measured explicitly;
+4. invalidated protocols and failed qualification cases remain in the public
+   chronology instead of being selectively replaced by successful rows.
 
 ## Evidence chronology
 
@@ -117,6 +174,8 @@ executions under one frozen revision.
 | Recent memory K=8 | 6/6 | 6.667 | 4.500 |
 | Object memory | 6/6 | 6.667 | 4.500 |
 
+![Phase-7B chart showing target retention at reacquisition for no memory, recent K=2, recent K=4, recent K=8, and object memory](docs/assets/readme/memory_horizon_retention.svg)
+
 K=8 and object memory matched on retention, total actions, and reacquisition
 actions in every configuration. In this simple task, retaining the target long
 enough reproduced the observed efficiency pattern; the study does not
@@ -141,33 +200,6 @@ ablation. Together they support conditional evidence in narrow deterministic
 settings, not statistical significance or broad external validity. See the
 [Phase-5 result](docs/phase5_formal_results.md) and
 [Phase-7 evidence index](docs/phase7/README.md).
-
-## System at a glance
-
-```mermaid
-flowchart LR
-    THOR[AI2-THOR] --> OBS[Visible observation parser]
-    OBS --> MEM[Selected memory provider]
-    OBS --> REQ[PlannerRequest]
-    MEM --> REQ
-    REQ --> PLAN[Shared planner and recovery policy]
-    PLAN --> ACT[Action executor]
-    ACT --> THOR
-    REQ --> TRACE[Planner-visible audit trace]
-    ACT --> TRACE
-    THOR -. evaluator-only full state .-> EVAL[Intervention and success checker]
-    EVAL --> PRIVATE[Private evaluator audit]
-```
-
-The dashed evaluator path is unavailable to the planner. The full architecture
-and field-level information boundary are documented in
-[`docs/architecture.md`](docs/architecture.md).
-
-![Real AI2-THOR FloorPlan1 frame with a visible Book](docs/assets/ai2thor_smoke/floorplan1.png)
-
-*A real AI2-THOR integration-smoke frame captured from the in-memory RGB array.
-It confirms the simulator/rendering path; it is not presented as formal memory-
-comparison evidence.*
 
 ## Why a deterministic visible-metadata planner?
 
@@ -208,7 +240,7 @@ python -m pip install -e ".[dev]"
 python -m pytest -q
 ```
 
-The accepted checkpoint passes **448 tests plus 70 generated subtests**.
+The accepted checkpoint passes **453 tests plus 70 generated subtests**.
 
 ### Minimal mock episode
 
@@ -248,6 +280,19 @@ Setup actions and optional evaluator debug state are logged separately from
 planner metrics. A complete formal-matrix rerun additionally requires the local
 evaluator-only historical registry described in
 [`configs/evaluator_only/README.md`](configs/evaluator_only/README.md).
+
+### README research visuals
+
+The architecture figure and Phase-7B chart are deterministic, code-generated
+SVGs:
+
+```bash
+python scripts/render_readme_assets.py
+```
+
+The presentation GIF additionally requires the verified real-THOR runtime and
+the local evaluator-only registry. Its exact role and provenance boundary are
+recorded in [`docs/assets/readme/README.md`](docs/assets/readme/README.md).
 
 ## Installation and environment
 

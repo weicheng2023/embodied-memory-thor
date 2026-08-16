@@ -1,0 +1,16 @@
+{
+  "artifact_role": "presentation_only_not_formal_comparative_evidence",
+  "desktop_screenshot_used": false,
+  "evaluated_step_count": 7,
+  "evaluator_only_state_in_overlay": false,
+  "generator": "scripts/render_readme_assets.py",
+  "gif_sha256": "760d55c1d92745a460288fe98740f5f7a4bd4a4c45f90dce2b2174d3f23ac6b7",
+  "memory": "object_memory",
+  "poster_sha256": "504c0b05e2fa29c1bf4533e304afe4ec8043db36b6a0ae4ce012b8bf12870a3f",
+  "rendered_frame_count": 7,
+  "scene": "FloorPlan308",
+  "source_boundary": "planner_visible_trace_and_in_memory_rgb_frames_only",
+  "source_episode_jsonl_sha256": "b7cee7826071cc33fe95c403263236819019b1ff5eeae7e7930442299dfde9fb",
+  "success": true,
+  "task": "thor_book_reacquire_k2"
+}

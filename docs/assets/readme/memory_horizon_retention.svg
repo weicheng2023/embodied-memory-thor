@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Phase 7B target retention at reacquisition</title>
+  <desc id="desc">No memory and K equals 2 retained the target in zero of six configurations, K equals 4 in two, and K equals 8 and object memory in all six.</desc>
+  <style>.title{font:700 28px system-ui,-apple-system,Segoe UI,sans-serif;fill:#0f172a}.subtitle{font:400 16px system-ui,-apple-system,Segoe UI,sans-serif;fill:#475569}.value{font:700 25px system-ui,-apple-system,Segoe UI,sans-serif;fill:#0f172a}.label{font:600 15px system-ui,-apple-system,Segoe UI,sans-serif;fill:#334155}.axis{font:500 13px system-ui,-apple-system,Segoe UI,sans-serif;fill:#64748b}</style>
+  <rect width="1200" height="520" rx="22" fill="#f8fafc"/>
+  <text class="title" x="65" y="58">Phase 7B · Target retained at reacquisition</text>
+  <text class="subtitle" x="65" y="88">Fresh paired mechanism study; six fixed configurations per memory condition.</text>
+  <line x1="70" y1="370" x2="1135" y2="370" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="70" y1="120" x2="1135" y2="120" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6 7"/>
+  <text class="axis" x="40" y="375">0</text><text class="axis" x="35" y="125">6</text>
+  <rect x="105" y="370" width="130" height="0" rx="12" fill="#94a3b8"/><text class="value" x="170" y="355" text-anchor="middle">0/6</text><text class="label" x="170" y="410" text-anchor="middle">No memory</text><rect x="315" y="370" width="130" height="0" rx="12" fill="#93c5fd"/><text class="value" x="380" y="355" text-anchor="middle">0/6</text><text class="label" x="380" y="410" text-anchor="middle">Recent K=2</text><rect x="525" y="287" width="130" height="83" rx="12" fill="#60a5fa"/><text class="value" x="590" y="272" text-anchor="middle">2/6</text><text class="label" x="590" y="410" text-anchor="middle">Recent K=4</text><rect x="735" y="120" width="130" height="250" rx="12" fill="#2563eb"/><text class="value" x="800" y="105" text-anchor="middle">6/6</text><text class="label" x="800" y="410" text-anchor="middle">Recent K=8</text><rect x="945" y="120" width="130" height="250" rx="12" fill="#0f766e"/><text class="value" x="1010" y="105" text-anchor="middle">6/6</text><text class="label" x="1010" y="410" text-anchor="middle">Object memory</text>
+  <rect x="65" y="452" width="1070" height="42" rx="10" fill="#eef2ff"/>
+  <text class="axis" x="85" y="478">K=8 matched object memory here; this narrow result does not establish general equivalence. · analysis e194912e675c</text>
+</svg>
